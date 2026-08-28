@@ -1,0 +1,42 @@
+import { randomUUID } from "node:crypto";
+import { prisma } from "../../lib/prisma.js";
+import { AppError } from "../../middleware/errorHandler.js";
+import type { RpgTopicInput, UpdateRpgTopicInput } from "../../schemas/admin.schema.js";
+
+const SELF_SERVE_COLORS = ["#7CC24A", "#57C6C6", "#F5822B", "#5C7BC9", "#EF6A5A", "#9B7EDE", "#F79BB0", "#FFC93C"];
+
+export async function listRpgTopics(ownerId?: string) {
+  return prisma.rpgTopic.findMany({
+    where: ownerId !== undefined ? { parentId: ownerId } : {},
+    orderBy: [{ order: "asc" }, { createdAt: "asc" }],
+    include: { _count: { select: { monsters: true } } },
+  });
+}
+
+export async function getRpgTopic(id: string, ownerId?: string) {
+  const topic = await prisma.rpgTopic.findUnique({ where: { id } });
+  if (!topic || (ownerId !== undefined && topic.parentId !== ownerId)) {
+    throw new AppError(404, "Không tìm thấy hầm ngục.", "RPG_TOPIC_NOT_FOUND");
+  }
+  return topic;
+}
+
+export async function createRpgTopic(input: RpgTopicInput, ownerId?: string) {
+  return prisma.rpgTopic.create({ data: { ...input, parentId: ownerId ?? null } });
+}
+
+/** Self-serve create — no key/color picking, just a name; color is picked from a small fixed palette. */
+export async function createOwnRpgTopic(ownerId: string, input: { name: string }) {
+  const color = SELF_SERVE_COLORS[input.name.length % SELF_SERVE_COLORS.length]!;
+  return prisma.rpgTopic.create({ data: { key: `u-${randomUUID()}`, parentId: ownerId, name: input.name, color, order: 0, isActive: true } });
+}
+
+export async function updateRpgTopic(id: string, input: UpdateRpgTopicInput, ownerId?: string) {
+  await getRpgTopic(id, ownerId);
+  return prisma.rpgTopic.update({ where: { id }, data: input });
+}
+
+export async function deleteRpgTopic(id: string, ownerId?: string) {
+  await getRpgTopic(id, ownerId);
+  await prisma.rpgTopic.delete({ where: { id } }); // cascades to monsters
+}

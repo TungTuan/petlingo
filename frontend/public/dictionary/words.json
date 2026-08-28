@@ -1,0 +1,4882 @@
+[
+  {
+    "word": "dog",
+    "phonetic": "/dɒɡ/",
+    "vi": "chó",
+    "ja": "犬",
+    "ko": "개",
+    "topic": "animals",
+    "example": "I have a pet dog.",
+    "exampleVi": "Tôi có một con chó cưng."
+  },
+  {
+    "word": "cat",
+    "phonetic": "/kæt/",
+    "vi": "mèo",
+    "ja": "猫",
+    "ko": "고양이",
+    "topic": "animals",
+    "example": "My cat sleeps all day.",
+    "exampleVi": "Con mèo của tôi ngủ cả ngày."
+  },
+  {
+    "word": "rabbit",
+    "phonetic": "/ˈræbɪt/",
+    "vi": "thỏ",
+    "ja": "うさぎ",
+    "ko": "토끼",
+    "topic": "animals",
+    "example": "The rabbit hops in the garden.",
+    "exampleVi": "Con thỏ nhảy trong khu vườn."
+  },
+  {
+    "word": "bird",
+    "phonetic": "/bɜːd/",
+    "vi": "chim",
+    "ja": "鳥",
+    "ko": "새",
+    "topic": "animals",
+    "example": "A bird is singing in the tree.",
+    "exampleVi": "Một con chim đang hót trên cây."
+  },
+  {
+    "word": "fish",
+    "phonetic": "/fɪʃ/",
+    "vi": "cá",
+    "ja": "魚",
+    "ko": "물고기",
+    "topic": "animals",
+    "example": "The fish swims in the pond.",
+    "exampleVi": "Con cá bơi trong ao."
+  },
+  {
+    "word": "elephant",
+    "phonetic": "/ˈelɪfənt/",
+    "vi": "voi",
+    "ja": "象",
+    "ko": "코끼리",
+    "topic": "animals",
+    "example": "An elephant is very big.",
+    "exampleVi": "Con voi rất to lớn."
+  },
+  {
+    "word": "lion",
+    "phonetic": "/ˈlaɪən/",
+    "vi": "sư tử",
+    "ja": "ライオン",
+    "ko": "사자",
+    "topic": "animals",
+    "example": "The lion is the king of the jungle.",
+    "exampleVi": "Sư tử là vua của rừng xanh."
+  },
+  {
+    "word": "tiger",
+    "phonetic": "/ˈtaɪɡər/",
+    "vi": "hổ",
+    "ja": "虎",
+    "ko": "호랑이",
+    "topic": "animals",
+    "example": "The tiger has orange and black stripes.",
+    "exampleVi": "Con hổ có sọc cam và đen."
+  },
+  {
+    "word": "bear",
+    "phonetic": "/beər/",
+    "vi": "gấu",
+    "ja": "熊",
+    "ko": "곰",
+    "topic": "animals",
+    "example": "A bear is sleeping in the cave.",
+    "exampleVi": "Một con gấu đang ngủ trong hang."
+  },
+  {
+    "word": "monkey",
+    "phonetic": "/ˈmʌŋki/",
+    "vi": "khỉ",
+    "ja": "猿",
+    "ko": "원숭이",
+    "topic": "animals",
+    "example": "The monkey climbs the tree fast.",
+    "exampleVi": "Con khỉ trèo cây rất nhanh."
+  },
+  {
+    "word": "horse",
+    "phonetic": "/hɔːrs/",
+    "vi": "ngựa",
+    "ja": "馬",
+    "ko": "말",
+    "topic": "animals",
+    "example": "I can ride a horse.",
+    "exampleVi": "Tôi có thể cưỡi ngựa."
+  },
+  {
+    "word": "cow",
+    "phonetic": "/kaʊ/",
+    "vi": "bò",
+    "ja": "牛",
+    "ko": "소",
+    "topic": "animals",
+    "example": "The cow gives us milk.",
+    "exampleVi": "Con bò cho chúng ta sữa."
+  },
+  {
+    "word": "pig",
+    "phonetic": "/pɪɡ/",
+    "vi": "lợn",
+    "ja": "豚",
+    "ko": "돼지",
+    "topic": "animals",
+    "example": "The pig plays in the mud.",
+    "exampleVi": "Con lợn chơi trong bùn."
+  },
+  {
+    "word": "duck",
+    "phonetic": "/dʌk/",
+    "vi": "vịt",
+    "ja": "アヒル",
+    "ko": "오리",
+    "topic": "animals",
+    "example": "The duck swims in the lake.",
+    "exampleVi": "Con vịt bơi trong hồ."
+  },
+  {
+    "word": "chicken",
+    "phonetic": "/ˈtʃɪkɪn/",
+    "vi": "gà",
+    "ja": "鶏",
+    "ko": "닭",
+    "topic": "animals",
+    "example": "The chicken lays eggs every day.",
+    "exampleVi": "Con gà đẻ trứng mỗi ngày."
+  },
+  {
+    "word": "sheep",
+    "phonetic": "/ʃiːp/",
+    "vi": "cừu",
+    "ja": "羊",
+    "ko": "양",
+    "topic": "animals",
+    "example": "The sheep has soft white wool.",
+    "exampleVi": "Con cừu có lông trắng mềm."
+  },
+  {
+    "word": "frog",
+    "phonetic": "/frɒɡ/",
+    "vi": "ếch",
+    "ja": "カエル",
+    "ko": "개구리",
+    "topic": "animals",
+    "example": "The frog jumps into the pond.",
+    "exampleVi": "Con ếch nhảy xuống ao."
+  },
+  {
+    "word": "snake",
+    "phonetic": "/sneɪk/",
+    "vi": "rắn",
+    "ja": "蛇",
+    "ko": "뱀",
+    "topic": "animals",
+    "example": "The snake moves without legs.",
+    "exampleVi": "Con rắn di chuyển mà không có chân."
+  },
+  {
+    "word": "turtle",
+    "phonetic": "/ˈtɜːrtl/",
+    "vi": "rùa",
+    "ja": "カメ",
+    "ko": "거북이",
+    "topic": "animals",
+    "example": "The turtle walks very slowly.",
+    "exampleVi": "Con rùa đi rất chậm."
+  },
+  {
+    "word": "butterfly",
+    "phonetic": "/ˈbʌtərflaɪ/",
+    "vi": "bướm",
+    "ja": "蝶",
+    "ko": "나비",
+    "topic": "animals",
+    "example": "A butterfly landed on the flower.",
+    "exampleVi": "Một con bướm đậu trên bông hoa."
+  },
+  {
+    "word": "zebra",
+    "phonetic": "/ˈziːbrə/",
+    "vi": "ngựa vằn",
+    "ja": "シマウマ",
+    "ko": "얼룩말",
+    "topic": "animals",
+    "example": "A zebra has black and white stripes.",
+    "exampleVi": "Con ngựa vằn có sọc đen trắng."
+  },
+  {
+    "word": "giraffe",
+    "phonetic": "/dʒɪˈræf/",
+    "vi": "hươu cao cổ",
+    "ja": "キリン",
+    "ko": "기린",
+    "topic": "animals",
+    "example": "The giraffe has a very long neck.",
+    "exampleVi": "Hươu cao cổ có cái cổ rất dài."
+  },
+  {
+    "word": "fox",
+    "phonetic": "/fɒks/",
+    "vi": "cáo",
+    "ja": "キツネ",
+    "ko": "여우",
+    "topic": "animals",
+    "example": "A fox ran across the field.",
+    "exampleVi": "Một con cáo chạy băng qua cánh đồng."
+  },
+  {
+    "word": "wolf",
+    "phonetic": "/wʊlf/",
+    "vi": "sói",
+    "ja": "オオカミ",
+    "ko": "늑대",
+    "topic": "animals",
+    "example": "The wolf howled at the moon.",
+    "exampleVi": "Con sói tru dưới ánh trăng."
+  },
+  {
+    "word": "deer",
+    "phonetic": "/dɪər/",
+    "vi": "hươu",
+    "ja": "鹿",
+    "ko": "사슴",
+    "topic": "animals",
+    "example": "A deer ran into the forest.",
+    "exampleVi": "Một con hươu chạy vào rừng."
+  },
+  {
+    "word": "squirrel",
+    "phonetic": "/ˈskwɪrəl/",
+    "vi": "sóc",
+    "ja": "リス",
+    "ko": "다람쥐",
+    "topic": "animals",
+    "example": "The squirrel hides nuts in the tree.",
+    "exampleVi": "Con sóc giấu hạt trên cây."
+  },
+  {
+    "word": "mouse",
+    "phonetic": "/maʊs/",
+    "vi": "chuột",
+    "ja": "ネズミ",
+    "ko": "쥐",
+    "topic": "animals",
+    "example": "A little mouse ran under the table.",
+    "exampleVi": "Một con chuột nhỏ chạy dưới gầm bàn."
+  },
+  {
+    "word": "goat",
+    "phonetic": "/ɡoʊt/",
+    "vi": "dê",
+    "ja": "ヤギ",
+    "ko": "염소",
+    "topic": "animals",
+    "example": "The goat eats grass on the hill.",
+    "exampleVi": "Con dê ăn cỏ trên đồi."
+  },
+  {
+    "word": "owl",
+    "phonetic": "/aʊl/",
+    "vi": "cú",
+    "ja": "フクロウ",
+    "ko": "부엉이",
+    "topic": "animals",
+    "example": "The owl wakes up at night.",
+    "exampleVi": "Con cú thức dậy vào ban đêm."
+  },
+  {
+    "word": "penguin",
+    "phonetic": "/ˈpeŋɡwɪn/",
+    "vi": "chim cánh cụt",
+    "ja": "ペンギン",
+    "ko": "펭귄",
+    "topic": "animals",
+    "example": "A penguin waddles on the ice.",
+    "exampleVi": "Một con chim cánh cụt lạch bạch trên băng."
+  },
+  {
+    "word": "dolphin",
+    "phonetic": "/ˈdɒlfɪn/",
+    "vi": "cá heo",
+    "ja": "イルカ",
+    "ko": "돌고래",
+    "topic": "animals",
+    "example": "The dolphin jumps out of the water.",
+    "exampleVi": "Con cá heo nhảy lên khỏi mặt nước."
+  },
+  {
+    "word": "whale",
+    "phonetic": "/weɪl/",
+    "vi": "cá voi",
+    "ja": "クジラ",
+    "ko": "고래",
+    "topic": "animals",
+    "example": "A whale is the biggest animal in the sea.",
+    "exampleVi": "Cá voi là loài vật lớn nhất ở biển."
+  },
+  {
+    "word": "shark",
+    "phonetic": "/ʃɑːrk/",
+    "vi": "cá mập",
+    "ja": "サメ",
+    "ko": "상어",
+    "topic": "animals",
+    "example": "The shark swims fast in the ocean.",
+    "exampleVi": "Cá mập bơi rất nhanh trong đại dương."
+  },
+  {
+    "word": "crab",
+    "phonetic": "/kræb/",
+    "vi": "cua",
+    "ja": "カニ",
+    "ko": "게",
+    "topic": "animals",
+    "example": "A crab walks sideways on the beach.",
+    "exampleVi": "Một con cua đi ngang trên bãi biển."
+  },
+  {
+    "word": "bee",
+    "phonetic": "/biː/",
+    "vi": "ong",
+    "ja": "ハチ",
+    "ko": "벌",
+    "topic": "animals",
+    "example": "The bee flies from flower to flower.",
+    "exampleVi": "Con ong bay từ hoa này sang hoa khác."
+  },
+  {
+    "word": "ant",
+    "phonetic": "/ænt/",
+    "vi": "kiến",
+    "ja": "アリ",
+    "ko": "개미",
+    "topic": "animals",
+    "example": "A tiny ant carried the crumb.",
+    "exampleVi": "Một con kiến nhỏ tha mẩu bánh vụn."
+  },
+  {
+    "word": "spider",
+    "phonetic": "/ˈspaɪdər/",
+    "vi": "nhện",
+    "ja": "クモ",
+    "ko": "거미",
+    "topic": "animals",
+    "example": "The spider made a web in the corner.",
+    "exampleVi": "Con nhện giăng tơ ở góc nhà."
+  },
+  {
+    "word": "snail",
+    "phonetic": "/sneɪl/",
+    "vi": "ốc sên",
+    "ja": "カタツムリ",
+    "ko": "달팽이",
+    "topic": "animals",
+    "example": "A snail moves very slowly.",
+    "exampleVi": "Một con ốc sên di chuyển rất chậm."
+  },
+  {
+    "word": "kangaroo",
+    "phonetic": "/ˌkæŋɡəˈruː/",
+    "vi": "chuột túi",
+    "ja": "カンガルー",
+    "ko": "캥거루",
+    "topic": "animals",
+    "example": "A kangaroo jumps with its strong legs.",
+    "exampleVi": "Con chuột túi nhảy bằng đôi chân khoẻ."
+  },
+  {
+    "word": "panda",
+    "phonetic": "/ˈpændə/",
+    "vi": "gấu trúc",
+    "ja": "パンダ",
+    "ko": "판다",
+    "topic": "animals",
+    "example": "The panda eats bamboo all day.",
+    "exampleVi": "Gấu trúc ăn tre cả ngày."
+  },
+  {
+    "word": "red",
+    "phonetic": "/red/",
+    "vi": "đỏ",
+    "ja": "赤",
+    "ko": "빨강",
+    "topic": "colors",
+    "example": "The apple is red.",
+    "exampleVi": "Quả táo màu đỏ."
+  },
+  {
+    "word": "blue",
+    "phonetic": "/bluː/",
+    "vi": "xanh dương",
+    "ja": "青",
+    "ko": "파랑",
+    "topic": "colors",
+    "example": "The sky is blue.",
+    "exampleVi": "Bầu trời màu xanh dương."
+  },
+  {
+    "word": "green",
+    "phonetic": "/ɡriːn/",
+    "vi": "xanh lá",
+    "ja": "緑",
+    "ko": "초록",
+    "topic": "colors",
+    "example": "The grass is green.",
+    "exampleVi": "Cỏ có màu xanh lá."
+  },
+  {
+    "word": "yellow",
+    "phonetic": "/ˈjeloʊ/",
+    "vi": "vàng",
+    "ja": "黄色",
+    "ko": "노랑",
+    "topic": "colors",
+    "example": "The sun is yellow.",
+    "exampleVi": "Mặt trời có màu vàng."
+  },
+  {
+    "word": "orange",
+    "phonetic": "/ˈɔːrɪndʒ/",
+    "vi": "cam",
+    "ja": "オレンジ",
+    "ko": "주황",
+    "topic": "colors",
+    "example": "The orange fruit is orange.",
+    "exampleVi": "Quả cam có màu cam."
+  },
+  {
+    "word": "purple",
+    "phonetic": "/ˈpɜːrpl/",
+    "vi": "tím",
+    "ja": "紫",
+    "ko": "보라",
+    "topic": "colors",
+    "example": "She likes the color purple.",
+    "exampleVi": "Cô ấy thích màu tím."
+  },
+  {
+    "word": "pink",
+    "phonetic": "/pɪŋk/",
+    "vi": "hồng",
+    "ja": "ピンク",
+    "ko": "분홍",
+    "topic": "colors",
+    "example": "My sister has a pink bag.",
+    "exampleVi": "Chị tôi có một chiếc túi màu hồng."
+  },
+  {
+    "word": "black",
+    "phonetic": "/blæk/",
+    "vi": "đen",
+    "ja": "黒",
+    "ko": "검정",
+    "topic": "colors",
+    "example": "The cat has black fur.",
+    "exampleVi": "Con mèo có bộ lông màu đen."
+  },
+  {
+    "word": "white",
+    "phonetic": "/waɪt/",
+    "vi": "trắng",
+    "ja": "白",
+    "ko": "하양",
+    "topic": "colors",
+    "example": "Snow is white.",
+    "exampleVi": "Tuyết có màu trắng."
+  },
+  {
+    "word": "brown",
+    "phonetic": "/braʊn/",
+    "vi": "nâu",
+    "ja": "茶色",
+    "ko": "갈색",
+    "topic": "colors",
+    "example": "The dog has brown fur.",
+    "exampleVi": "Con chó có bộ lông màu nâu."
+  },
+  {
+    "word": "gray",
+    "phonetic": "/ɡreɪ/",
+    "vi": "xám",
+    "ja": "灰色",
+    "ko": "회색",
+    "topic": "colors",
+    "example": "The elephant is gray.",
+    "exampleVi": "Con voi có màu xám."
+  },
+  {
+    "word": "gold",
+    "phonetic": "/ɡoʊld/",
+    "vi": "vàng kim",
+    "ja": "金色",
+    "ko": "금색",
+    "topic": "colors",
+    "example": "She wears a gold ring.",
+    "exampleVi": "Cô ấy đeo một chiếc nhẫn vàng kim."
+  },
+  {
+    "word": "silver",
+    "phonetic": "/ˈsɪlvər/",
+    "vi": "bạc",
+    "ja": "銀色",
+    "ko": "은색",
+    "topic": "colors",
+    "example": "He has a silver watch.",
+    "exampleVi": "Anh ấy có một chiếc đồng hồ bạc."
+  },
+  {
+    "word": "turquoise",
+    "phonetic": "/ˈtɜːrkwɔɪz/",
+    "vi": "ngọc lam",
+    "ja": "ターコイズ",
+    "ko": "청록색",
+    "topic": "colors",
+    "example": "The sea looks turquoise today.",
+    "exampleVi": "Biển hôm nay có màu ngọc lam."
+  },
+  {
+    "word": "maroon",
+    "phonetic": "/məˈruːn/",
+    "vi": "đỏ mận",
+    "ja": "えんじ色",
+    "ko": "밤색",
+    "topic": "colors",
+    "example": "He wore a maroon jacket.",
+    "exampleVi": "Anh ấy mặc một chiếc áo khoác màu đỏ mận."
+  },
+  {
+    "word": "one",
+    "phonetic": "/wʌn/",
+    "vi": "một",
+    "ja": "一",
+    "ko": "하나",
+    "topic": "numbers",
+    "example": "I have one apple.",
+    "exampleVi": "Tôi có một quả táo."
+  },
+  {
+    "word": "two",
+    "phonetic": "/tuː/",
+    "vi": "hai",
+    "ja": "二",
+    "ko": "둘",
+    "topic": "numbers",
+    "example": "She has two brothers.",
+    "exampleVi": "Cô ấy có hai anh trai."
+  },
+  {
+    "word": "three",
+    "phonetic": "/θriː/",
+    "vi": "ba",
+    "ja": "三",
+    "ko": "셋",
+    "topic": "numbers",
+    "example": "There are three books on the desk.",
+    "exampleVi": "Có ba quyển sách trên bàn."
+  },
+  {
+    "word": "four",
+    "phonetic": "/fɔːr/",
+    "vi": "bốn",
+    "ja": "四",
+    "ko": "넷",
+    "topic": "numbers",
+    "example": "A car has four wheels.",
+    "exampleVi": "Một chiếc ô tô có bốn bánh xe."
+  },
+  {
+    "word": "five",
+    "phonetic": "/faɪv/",
+    "vi": "năm",
+    "ja": "五",
+    "ko": "다섯",
+    "topic": "numbers",
+    "example": "I have five fingers on one hand.",
+    "exampleVi": "Tôi có năm ngón tay trên một bàn tay."
+  },
+  {
+    "word": "six",
+    "phonetic": "/sɪks/",
+    "vi": "sáu",
+    "ja": "六",
+    "ko": "여섯",
+    "topic": "numbers",
+    "example": "The box has six eggs.",
+    "exampleVi": "Hộp có sáu quả trứng."
+  },
+  {
+    "word": "seven",
+    "phonetic": "/ˈsevən/",
+    "vi": "bảy",
+    "ja": "七",
+    "ko": "일곱",
+    "topic": "numbers",
+    "example": "There are seven days in a week.",
+    "exampleVi": "Có bảy ngày trong một tuần."
+  },
+  {
+    "word": "eight",
+    "phonetic": "/eɪt/",
+    "vi": "tám",
+    "ja": "八",
+    "ko": "여덟",
+    "topic": "numbers",
+    "example": "The spider has eight legs.",
+    "exampleVi": "Con nhện có tám chân."
+  },
+  {
+    "word": "nine",
+    "phonetic": "/naɪn/",
+    "vi": "chín",
+    "ja": "九",
+    "ko": "아홉",
+    "topic": "numbers",
+    "example": "The cat has nine lives, they say.",
+    "exampleVi": "Người ta nói mèo có chín mạng."
+  },
+  {
+    "word": "ten",
+    "phonetic": "/ten/",
+    "vi": "mười",
+    "ja": "十",
+    "ko": "열",
+    "topic": "numbers",
+    "example": "I can count to ten.",
+    "exampleVi": "Tôi có thể đếm đến mười."
+  },
+  {
+    "word": "eleven",
+    "phonetic": "/ɪˈlevən/",
+    "vi": "mười một",
+    "ja": "十一",
+    "ko": "열하나",
+    "topic": "numbers",
+    "example": "Eleven students are in the classroom.",
+    "exampleVi": "Có mười một học sinh trong lớp học."
+  },
+  {
+    "word": "twelve",
+    "phonetic": "/twelv/",
+    "vi": "mười hai",
+    "ja": "十二",
+    "ko": "열둘",
+    "topic": "numbers",
+    "example": "There are twelve months in a year.",
+    "exampleVi": "Có mười hai tháng trong một năm."
+  },
+  {
+    "word": "twenty",
+    "phonetic": "/ˈtwenti/",
+    "vi": "hai mươi",
+    "ja": "二十",
+    "ko": "스물",
+    "topic": "numbers",
+    "example": "She is twenty years old.",
+    "exampleVi": "Cô ấy hai mươi tuổi."
+  },
+  {
+    "word": "thirty",
+    "phonetic": "/ˈθɜːrti/",
+    "vi": "ba mươi",
+    "ja": "三十",
+    "ko": "서른",
+    "topic": "numbers",
+    "example": "He ran thirty minutes today.",
+    "exampleVi": "Hôm nay anh ấy đã chạy ba mươi phút."
+  },
+  {
+    "word": "forty",
+    "phonetic": "/ˈfɔːrti/",
+    "vi": "bốn mươi",
+    "ja": "四十",
+    "ko": "마흔",
+    "topic": "numbers",
+    "example": "The bus ride takes forty minutes.",
+    "exampleVi": "Chuyến xe buýt mất bốn mươi phút."
+  },
+  {
+    "word": "fifty",
+    "phonetic": "/ˈfɪfti/",
+    "vi": "năm mươi",
+    "ja": "五十",
+    "ko": "쉰",
+    "topic": "numbers",
+    "example": "There are fifty students in the school.",
+    "exampleVi": "Có năm mươi học sinh trong trường."
+  },
+  {
+    "word": "hundred",
+    "phonetic": "/ˈhʌndrəd/",
+    "vi": "một trăm",
+    "ja": "百",
+    "ko": "백",
+    "topic": "numbers",
+    "example": "I saved one hundred coins.",
+    "exampleVi": "Tôi đã để dành một trăm đồng xu."
+  },
+  {
+    "word": "thousand",
+    "phonetic": "/ˈθaʊzənd/",
+    "vi": "một nghìn",
+    "ja": "千",
+    "ko": "천",
+    "topic": "numbers",
+    "example": "A thousand stars shine at night.",
+    "exampleVi": "Một nghìn ngôi sao lấp lánh vào ban đêm."
+  },
+  {
+    "word": "first",
+    "phonetic": "/fɜːrst/",
+    "vi": "thứ nhất",
+    "ja": "一番目",
+    "ko": "첫째",
+    "topic": "numbers",
+    "example": "She finished the race first.",
+    "exampleVi": "Cô ấy về đích đầu tiên."
+  },
+  {
+    "word": "second",
+    "phonetic": "/ˈsekənd/",
+    "vi": "thứ hai",
+    "ja": "二番目",
+    "ko": "둘째",
+    "topic": "numbers",
+    "example": "He came in second place.",
+    "exampleVi": "Anh ấy về đích ở vị trí thứ hai."
+  },
+  {
+    "word": "mother",
+    "phonetic": "/ˈmʌðər/",
+    "vi": "mẹ",
+    "ja": "母",
+    "ko": "어머니",
+    "topic": "family",
+    "example": "My mother cooks dinner every night.",
+    "exampleVi": "Mẹ tôi nấu bữa tối mỗi đêm."
+  },
+  {
+    "word": "father",
+    "phonetic": "/ˈfɑːðər/",
+    "vi": "bố",
+    "ja": "父",
+    "ko": "아버지",
+    "topic": "family",
+    "example": "My father drives me to school.",
+    "exampleVi": "Bố tôi chở tôi đi học."
+  },
+  {
+    "word": "sister",
+    "phonetic": "/ˈsɪstər/",
+    "vi": "chị/em gái",
+    "ja": "姉/妹",
+    "ko": "언니/여동생",
+    "topic": "family",
+    "example": "My sister likes to draw.",
+    "exampleVi": "Chị/em gái tôi thích vẽ tranh."
+  },
+  {
+    "word": "brother",
+    "phonetic": "/ˈbrʌðər/",
+    "vi": "anh/em trai",
+    "ja": "兄/弟",
+    "ko": "오빠/남동생",
+    "topic": "family",
+    "example": "My brother plays soccer well.",
+    "exampleVi": "Anh/em trai tôi chơi bóng đá giỏi."
+  },
+  {
+    "word": "grandmother",
+    "phonetic": "/ˈɡrænmʌðər/",
+    "vi": "bà",
+    "ja": "祖母",
+    "ko": "할머니",
+    "topic": "family",
+    "example": "My grandmother tells nice stories.",
+    "exampleVi": "Bà tôi kể những câu chuyện hay."
+  },
+  {
+    "word": "grandfather",
+    "phonetic": "/ˈɡrænfɑːðər/",
+    "vi": "ông",
+    "ja": "祖父",
+    "ko": "할아버지",
+    "topic": "family",
+    "example": "My grandfather reads the newspaper every morning.",
+    "exampleVi": "Ông tôi đọc báo mỗi sáng."
+  },
+  {
+    "word": "aunt",
+    "phonetic": "/ænt/",
+    "vi": "cô/dì",
+    "ja": "おば",
+    "ko": "이모/고모",
+    "topic": "family",
+    "example": "My aunt visits us on weekends.",
+    "exampleVi": "Cô/dì tôi đến thăm chúng tôi vào cuối tuần."
+  },
+  {
+    "word": "uncle",
+    "phonetic": "/ˈʌŋkl/",
+    "vi": "chú/bác",
+    "ja": "おじ",
+    "ko": "삼촌",
+    "topic": "family",
+    "example": "My uncle works at a hospital.",
+    "exampleVi": "Chú/bác tôi làm việc ở bệnh viện."
+  },
+  {
+    "word": "cousin",
+    "phonetic": "/ˈkʌzən/",
+    "vi": "anh chị em họ",
+    "ja": "いとこ",
+    "ko": "사촌",
+    "topic": "family",
+    "example": "My cousin lives in another city.",
+    "exampleVi": "Anh chị em họ của tôi sống ở thành phố khác."
+  },
+  {
+    "word": "baby",
+    "phonetic": "/ˈbeɪbi/",
+    "vi": "em bé",
+    "ja": "赤ちゃん",
+    "ko": "아기",
+    "topic": "family",
+    "example": "The baby is sleeping in the crib.",
+    "exampleVi": "Em bé đang ngủ trong nôi."
+  },
+  {
+    "word": "parents",
+    "phonetic": "/ˈperənts/",
+    "vi": "bố mẹ",
+    "ja": "両親",
+    "ko": "부모님",
+    "topic": "family",
+    "example": "My parents love me very much.",
+    "exampleVi": "Bố mẹ tôi rất yêu thương tôi."
+  },
+  {
+    "word": "son",
+    "phonetic": "/sʌn/",
+    "vi": "con trai",
+    "ja": "息子",
+    "ko": "아들",
+    "topic": "family",
+    "example": "Their son is five years old.",
+    "exampleVi": "Con trai của họ năm tuổi."
+  },
+  {
+    "word": "daughter",
+    "phonetic": "/ˈdɔːtər/",
+    "vi": "con gái",
+    "ja": "娘",
+    "ko": "딸",
+    "topic": "family",
+    "example": "Their daughter loves to sing.",
+    "exampleVi": "Con gái của họ thích ca hát."
+  },
+  {
+    "word": "husband",
+    "phonetic": "/ˈhʌzbənd/",
+    "vi": "chồng",
+    "ja": "夫",
+    "ko": "남편",
+    "topic": "family",
+    "example": "Her husband works as a teacher.",
+    "exampleVi": "Chồng của cô ấy làm giáo viên."
+  },
+  {
+    "word": "wife",
+    "phonetic": "/waɪf/",
+    "vi": "vợ",
+    "ja": "妻",
+    "ko": "아내",
+    "topic": "family",
+    "example": "His wife is a doctor.",
+    "exampleVi": "Vợ của anh ấy là bác sĩ."
+  },
+  {
+    "word": "family",
+    "phonetic": "/ˈfæməli/",
+    "vi": "gia đình",
+    "ja": "家族",
+    "ko": "가족",
+    "topic": "family",
+    "example": "I love my family very much.",
+    "exampleVi": "Tôi rất yêu gia đình mình."
+  },
+  {
+    "word": "twin",
+    "phonetic": "/twɪn/",
+    "vi": "sinh đôi",
+    "ja": "双子",
+    "ko": "쌍둥이",
+    "topic": "family",
+    "example": "My twin looks just like me.",
+    "exampleVi": "Anh/em sinh đôi của tôi trông giống hệt tôi."
+  },
+  {
+    "word": "niece",
+    "phonetic": "/niːs/",
+    "vi": "cháu gái",
+    "ja": "姪",
+    "ko": "조카딸",
+    "topic": "family",
+    "example": "My niece is learning to walk.",
+    "exampleVi": "Cháu gái tôi đang tập đi."
+  },
+  {
+    "word": "nephew",
+    "phonetic": "/ˈnefjuː/",
+    "vi": "cháu trai",
+    "ja": "甥",
+    "ko": "조카",
+    "topic": "family",
+    "example": "My nephew loves playing video games.",
+    "exampleVi": "Cháu trai tôi thích chơi trò chơi điện tử."
+  },
+  {
+    "word": "relative",
+    "phonetic": "/ˈrelətɪv/",
+    "vi": "người thân",
+    "ja": "親戚",
+    "ko": "친척",
+    "topic": "family",
+    "example": "A relative came to visit us.",
+    "exampleVi": "Một người thân đến thăm chúng tôi."
+  },
+  {
+    "word": "apple",
+    "phonetic": "/ˈæpl/",
+    "vi": "quả táo",
+    "ja": "りんご",
+    "ko": "사과",
+    "topic": "food",
+    "example": "I eat an apple every day.",
+    "exampleVi": "Tôi ăn một quả táo mỗi ngày."
+  },
+  {
+    "word": "banana",
+    "phonetic": "/bəˈnænə/",
+    "vi": "quả chuối",
+    "ja": "バナナ",
+    "ko": "바나나",
+    "topic": "food",
+    "example": "The monkey eats a banana.",
+    "exampleVi": "Con khỉ ăn một quả chuối."
+  },
+  {
+    "word": "bread",
+    "phonetic": "/bred/",
+    "vi": "bánh mì",
+    "ja": "パン",
+    "ko": "빵",
+    "topic": "food",
+    "example": "I have bread for breakfast.",
+    "exampleVi": "Tôi ăn bánh mì vào bữa sáng."
+  },
+  {
+    "word": "rice",
+    "phonetic": "/raɪs/",
+    "vi": "cơm",
+    "ja": "ご飯",
+    "ko": "밥",
+    "topic": "food",
+    "example": "We eat rice every day.",
+    "exampleVi": "Chúng tôi ăn cơm mỗi ngày."
+  },
+  {
+    "word": "milk",
+    "phonetic": "/mɪlk/",
+    "vi": "sữa",
+    "ja": "牛乳",
+    "ko": "우유",
+    "topic": "food",
+    "example": "I drink milk in the morning.",
+    "exampleVi": "Tôi uống sữa vào buổi sáng."
+  },
+  {
+    "word": "egg",
+    "phonetic": "/eɡ/",
+    "vi": "trứng",
+    "ja": "卵",
+    "ko": "계란",
+    "topic": "food",
+    "example": "She fried an egg for breakfast.",
+    "exampleVi": "Cô ấy chiên một quả trứng cho bữa sáng."
+  },
+  {
+    "word": "vegetable",
+    "phonetic": "/ˈvedʒtəbl/",
+    "vi": "rau",
+    "ja": "野菜",
+    "ko": "채소",
+    "topic": "food",
+    "example": "Eating vegetables is good for you.",
+    "exampleVi": "Ăn rau tốt cho sức khoẻ."
+  },
+  {
+    "word": "fruit",
+    "phonetic": "/fruːt/",
+    "vi": "trái cây",
+    "ja": "果物",
+    "ko": "과일",
+    "topic": "food",
+    "example": "Fruit is sweet and healthy.",
+    "exampleVi": "Trái cây ngọt và tốt cho sức khoẻ."
+  },
+  {
+    "word": "water",
+    "phonetic": "/ˈwɔːtər/",
+    "vi": "nước",
+    "ja": "水",
+    "ko": "물",
+    "topic": "food",
+    "example": "I drink water every day.",
+    "exampleVi": "Tôi uống nước mỗi ngày."
+  },
+  {
+    "word": "juice",
+    "phonetic": "/dʒuːs/",
+    "vi": "nước ép",
+    "ja": "ジュース",
+    "ko": "주스",
+    "topic": "food",
+    "example": "She likes orange juice.",
+    "exampleVi": "Cô ấy thích nước ép cam."
+  },
+  {
+    "word": "cake",
+    "phonetic": "/keɪk/",
+    "vi": "bánh ngọt",
+    "ja": "ケーキ",
+    "ko": "케이크",
+    "topic": "food",
+    "example": "We had cake at the party.",
+    "exampleVi": "Chúng tôi đã ăn bánh ngọt ở bữa tiệc."
+  },
+  {
+    "word": "candy",
+    "phonetic": "/ˈkændi/",
+    "vi": "kẹo",
+    "ja": "キャンディ",
+    "ko": "사탕",
+    "topic": "food",
+    "example": "The kids love candy.",
+    "exampleVi": "Bọn trẻ rất thích kẹo."
+  },
+  {
+    "word": "soup",
+    "phonetic": "/suːp/",
+    "vi": "súp",
+    "ja": "スープ",
+    "ko": "수프",
+    "topic": "food",
+    "example": "Mom made hot soup for dinner.",
+    "exampleVi": "Mẹ đã nấu súp nóng cho bữa tối."
+  },
+  {
+    "word": "noodles",
+    "phonetic": "/ˈnuːdlz/",
+    "vi": "mì",
+    "ja": "麺",
+    "ko": "국수",
+    "topic": "food",
+    "example": "I like eating noodles for lunch.",
+    "exampleVi": "Tôi thích ăn mì vào bữa trưa."
+  },
+  {
+    "word": "cheese",
+    "phonetic": "/tʃiːz/",
+    "vi": "phô mai",
+    "ja": "チーズ",
+    "ko": "치즈",
+    "topic": "food",
+    "example": "He put cheese on the sandwich.",
+    "exampleVi": "Anh ấy cho phô mai vào bánh sandwich."
+  },
+  {
+    "word": "butter",
+    "phonetic": "/ˈbʌtər/",
+    "vi": "bơ",
+    "ja": "バター",
+    "ko": "버터",
+    "topic": "food",
+    "example": "She spread butter on the bread.",
+    "exampleVi": "Cô ấy phết bơ lên bánh mì."
+  },
+  {
+    "word": "honey",
+    "phonetic": "/ˈhʌni/",
+    "vi": "mật ong",
+    "ja": "はちみつ",
+    "ko": "꿀",
+    "topic": "food",
+    "example": "Bees make honey.",
+    "exampleVi": "Ong làm ra mật ong."
+  },
+  {
+    "word": "ice cream",
+    "phonetic": "/aɪs kriːm/",
+    "vi": "kem",
+    "ja": "アイスクリーム",
+    "ko": "아이스크림",
+    "topic": "food",
+    "example": "I love ice cream in summer.",
+    "exampleVi": "Tôi thích kem vào mùa hè."
+  },
+  {
+    "word": "mango",
+    "phonetic": "/ˈmæŋɡoʊ/",
+    "vi": "quả xoài",
+    "ja": "マンゴー",
+    "ko": "망고",
+    "topic": "food",
+    "example": "The mango is sweet and juicy.",
+    "exampleVi": "Quả xoài ngọt và nhiều nước."
+  },
+  {
+    "word": "strawberry",
+    "phonetic": "/ˈstrɔːberi/",
+    "vi": "quả dâu tây",
+    "ja": "いちご",
+    "ko": "딸기",
+    "topic": "food",
+    "example": "She picked a red strawberry.",
+    "exampleVi": "Cô ấy hái một quả dâu tây đỏ."
+  },
+  {
+    "word": "watermelon",
+    "phonetic": "/ˈwɔːtərmelən/",
+    "vi": "quả dưa hấu",
+    "ja": "スイカ",
+    "ko": "수박",
+    "topic": "food",
+    "example": "We ate watermelon in the sun.",
+    "exampleVi": "Chúng tôi ăn dưa hấu dưới nắng."
+  },
+  {
+    "word": "pineapple",
+    "phonetic": "/ˈpaɪnæpl/",
+    "vi": "quả dứa",
+    "ja": "パイナップル",
+    "ko": "파인애플",
+    "topic": "food",
+    "example": "The pineapple tastes sour and sweet.",
+    "exampleVi": "Quả dứa có vị chua ngọt."
+  },
+  {
+    "word": "lemon",
+    "phonetic": "/ˈlemən/",
+    "vi": "quả chanh",
+    "ja": "レモン",
+    "ko": "레몬",
+    "topic": "food",
+    "example": "The lemon is very sour.",
+    "exampleVi": "Quả chanh rất chua."
+  },
+  {
+    "word": "peach",
+    "phonetic": "/piːtʃ/",
+    "vi": "quả đào",
+    "ja": "もも",
+    "ko": "복숭아",
+    "topic": "food",
+    "example": "The peach is soft and sweet.",
+    "exampleVi": "Quả đào mềm và ngọt."
+  },
+  {
+    "word": "grapes",
+    "phonetic": "/ɡreɪps/",
+    "vi": "chùm nho",
+    "ja": "ぶどう",
+    "ko": "포도",
+    "topic": "food",
+    "example": "I like eating grapes.",
+    "exampleVi": "Tôi thích ăn nho."
+  },
+  {
+    "word": "cookie",
+    "phonetic": "/ˈkʊki/",
+    "vi": "bánh quy",
+    "ja": "クッキー",
+    "ko": "쿠키",
+    "topic": "food",
+    "example": "Grandma baked cookies for us.",
+    "exampleVi": "Bà đã nướng bánh quy cho chúng tôi."
+  },
+  {
+    "word": "donut",
+    "phonetic": "/ˈdoʊnʌt/",
+    "vi": "bánh donut",
+    "ja": "ドーナツ",
+    "ko": "도넛",
+    "topic": "food",
+    "example": "He ate a donut for breakfast.",
+    "exampleVi": "Anh ấy ăn một cái bánh donut cho bữa sáng."
+  },
+  {
+    "word": "cupcake",
+    "phonetic": "/ˈkʌpkeɪk/",
+    "vi": "bánh cupcake",
+    "ja": "カップケーキ",
+    "ko": "컵케이크",
+    "topic": "food",
+    "example": "She made a cupcake for the party.",
+    "exampleVi": "Cô ấy làm một cái bánh cupcake cho bữa tiệc."
+  },
+  {
+    "word": "pie",
+    "phonetic": "/paɪ/",
+    "vi": "bánh pie",
+    "ja": "パイ",
+    "ko": "파이",
+    "topic": "food",
+    "example": "Mom baked an apple pie.",
+    "exampleVi": "Mẹ đã nướng một cái bánh pie táo."
+  },
+  {
+    "word": "croissant",
+    "phonetic": "/krwʌˈsɒnt/",
+    "vi": "bánh sừng bò",
+    "ja": "クロワッサン",
+    "ko": "크루아상",
+    "topic": "food",
+    "example": "He had a croissant with coffee.",
+    "exampleVi": "Anh ấy ăn bánh sừng bò cùng cà phê."
+  },
+  {
+    "word": "chocolate",
+    "phonetic": "/ˈtʃɒklət/",
+    "vi": "sô-cô-la",
+    "ja": "チョコレート",
+    "ko": "초콜릿",
+    "topic": "food",
+    "example": "I love chocolate very much.",
+    "exampleVi": "Tôi rất thích sô-cô-la."
+  },
+  {
+    "word": "corn",
+    "phonetic": "/kɔːrn/",
+    "vi": "bắp ngô",
+    "ja": "とうもろこし",
+    "ko": "옥수수",
+    "topic": "food",
+    "example": "We grow corn on the farm.",
+    "exampleVi": "Chúng tôi trồng ngô trên nông trại."
+  },
+  {
+    "word": "pepper",
+    "phonetic": "/ˈpepər/",
+    "vi": "quả ớt chuông",
+    "ja": "ピーマン",
+    "ko": "피망",
+    "topic": "food",
+    "example": "She added a pepper to the salad.",
+    "exampleVi": "Cô ấy cho một quả ớt chuông vào món salad."
+  },
+  {
+    "word": "cucumber",
+    "phonetic": "/ˈkjuːkʌmbər/",
+    "vi": "quả dưa chuột",
+    "ja": "きゅうり",
+    "ko": "오이",
+    "topic": "food",
+    "example": "The salad has fresh cucumber.",
+    "exampleVi": "Món salad có dưa chuột tươi."
+  },
+  {
+    "word": "broccoli",
+    "phonetic": "/ˈbrɒkəli/",
+    "vi": "bông cải xanh",
+    "ja": "ブロッコリー",
+    "ko": "브로콜리",
+    "topic": "food",
+    "example": "Eating broccoli is good for you.",
+    "exampleVi": "Ăn bông cải xanh tốt cho sức khoẻ."
+  },
+  {
+    "word": "cabbage",
+    "phonetic": "/ˈkæbɪdʒ/",
+    "vi": "bắp cải",
+    "ja": "キャベツ",
+    "ko": "양배추",
+    "topic": "food",
+    "example": "Mom cooked cabbage soup.",
+    "exampleVi": "Mẹ đã nấu súp bắp cải."
+  },
+  {
+    "word": "carrot",
+    "phonetic": "/ˈkærət/",
+    "vi": "củ cà rốt",
+    "ja": "にんじん",
+    "ko": "당근",
+    "topic": "food",
+    "example": "Rabbits love eating carrots.",
+    "exampleVi": "Thỏ rất thích ăn cà rốt."
+  },
+  {
+    "word": "tomato",
+    "phonetic": "/təˈmeɪtoʊ/",
+    "vi": "quả cà chua",
+    "ja": "トマト",
+    "ko": "토마토",
+    "topic": "food",
+    "example": "The tomato is red and juicy.",
+    "exampleVi": "Quả cà chua đỏ và nhiều nước."
+  },
+  {
+    "word": "potato",
+    "phonetic": "/pəˈteɪtoʊ/",
+    "vi": "củ khoai tây",
+    "ja": "じゃがいも",
+    "ko": "감자",
+    "topic": "food",
+    "example": "We cooked potato soup for dinner.",
+    "exampleVi": "Chúng tôi nấu súp khoai tây cho bữa tối."
+  },
+  {
+    "word": "onion",
+    "phonetic": "/ˈʌnjən/",
+    "vi": "củ hành tây",
+    "ja": "たまねぎ",
+    "ko": "양파",
+    "topic": "food",
+    "example": "The onion made her cry.",
+    "exampleVi": "Củ hành tây làm cô ấy chảy nước mắt."
+  },
+  {
+    "word": "sandwich",
+    "phonetic": "/ˈsænwɪdʒ/",
+    "vi": "bánh sandwich",
+    "ja": "サンドイッチ",
+    "ko": "샌드위치",
+    "topic": "food",
+    "example": "He made a sandwich for lunch.",
+    "exampleVi": "Anh ấy làm một chiếc bánh sandwich cho bữa trưa."
+  },
+  {
+    "word": "pizza",
+    "phonetic": "/ˈpiːtsə/",
+    "vi": "bánh pizza",
+    "ja": "ピザ",
+    "ko": "피자",
+    "topic": "food",
+    "example": "We ordered pizza for dinner.",
+    "exampleVi": "Chúng tôi đặt bánh pizza cho bữa tối."
+  },
+  {
+    "word": "burger",
+    "phonetic": "/ˈbɜːrɡər/",
+    "vi": "bánh burger",
+    "ja": "ハンバーガー",
+    "ko": "버거",
+    "topic": "food",
+    "example": "She ate a burger for lunch.",
+    "exampleVi": "Cô ấy ăn một chiếc bánh burger vào bữa trưa."
+  },
+  {
+    "word": "sausage",
+    "phonetic": "/ˈsɒsɪdʒ/",
+    "vi": "xúc xích",
+    "ja": "ソーセージ",
+    "ko": "소시지",
+    "topic": "food",
+    "example": "He grilled a sausage for breakfast.",
+    "exampleVi": "Anh ấy nướng một chiếc xúc xích cho bữa sáng."
+  },
+  {
+    "word": "yogurt",
+    "phonetic": "/ˈjoʊɡərt/",
+    "vi": "sữa chua",
+    "ja": "ヨーグルト",
+    "ko": "요구르트",
+    "topic": "food",
+    "example": "I eat yogurt every morning.",
+    "exampleVi": "Tôi ăn sữa chua mỗi sáng."
+  },
+  {
+    "word": "sunny",
+    "phonetic": "/ˈsʌni/",
+    "vi": "nắng",
+    "ja": "晴れ",
+    "ko": "맑음",
+    "topic": "weather",
+    "example": "It is sunny today.",
+    "exampleVi": "Hôm nay trời nắng."
+  },
+  {
+    "word": "rainy",
+    "phonetic": "/ˈreɪni/",
+    "vi": "mưa",
+    "ja": "雨",
+    "ko": "비",
+    "topic": "weather",
+    "example": "It is a rainy day.",
+    "exampleVi": "Hôm nay là một ngày mưa."
+  },
+  {
+    "word": "cloudy",
+    "phonetic": "/ˈklaʊdi/",
+    "vi": "nhiều mây",
+    "ja": "曇り",
+    "ko": "흐림",
+    "topic": "weather",
+    "example": "The sky is cloudy this morning.",
+    "exampleVi": "Bầu trời nhiều mây sáng nay."
+  },
+  {
+    "word": "windy",
+    "phonetic": "/ˈwɪndi/",
+    "vi": "có gió",
+    "ja": "風が強い",
+    "ko": "바람이 붊",
+    "topic": "weather",
+    "example": "It is very windy outside.",
+    "exampleVi": "Bên ngoài trời có gió rất mạnh."
+  },
+  {
+    "word": "snowy",
+    "phonetic": "/ˈsnoʊi/",
+    "vi": "có tuyết",
+    "ja": "雪",
+    "ko": "눈",
+    "topic": "weather",
+    "example": "It is a snowy winter day.",
+    "exampleVi": "Đây là một ngày mùa đông có tuyết."
+  },
+  {
+    "word": "hot",
+    "phonetic": "/hɒt/",
+    "vi": "nóng",
+    "ja": "暑い",
+    "ko": "더움",
+    "topic": "weather",
+    "example": "It is hot in summer.",
+    "exampleVi": "Trời nóng vào mùa hè."
+  },
+  {
+    "word": "cold",
+    "phonetic": "/koʊld/",
+    "vi": "lạnh",
+    "ja": "寒い",
+    "ko": "추움",
+    "topic": "weather",
+    "example": "It is cold in winter.",
+    "exampleVi": "Trời lạnh vào mùa đông."
+  },
+  {
+    "word": "warm",
+    "phonetic": "/wɔːrm/",
+    "vi": "ấm",
+    "ja": "暖かい",
+    "ko": "따뜻함",
+    "topic": "weather",
+    "example": "The weather is warm today.",
+    "exampleVi": "Thời tiết hôm nay ấm áp."
+  },
+  {
+    "word": "cool",
+    "phonetic": "/kuːl/",
+    "vi": "mát",
+    "ja": "涼しい",
+    "ko": "시원함",
+    "topic": "weather",
+    "example": "The evening air feels cool.",
+    "exampleVi": "Không khí buổi tối cảm thấy mát mẻ."
+  },
+  {
+    "word": "storm",
+    "phonetic": "/stɔːrm/",
+    "vi": "bão",
+    "ja": "嵐",
+    "ko": "폭풍",
+    "topic": "weather",
+    "example": "A storm is coming tonight.",
+    "exampleVi": "Một cơn bão sắp đến tối nay."
+  },
+  {
+    "word": "thunder",
+    "phonetic": "/ˈθʌndər/",
+    "vi": "sấm",
+    "ja": "雷",
+    "ko": "천둥",
+    "topic": "weather",
+    "example": "I heard loud thunder last night.",
+    "exampleVi": "Tôi đã nghe tiếng sấm lớn tối qua."
+  },
+  {
+    "word": "lightning",
+    "phonetic": "/ˈlaɪtnɪŋ/",
+    "vi": "sét",
+    "ja": "稲妻",
+    "ko": "번개",
+    "topic": "weather",
+    "example": "Lightning lit up the dark sky.",
+    "exampleVi": "Tia sét chiếu sáng bầu trời tối."
+  },
+  {
+    "word": "rainbow",
+    "phonetic": "/ˈreɪnboʊ/",
+    "vi": "cầu vồng",
+    "ja": "虹",
+    "ko": "무지개",
+    "topic": "weather",
+    "example": "We saw a rainbow after the rain.",
+    "exampleVi": "Chúng tôi thấy cầu vồng sau cơn mưa."
+  },
+  {
+    "word": "fog",
+    "phonetic": "/fɒɡ/",
+    "vi": "sương mù",
+    "ja": "霧",
+    "ko": "안개",
+    "topic": "weather",
+    "example": "The fog covered the whole city.",
+    "exampleVi": "Sương mù bao phủ cả thành phố."
+  },
+  {
+    "word": "humid",
+    "phonetic": "/ˈhjuːmɪd/",
+    "vi": "ẩm ướt",
+    "ja": "湿気が多い",
+    "ko": "습함",
+    "topic": "weather",
+    "example": "It feels humid today.",
+    "exampleVi": "Hôm nay trời cảm thấy ẩm ướt."
+  },
+  {
+    "word": "temperature",
+    "phonetic": "/ˈtemprətʃər/",
+    "vi": "nhiệt độ",
+    "ja": "気温",
+    "ko": "기온",
+    "topic": "weather",
+    "example": "The temperature dropped at night.",
+    "exampleVi": "Nhiệt độ giảm vào ban đêm."
+  },
+  {
+    "word": "season",
+    "phonetic": "/ˈsiːzən/",
+    "vi": "mùa",
+    "ja": "季節",
+    "ko": "계절",
+    "topic": "weather",
+    "example": "My favorite season is summer.",
+    "exampleVi": "Mùa yêu thích của tôi là mùa hè."
+  },
+  {
+    "word": "spring",
+    "phonetic": "/sprɪŋ/",
+    "vi": "mùa xuân",
+    "ja": "春",
+    "ko": "봄",
+    "topic": "weather",
+    "example": "Flowers bloom in spring.",
+    "exampleVi": "Hoa nở vào mùa xuân."
+  },
+  {
+    "word": "summer",
+    "phonetic": "/ˈsʌmər/",
+    "vi": "mùa hè",
+    "ja": "夏",
+    "ko": "여름",
+    "topic": "weather",
+    "example": "We swim a lot in summer.",
+    "exampleVi": "Chúng tôi bơi nhiều vào mùa hè."
+  },
+  {
+    "word": "winter",
+    "phonetic": "/ˈwɪntər/",
+    "vi": "mùa đông",
+    "ja": "冬",
+    "ko": "겨울",
+    "topic": "weather",
+    "example": "It snows a lot in winter.",
+    "exampleVi": "Tuyết rơi nhiều vào mùa đông."
+  },
+  {
+    "word": "book",
+    "phonetic": "/bʊk/",
+    "vi": "sách",
+    "ja": "本",
+    "ko": "책",
+    "topic": "school",
+    "example": "I read a book every night.",
+    "exampleVi": "Tôi đọc sách mỗi tối."
+  },
+  {
+    "word": "pen",
+    "phonetic": "/pen/",
+    "vi": "bút mực",
+    "ja": "ペン",
+    "ko": "펜",
+    "topic": "school",
+    "example": "She wrote her name with a pen.",
+    "exampleVi": "Cô ấy viết tên mình bằng bút mực."
+  },
+  {
+    "word": "pencil",
+    "phonetic": "/ˈpensəl/",
+    "vi": "bút chì",
+    "ja": "鉛筆",
+    "ko": "연필",
+    "topic": "school",
+    "example": "I draw with a pencil.",
+    "exampleVi": "Tôi vẽ bằng bút chì."
+  },
+  {
+    "word": "eraser",
+    "phonetic": "/ɪˈreɪsər/",
+    "vi": "cục tẩy",
+    "ja": "消しゴム",
+    "ko": "지우개",
+    "topic": "school",
+    "example": "He used an eraser to fix his mistake.",
+    "exampleVi": "Cậu ấy dùng cục tẩy để sửa lỗi."
+  },
+  {
+    "word": "ruler",
+    "phonetic": "/ˈruːlər/",
+    "vi": "thước kẻ",
+    "ja": "定規",
+    "ko": "자",
+    "topic": "school",
+    "example": "I use a ruler to draw a straight line.",
+    "exampleVi": "Tôi dùng thước kẻ để vẽ một đường thẳng."
+  },
+  {
+    "word": "desk",
+    "phonetic": "/desk/",
+    "vi": "bàn học",
+    "ja": "机",
+    "ko": "책상",
+    "topic": "school",
+    "example": "My books are on the desk.",
+    "exampleVi": "Sách của tôi ở trên bàn học."
+  },
+  {
+    "word": "chair",
+    "phonetic": "/tʃeər/",
+    "vi": "ghế",
+    "ja": "椅子",
+    "ko": "의자",
+    "topic": "school",
+    "example": "She sat on the chair.",
+    "exampleVi": "Cô ấy ngồi trên ghế."
+  },
+  {
+    "word": "teacher",
+    "phonetic": "/ˈtiːtʃər/",
+    "vi": "giáo viên",
+    "ja": "先生",
+    "ko": "선생님",
+    "topic": "school",
+    "example": "My teacher is very kind.",
+    "exampleVi": "Giáo viên của tôi rất tốt bụng."
+  },
+  {
+    "word": "student",
+    "phonetic": "/ˈstuːdənt/",
+    "vi": "học sinh",
+    "ja": "生徒",
+    "ko": "학생",
+    "topic": "school",
+    "example": "Every student has a notebook.",
+    "exampleVi": "Mỗi học sinh đều có một quyển vở."
+  },
+  {
+    "word": "classroom",
+    "phonetic": "/ˈklæsruːm/",
+    "vi": "lớp học",
+    "ja": "教室",
+    "ko": "교실",
+    "topic": "school",
+    "example": "We study in the classroom.",
+    "exampleVi": "Chúng tôi học trong lớp học."
+  },
+  {
+    "word": "blackboard",
+    "phonetic": "/ˈblækbɔːrd/",
+    "vi": "bảng đen",
+    "ja": "黒板",
+    "ko": "칠판",
+    "topic": "school",
+    "example": "The teacher wrote on the blackboard.",
+    "exampleVi": "Giáo viên viết lên bảng đen."
+  },
+  {
+    "word": "notebook",
+    "phonetic": "/ˈnoʊtbʊk/",
+    "vi": "vở",
+    "ja": "ノート",
+    "ko": "공책",
+    "topic": "school",
+    "example": "I write notes in my notebook.",
+    "exampleVi": "Tôi ghi chép vào vở của mình."
+  },
+  {
+    "word": "scissors",
+    "phonetic": "/ˈsɪzərz/",
+    "vi": "kéo",
+    "ja": "はさみ",
+    "ko": "가위",
+    "topic": "school",
+    "example": "Use scissors to cut the paper.",
+    "exampleVi": "Dùng kéo để cắt giấy."
+  },
+  {
+    "word": "glue",
+    "phonetic": "/ɡluː/",
+    "vi": "keo dán",
+    "ja": "のり",
+    "ko": "풀",
+    "topic": "school",
+    "example": "He used glue to stick the paper.",
+    "exampleVi": "Cậu ấy dùng keo dán để dán tờ giấy."
+  },
+  {
+    "word": "crayon",
+    "phonetic": "/ˈkreɪɒn/",
+    "vi": "bút sáp màu",
+    "ja": "クレヨン",
+    "ko": "크레용",
+    "topic": "school",
+    "example": "The kids drew with crayons.",
+    "exampleVi": "Bọn trẻ vẽ bằng bút sáp màu."
+  },
+  {
+    "word": "homework",
+    "phonetic": "/ˈhoʊmwɜːrk/",
+    "vi": "bài tập về nhà",
+    "ja": "宿題",
+    "ko": "숙제",
+    "topic": "school",
+    "example": "I finish my homework every day.",
+    "exampleVi": "Tôi hoàn thành bài tập về nhà mỗi ngày."
+  },
+  {
+    "word": "exam",
+    "phonetic": "/ɪɡˈzæm/",
+    "vi": "bài kiểm tra",
+    "ja": "試験",
+    "ko": "시험",
+    "topic": "school",
+    "example": "We have an exam tomorrow.",
+    "exampleVi": "Ngày mai chúng tôi có bài kiểm tra."
+  },
+  {
+    "word": "library",
+    "phonetic": "/ˈlaɪbreri/",
+    "vi": "thư viện",
+    "ja": "図書館",
+    "ko": "도서관",
+    "topic": "school",
+    "example": "I borrowed a book from the library.",
+    "exampleVi": "Tôi đã mượn một quyển sách từ thư viện."
+  },
+  {
+    "word": "head",
+    "phonetic": "/hed/",
+    "vi": "đầu",
+    "ja": "頭",
+    "ko": "머리",
+    "topic": "body",
+    "example": "He nodded his head.",
+    "exampleVi": "Cậu ấy gật đầu."
+  },
+  {
+    "word": "hair",
+    "phonetic": "/heər/",
+    "vi": "tóc",
+    "ja": "髪",
+    "ko": "머리카락",
+    "topic": "body",
+    "example": "She has long black hair.",
+    "exampleVi": "Cô ấy có mái tóc dài màu đen."
+  },
+  {
+    "word": "eye",
+    "phonetic": "/aɪ/",
+    "vi": "mắt",
+    "ja": "目",
+    "ko": "눈",
+    "topic": "body",
+    "example": "He has one blue eye.",
+    "exampleVi": "Cậu ấy có một mắt màu xanh."
+  },
+  {
+    "word": "ear",
+    "phonetic": "/ɪər/",
+    "vi": "tai",
+    "ja": "耳",
+    "ko": "귀",
+    "topic": "body",
+    "example": "Rabbits have long ears.",
+    "exampleVi": "Thỏ có đôi tai dài."
+  },
+  {
+    "word": "nose",
+    "phonetic": "/noʊz/",
+    "vi": "mũi",
+    "ja": "鼻",
+    "ko": "코",
+    "topic": "body",
+    "example": "My nose is a little red.",
+    "exampleVi": "Mũi tôi hơi đỏ."
+  },
+  {
+    "word": "mouth",
+    "phonetic": "/maʊθ/",
+    "vi": "miệng",
+    "ja": "口",
+    "ko": "입",
+    "topic": "body",
+    "example": "Open your mouth wide.",
+    "exampleVi": "Hãy mở miệng thật to."
+  },
+  {
+    "word": "teeth",
+    "phonetic": "/tiːθ/",
+    "vi": "răng",
+    "ja": "歯",
+    "ko": "이",
+    "topic": "body",
+    "example": "Brush your teeth every day.",
+    "exampleVi": "Hãy đánh răng mỗi ngày."
+  },
+  {
+    "word": "hand",
+    "phonetic": "/hænd/",
+    "vi": "bàn tay",
+    "ja": "手",
+    "ko": "손",
+    "topic": "body",
+    "example": "She waved her hand at me.",
+    "exampleVi": "Cô ấy vẫy tay chào tôi."
+  },
+  {
+    "word": "finger",
+    "phonetic": "/ˈfɪŋɡər/",
+    "vi": "ngón tay",
+    "ja": "指",
+    "ko": "손가락",
+    "topic": "body",
+    "example": "I hurt my finger.",
+    "exampleVi": "Tôi bị đau ngón tay."
+  },
+  {
+    "word": "arm",
+    "phonetic": "/ɑːrm/",
+    "vi": "cánh tay",
+    "ja": "腕",
+    "ko": "팔",
+    "topic": "body",
+    "example": "He broke his arm last week.",
+    "exampleVi": "Cậu ấy bị gãy tay tuần trước."
+  },
+  {
+    "word": "leg",
+    "phonetic": "/leɡ/",
+    "vi": "chân",
+    "ja": "脚",
+    "ko": "다리",
+    "topic": "body",
+    "example": "The dog hurt its leg.",
+    "exampleVi": "Con chó bị đau chân."
+  },
+  {
+    "word": "foot",
+    "phonetic": "/fʊt/",
+    "vi": "bàn chân",
+    "ja": "足",
+    "ko": "발",
+    "topic": "body",
+    "example": "My foot is very cold.",
+    "exampleVi": "Bàn chân tôi rất lạnh."
+  },
+  {
+    "word": "shoulder",
+    "phonetic": "/ˈʃoʊldər/",
+    "vi": "vai",
+    "ja": "肩",
+    "ko": "어깨",
+    "topic": "body",
+    "example": "She carried the bag on her shoulder.",
+    "exampleVi": "Cô ấy vác túi trên vai."
+  },
+  {
+    "word": "back",
+    "phonetic": "/bæk/",
+    "vi": "lưng",
+    "ja": "背中",
+    "ko": "등",
+    "topic": "body",
+    "example": "My back hurts a little.",
+    "exampleVi": "Lưng tôi hơi đau."
+  },
+  {
+    "word": "stomach",
+    "phonetic": "/ˈstʌmək/",
+    "vi": "bụng",
+    "ja": "おなか",
+    "ko": "배",
+    "topic": "body",
+    "example": "My stomach hurts after lunch.",
+    "exampleVi": "Bụng tôi đau sau bữa trưa."
+  },
+  {
+    "word": "knee",
+    "phonetic": "/niː/",
+    "vi": "đầu gối",
+    "ja": "ひざ",
+    "ko": "무릎",
+    "topic": "body",
+    "example": "He hurt his knee while running.",
+    "exampleVi": "Cậu ấy bị đau đầu gối khi chạy."
+  },
+  {
+    "word": "neck",
+    "phonetic": "/nek/",
+    "vi": "cổ",
+    "ja": "首",
+    "ko": "목",
+    "topic": "body",
+    "example": "She wore a scarf around her neck.",
+    "exampleVi": "Cô ấy quàng khăn quanh cổ."
+  },
+  {
+    "word": "chin",
+    "phonetic": "/tʃɪn/",
+    "vi": "cằm",
+    "ja": "あご",
+    "ko": "턱",
+    "topic": "body",
+    "example": "He rested his chin on his hand.",
+    "exampleVi": "Cậu ấy tựa cằm lên tay."
+  },
+  {
+    "word": "elbow",
+    "phonetic": "/ˈelboʊ/",
+    "vi": "khuỷu tay",
+    "ja": "ひじ",
+    "ko": "팔꿈치",
+    "topic": "body",
+    "example": "She bent her elbow.",
+    "exampleVi": "Cô ấy cong khuỷu tay."
+  },
+  {
+    "word": "heart",
+    "phonetic": "/hɑːrt/",
+    "vi": "tim",
+    "ja": "心臓",
+    "ko": "심장",
+    "topic": "body",
+    "example": "My heart beats fast when I run.",
+    "exampleVi": "Tim tôi đập nhanh khi tôi chạy."
+  },
+  {
+    "word": "shirt",
+    "phonetic": "/ʃɜːrt/",
+    "vi": "áo sơ mi",
+    "ja": "シャツ",
+    "ko": "셔츠",
+    "topic": "clothes",
+    "example": "He is wearing a blue shirt.",
+    "exampleVi": "Cậu ấy đang mặc một chiếc áo sơ mi xanh."
+  },
+  {
+    "word": "pants",
+    "phonetic": "/pænts/",
+    "vi": "quần dài",
+    "ja": "ズボン",
+    "ko": "바지",
+    "topic": "clothes",
+    "example": "She bought new pants.",
+    "exampleVi": "Cô ấy đã mua một chiếc quần dài mới."
+  },
+  {
+    "word": "dress",
+    "phonetic": "/dres/",
+    "vi": "váy",
+    "ja": "ワンピース",
+    "ko": "원피스",
+    "topic": "clothes",
+    "example": "The girl wore a pretty dress.",
+    "exampleVi": "Cô bé mặc một chiếc váy xinh."
+  },
+  {
+    "word": "skirt",
+    "phonetic": "/skɜːrt/",
+    "vi": "chân váy",
+    "ja": "スカート",
+    "ko": "치마",
+    "topic": "clothes",
+    "example": "She is wearing a red skirt.",
+    "exampleVi": "Cô ấy đang mặc một chiếc chân váy đỏ."
+  },
+  {
+    "word": "shoe",
+    "phonetic": "/ʃuː/",
+    "vi": "giày",
+    "ja": "靴",
+    "ko": "신발",
+    "topic": "clothes",
+    "example": "He tied his shoe before running.",
+    "exampleVi": "Cậu ấy buộc dây giày trước khi chạy."
+  },
+  {
+    "word": "sock",
+    "phonetic": "/sɒk/",
+    "vi": "tất",
+    "ja": "靴下",
+    "ko": "양말",
+    "topic": "clothes",
+    "example": "I put on my socks in the morning.",
+    "exampleVi": "Tôi mang tất vào buổi sáng."
+  },
+  {
+    "word": "hat",
+    "phonetic": "/hæt/",
+    "vi": "mũ",
+    "ja": "帽子",
+    "ko": "모자",
+    "topic": "clothes",
+    "example": "She wears a hat in the sun.",
+    "exampleVi": "Cô ấy đội mũ khi trời nắng."
+  },
+  {
+    "word": "jacket",
+    "phonetic": "/ˈdʒækɪt/",
+    "vi": "áo khoác",
+    "ja": "ジャケット",
+    "ko": "재킷",
+    "topic": "clothes",
+    "example": "Put on your jacket, it's cold.",
+    "exampleVi": "Mặc áo khoác vào đi, trời lạnh đấy."
+  },
+  {
+    "word": "coat",
+    "phonetic": "/koʊt/",
+    "vi": "áo choàng",
+    "ja": "コート",
+    "ko": "코트",
+    "topic": "clothes",
+    "example": "He wore a warm coat in winter.",
+    "exampleVi": "Cậu ấy mặc một chiếc áo choàng ấm vào mùa đông."
+  },
+  {
+    "word": "glove",
+    "phonetic": "/ɡlʌv/",
+    "vi": "găng tay",
+    "ja": "手袋",
+    "ko": "장갑",
+    "topic": "clothes",
+    "example": "She wore gloves in the snow.",
+    "exampleVi": "Cô ấy đeo găng tay trong tuyết."
+  },
+  {
+    "word": "scarf",
+    "phonetic": "/skɑːrf/",
+    "vi": "khăn quàng cổ",
+    "ja": "マフラー",
+    "ko": "목도리",
+    "topic": "clothes",
+    "example": "He wrapped a scarf around his neck.",
+    "exampleVi": "Cậu ấy quàng khăn quanh cổ."
+  },
+  {
+    "word": "belt",
+    "phonetic": "/belt/",
+    "vi": "thắt lưng",
+    "ja": "ベルト",
+    "ko": "벨트",
+    "topic": "clothes",
+    "example": "He wore a brown belt.",
+    "exampleVi": "Cậu ấy đeo một chiếc thắt lưng màu nâu."
+  },
+  {
+    "word": "T-shirt",
+    "phonetic": "/ˈtiːʃɜːrt/",
+    "vi": "áo thun",
+    "ja": "Tシャツ",
+    "ko": "티셔츠",
+    "topic": "clothes",
+    "example": "I like this yellow T-shirt.",
+    "exampleVi": "Tôi thích chiếc áo thun màu vàng này."
+  },
+  {
+    "word": "shorts",
+    "phonetic": "/ʃɔːrts/",
+    "vi": "quần short",
+    "ja": "半ズボン",
+    "ko": "반바지",
+    "topic": "clothes",
+    "example": "He wore shorts to play soccer.",
+    "exampleVi": "Cậu ấy mặc quần short để chơi bóng đá."
+  },
+  {
+    "word": "sweater",
+    "phonetic": "/ˈswetər/",
+    "vi": "áo len",
+    "ja": "セーター",
+    "ko": "스웨터",
+    "topic": "clothes",
+    "example": "She knitted a warm sweater.",
+    "exampleVi": "Cô ấy đan một chiếc áo len ấm áp."
+  },
+  {
+    "word": "pajama",
+    "phonetic": "/pəˈdʒɑːmə/",
+    "vi": "đồ ngủ",
+    "ja": "パジャマ",
+    "ko": "잠옷",
+    "topic": "clothes",
+    "example": "I wear pajamas to sleep.",
+    "exampleVi": "Tôi mặc đồ ngủ để đi ngủ."
+  },
+  {
+    "word": "boot",
+    "phonetic": "/buːt/",
+    "vi": "ủng",
+    "ja": "ブーツ",
+    "ko": "부츠",
+    "topic": "clothes",
+    "example": "She wore boots in the rain.",
+    "exampleVi": "Cô ấy đi ủng khi trời mưa."
+  },
+  {
+    "word": "sandal",
+    "phonetic": "/ˈsændəl/",
+    "vi": "dép",
+    "ja": "サンダル",
+    "ko": "샌들",
+    "topic": "clothes",
+    "example": "He wore sandals to the beach.",
+    "exampleVi": "Cậu ấy đi dép ra bãi biển."
+  },
+  {
+    "word": "button",
+    "phonetic": "/ˈbʌtən/",
+    "vi": "cúc áo",
+    "ja": "ボタン",
+    "ko": "단추",
+    "topic": "clothes",
+    "example": "A button fell off his shirt.",
+    "exampleVi": "Một chiếc cúc áo bị rơi khỏi áo cậu ấy."
+  },
+  {
+    "word": "pocket",
+    "phonetic": "/ˈpɒkɪt/",
+    "vi": "túi áo",
+    "ja": "ポケット",
+    "ko": "주머니",
+    "topic": "clothes",
+    "example": "She put the key in her pocket.",
+    "exampleVi": "Cô ấy bỏ chìa khoá vào túi áo."
+  },
+  {
+    "word": "car",
+    "phonetic": "/kɑːr/",
+    "vi": "ô tô",
+    "ja": "車",
+    "ko": "자동차",
+    "topic": "transport",
+    "example": "We drove to school by car.",
+    "exampleVi": "Chúng tôi lái ô tô đến trường."
+  },
+  {
+    "word": "bus",
+    "phonetic": "/bʌs/",
+    "vi": "xe buýt",
+    "ja": "バス",
+    "ko": "버스",
+    "topic": "transport",
+    "example": "I take the bus to school.",
+    "exampleVi": "Tôi đi xe buýt đến trường."
+  },
+  {
+    "word": "bike",
+    "phonetic": "/baɪk/",
+    "vi": "xe đạp",
+    "ja": "自転車",
+    "ko": "자전거",
+    "topic": "transport",
+    "example": "He rides his bike every morning.",
+    "exampleVi": "Cậu ấy đạp xe mỗi sáng."
+  },
+  {
+    "word": "motorbike",
+    "phonetic": "/ˈmoʊtərbaɪk/",
+    "vi": "xe máy",
+    "ja": "バイク",
+    "ko": "오토바이",
+    "topic": "transport",
+    "example": "My father rides a motorbike to work.",
+    "exampleVi": "Bố tôi đi xe máy đến chỗ làm."
+  },
+  {
+    "word": "train",
+    "phonetic": "/treɪn/",
+    "vi": "tàu hoả",
+    "ja": "電車",
+    "ko": "기차",
+    "topic": "transport",
+    "example": "We took a train to the city.",
+    "exampleVi": "Chúng tôi đi tàu hoả đến thành phố."
+  },
+  {
+    "word": "plane",
+    "phonetic": "/pleɪn/",
+    "vi": "máy bay",
+    "ja": "飛行機",
+    "ko": "비행기",
+    "topic": "transport",
+    "example": "We flew on a plane to Japan.",
+    "exampleVi": "Chúng tôi bay bằng máy bay đến Nhật Bản."
+  },
+  {
+    "word": "boat",
+    "phonetic": "/boʊt/",
+    "vi": "thuyền",
+    "ja": "ボート",
+    "ko": "보트",
+    "topic": "transport",
+    "example": "They sailed on a small boat.",
+    "exampleVi": "Họ đi trên một chiếc thuyền nhỏ."
+  },
+  {
+    "word": "ship",
+    "phonetic": "/ʃɪp/",
+    "vi": "tàu thuỷ",
+    "ja": "船",
+    "ko": "배",
+    "topic": "transport",
+    "example": "The ship crossed the ocean.",
+    "exampleVi": "Con tàu thuỷ băng qua đại dương."
+  },
+  {
+    "word": "taxi",
+    "phonetic": "/ˈtæksi/",
+    "vi": "taxi",
+    "ja": "タクシー",
+    "ko": "택시",
+    "topic": "transport",
+    "example": "We called a taxi to the airport.",
+    "exampleVi": "Chúng tôi gọi taxi ra sân bay."
+  },
+  {
+    "word": "truck",
+    "phonetic": "/trʌk/",
+    "vi": "xe tải",
+    "ja": "トラック",
+    "ko": "트럭",
+    "topic": "transport",
+    "example": "The truck carried heavy boxes.",
+    "exampleVi": "Xe tải chở những thùng hàng nặng."
+  },
+  {
+    "word": "subway",
+    "phonetic": "/ˈsʌbweɪ/",
+    "vi": "tàu điện ngầm",
+    "ja": "地下鉄",
+    "ko": "지하철",
+    "topic": "transport",
+    "example": "I take the subway to work.",
+    "exampleVi": "Tôi đi tàu điện ngầm đến chỗ làm."
+  },
+  {
+    "word": "helicopter",
+    "phonetic": "/ˈhelɪkɒptər/",
+    "vi": "trực thăng",
+    "ja": "ヘリコプター",
+    "ko": "헬리콥터",
+    "topic": "transport",
+    "example": "A helicopter flew over the city.",
+    "exampleVi": "Một chiếc trực thăng bay qua thành phố."
+  },
+  {
+    "word": "scooter",
+    "phonetic": "/ˈskuːtər/",
+    "vi": "xe scooter",
+    "ja": "スクーター",
+    "ko": "스쿠터",
+    "topic": "transport",
+    "example": "She rides a scooter to school.",
+    "exampleVi": "Cô ấy đi xe scooter đến trường."
+  },
+  {
+    "word": "ambulance",
+    "phonetic": "/ˈæmbjələns/",
+    "vi": "xe cứu thương",
+    "ja": "救急車",
+    "ko": "구급차",
+    "topic": "transport",
+    "example": "The ambulance rushed to the hospital.",
+    "exampleVi": "Xe cứu thương lao nhanh đến bệnh viện."
+  },
+  {
+    "word": "fire truck",
+    "phonetic": "/faɪər trʌk/",
+    "vi": "xe cứu hỏa",
+    "ja": "消防車",
+    "ko": "소방차",
+    "topic": "transport",
+    "example": "The fire truck arrived quickly.",
+    "exampleVi": "Xe cứu hỏa đến rất nhanh."
+  },
+  {
+    "word": "ferry",
+    "phonetic": "/ˈferi/",
+    "vi": "phà",
+    "ja": "フェリー",
+    "ko": "페리",
+    "topic": "transport",
+    "example": "We crossed the river by ferry.",
+    "exampleVi": "Chúng tôi qua sông bằng phà."
+  },
+  {
+    "word": "rocket",
+    "phonetic": "/ˈrɒkɪt/",
+    "vi": "tên lửa",
+    "ja": "ロケット",
+    "ko": "로켓",
+    "topic": "transport",
+    "example": "The rocket flew into space.",
+    "exampleVi": "Tên lửa bay vào vũ trụ."
+  },
+  {
+    "word": "van",
+    "phonetic": "/væn/",
+    "vi": "xe van",
+    "ja": "バン",
+    "ko": "밴",
+    "topic": "transport",
+    "example": "The family traveled in a van.",
+    "exampleVi": "Gia đình đi du lịch bằng xe van."
+  },
+  {
+    "word": "tram",
+    "phonetic": "/træm/",
+    "vi": "xe điện",
+    "ja": "路面電車",
+    "ko": "트램",
+    "topic": "transport",
+    "example": "The tram stopped at the station.",
+    "exampleVi": "Xe điện dừng tại nhà ga."
+  },
+  {
+    "word": "cable car",
+    "phonetic": "/ˈkeɪbl kɑːr/",
+    "vi": "cáp treo",
+    "ja": "ロープウェー",
+    "ko": "케이블카",
+    "topic": "transport",
+    "example": "We rode the cable car up the mountain.",
+    "exampleVi": "Chúng tôi đi cáp treo lên núi."
+  },
+  {
+    "word": "hungry",
+    "phonetic": "/ˈhʌŋɡri/",
+    "vi": "đói",
+    "ja": "お腹が空いた",
+    "ko": "배고픈",
+    "topic": "emotions",
+    "example": "I am hungry, let's eat.",
+    "exampleVi": "Tôi đói, chúng ta ăn thôi."
+  },
+  {
+    "word": "sleepy",
+    "phonetic": "/ˈsliːpi/",
+    "vi": "buồn ngủ",
+    "ja": "眠い",
+    "ko": "졸린",
+    "topic": "emotions",
+    "example": "The baby looks sleepy.",
+    "exampleVi": "Em bé trông có vẻ buồn ngủ."
+  },
+  {
+    "word": "happy",
+    "phonetic": "/ˈhæpi/",
+    "vi": "vui vẻ",
+    "ja": "嬉しい",
+    "ko": "행복한",
+    "topic": "emotions",
+    "example": "She is very happy today.",
+    "exampleVi": "Hôm nay cô ấy rất vui vẻ."
+  },
+  {
+    "word": "angry",
+    "phonetic": "/ˈæŋɡri/",
+    "vi": "tức giận",
+    "ja": "怒っている",
+    "ko": "화난",
+    "topic": "emotions",
+    "example": "He is angry about the broken toy.",
+    "exampleVi": "Cậu ấy tức giận vì món đồ chơi bị hỏng."
+  },
+  {
+    "word": "sad",
+    "phonetic": "/sæd/",
+    "vi": "buồn",
+    "ja": "悲しい",
+    "ko": "슬픈",
+    "topic": "emotions",
+    "example": "She feels sad about the news.",
+    "exampleVi": "Cô ấy cảm thấy buồn về tin tức đó."
+  },
+  {
+    "word": "scared",
+    "phonetic": "/skeərd/",
+    "vi": "sợ hãi",
+    "ja": "怖い",
+    "ko": "무서운",
+    "topic": "emotions",
+    "example": "The kid is scared of the dark.",
+    "exampleVi": "Đứa trẻ sợ bóng tối."
+  },
+  {
+    "word": "excited",
+    "phonetic": "/ɪkˈsaɪtɪd/",
+    "vi": "hào hứng",
+    "ja": "わくわくする",
+    "ko": "신난",
+    "topic": "emotions",
+    "example": "We are excited about the trip.",
+    "exampleVi": "Chúng tôi rất hào hứng về chuyến đi."
+  },
+  {
+    "word": "tired",
+    "phonetic": "/taɪərd/",
+    "vi": "mệt mỏi",
+    "ja": "疲れた",
+    "ko": "피곤한",
+    "topic": "emotions",
+    "example": "I am tired after school.",
+    "exampleVi": "Tôi mệt mỏi sau khi tan học."
+  },
+  {
+    "word": "surprised",
+    "phonetic": "/sərˈpraɪzd/",
+    "vi": "ngạc nhiên",
+    "ja": "驚いた",
+    "ko": "놀란",
+    "topic": "emotions",
+    "example": "She was surprised by the gift.",
+    "exampleVi": "Cô ấy ngạc nhiên vì món quà."
+  },
+  {
+    "word": "proud",
+    "phonetic": "/praʊd/",
+    "vi": "tự hào",
+    "ja": "誇らしい",
+    "ko": "자랑스러운",
+    "topic": "emotions",
+    "example": "Mom is proud of me.",
+    "exampleVi": "Mẹ tự hào về tôi."
+  },
+  {
+    "word": "nervous",
+    "phonetic": "/ˈnɜːrvəs/",
+    "vi": "lo lắng",
+    "ja": "心配な",
+    "ko": "걱정되는",
+    "topic": "emotions",
+    "example": "He feels nervous before the test.",
+    "exampleVi": "Cậu ấy cảm thấy lo lắng trước bài kiểm tra."
+  },
+  {
+    "word": "bored",
+    "phonetic": "/bɔːrd/",
+    "vi": "chán",
+    "ja": "退屈な",
+    "ko": "지루한",
+    "topic": "emotions",
+    "example": "I am bored at home.",
+    "exampleVi": "Tôi thấy chán khi ở nhà."
+  },
+  {
+    "word": "run",
+    "phonetic": "/rʌn/",
+    "vi": "chạy",
+    "ja": "走る",
+    "ko": "달리다",
+    "topic": "verbs",
+    "example": "I run every morning.",
+    "exampleVi": "Tôi chạy mỗi sáng."
+  },
+  {
+    "word": "jump",
+    "phonetic": "/dʒʌmp/",
+    "vi": "nhảy",
+    "ja": "跳ぶ",
+    "ko": "뛰다",
+    "topic": "verbs",
+    "example": "The rabbit can jump very high.",
+    "exampleVi": "Con thỏ có thể nhảy rất cao."
+  },
+  {
+    "word": "swim",
+    "phonetic": "/swɪm/",
+    "vi": "bơi",
+    "ja": "泳ぐ",
+    "ko": "수영하다",
+    "topic": "verbs",
+    "example": "We swim in the pool.",
+    "exampleVi": "Chúng tôi bơi trong hồ bơi."
+  },
+  {
+    "word": "climb",
+    "phonetic": "/klaɪm/",
+    "vi": "leo trèo",
+    "ja": "登る",
+    "ko": "오르다",
+    "topic": "verbs",
+    "example": "He can climb the tree fast.",
+    "exampleVi": "Cậu ấy có thể trèo cây rất nhanh."
+  },
+  {
+    "word": "fly",
+    "phonetic": "/flaɪ/",
+    "vi": "bay",
+    "ja": "飛ぶ",
+    "ko": "날다",
+    "topic": "verbs",
+    "example": "Birds can fly in the sky.",
+    "exampleVi": "Chim có thể bay trên bầu trời."
+  },
+  {
+    "word": "dig",
+    "phonetic": "/dɪɡ/",
+    "vi": "đào",
+    "ja": "掘る",
+    "ko": "파다",
+    "topic": "verbs",
+    "example": "The dog likes to dig a hole.",
+    "exampleVi": "Con chó thích đào một cái hố."
+  },
+  {
+    "word": "crawl",
+    "phonetic": "/krɔːl/",
+    "vi": "bò",
+    "ja": "はう",
+    "ko": "기다",
+    "topic": "verbs",
+    "example": "The baby is learning to crawl.",
+    "exampleVi": "Em bé đang tập bò."
+  },
+  {
+    "word": "walk",
+    "phonetic": "/wɔːk/",
+    "vi": "đi bộ",
+    "ja": "歩く",
+    "ko": "걷다",
+    "topic": "verbs",
+    "example": "We walk to school together.",
+    "exampleVi": "Chúng tôi cùng đi bộ đến trường."
+  },
+  {
+    "word": "sit",
+    "phonetic": "/sɪt/",
+    "vi": "ngồi",
+    "ja": "座る",
+    "ko": "앉다",
+    "topic": "verbs",
+    "example": "Please sit on the chair.",
+    "exampleVi": "Xin hãy ngồi lên ghế."
+  },
+  {
+    "word": "throw",
+    "phonetic": "/θroʊ/",
+    "vi": "ném",
+    "ja": "投げる",
+    "ko": "던지다",
+    "topic": "verbs",
+    "example": "He can throw the ball far.",
+    "exampleVi": "Cậu ấy có thể ném quả bóng thật xa."
+  },
+  {
+    "word": "catch",
+    "phonetic": "/kætʃ/",
+    "vi": "bắt",
+    "ja": "捕まえる",
+    "ko": "잡다",
+    "topic": "verbs",
+    "example": "I can catch the ball.",
+    "exampleVi": "Tôi có thể bắt được quả bóng."
+  },
+  {
+    "word": "kick",
+    "phonetic": "/kɪk/",
+    "vi": "đá",
+    "ja": "蹴る",
+    "ko": "차다",
+    "topic": "verbs",
+    "example": "He kicked the ball into the goal.",
+    "exampleVi": "Cậu ấy đá quả bóng vào khung thành."
+  },
+  {
+    "word": "eat",
+    "phonetic": "/iːt/",
+    "vi": "ăn",
+    "ja": "食べる",
+    "ko": "먹다",
+    "topic": "verbs",
+    "example": "We eat breakfast at seven.",
+    "exampleVi": "Chúng tôi ăn sáng lúc bảy giờ."
+  },
+  {
+    "word": "drink",
+    "phonetic": "/drɪŋk/",
+    "vi": "uống",
+    "ja": "飲む",
+    "ko": "마시다",
+    "topic": "verbs",
+    "example": "I drink water when I'm thirsty.",
+    "exampleVi": "Tôi uống nước khi khát."
+  },
+  {
+    "word": "sleep",
+    "phonetic": "/sliːp/",
+    "vi": "ngủ",
+    "ja": "眠る",
+    "ko": "자다",
+    "topic": "verbs",
+    "example": "I sleep eight hours every night.",
+    "exampleVi": "Tôi ngủ tám tiếng mỗi đêm."
+  },
+  {
+    "word": "read",
+    "phonetic": "/riːd/",
+    "vi": "đọc",
+    "ja": "読む",
+    "ko": "읽다",
+    "topic": "verbs",
+    "example": "I read a book before bed.",
+    "exampleVi": "Tôi đọc sách trước khi ngủ."
+  },
+  {
+    "word": "write",
+    "phonetic": "/raɪt/",
+    "vi": "viết",
+    "ja": "書く",
+    "ko": "쓰다",
+    "topic": "verbs",
+    "example": "She can write her name.",
+    "exampleVi": "Cô bé có thể viết tên mình."
+  },
+  {
+    "word": "sing",
+    "phonetic": "/sɪŋ/",
+    "vi": "hát",
+    "ja": "歌う",
+    "ko": "노래하다",
+    "topic": "verbs",
+    "example": "The girl loves to sing.",
+    "exampleVi": "Cô bé rất thích hát."
+  },
+  {
+    "word": "dance",
+    "phonetic": "/dæns/",
+    "vi": "nhảy múa",
+    "ja": "踊る",
+    "ko": "춤추다",
+    "topic": "verbs",
+    "example": "We dance at the party.",
+    "exampleVi": "Chúng tôi nhảy múa ở bữa tiệc."
+  },
+  {
+    "word": "play",
+    "phonetic": "/pleɪ/",
+    "vi": "chơi",
+    "ja": "遊ぶ",
+    "ko": "놀다",
+    "topic": "verbs",
+    "example": "The kids play in the park.",
+    "exampleVi": "Bọn trẻ chơi trong công viên."
+  },
+  {
+    "word": "work",
+    "phonetic": "/wɜːrk/",
+    "vi": "làm việc",
+    "ja": "働く",
+    "ko": "일하다",
+    "topic": "verbs",
+    "example": "My father works every day.",
+    "exampleVi": "Bố tôi làm việc mỗi ngày."
+  },
+  {
+    "word": "study",
+    "phonetic": "/ˈstʌdi/",
+    "vi": "học",
+    "ja": "勉強する",
+    "ko": "공부하다",
+    "topic": "verbs",
+    "example": "I study English every night.",
+    "exampleVi": "Tôi học tiếng Anh mỗi tối."
+  },
+  {
+    "word": "cook",
+    "phonetic": "/kʊk/",
+    "vi": "nấu ăn",
+    "ja": "料理する",
+    "ko": "요리하다",
+    "topic": "verbs",
+    "example": "Mom likes to cook dinner.",
+    "exampleVi": "Mẹ thích nấu bữa tối."
+  },
+  {
+    "word": "wash",
+    "phonetic": "/wɒʃ/",
+    "vi": "rửa",
+    "ja": "洗う",
+    "ko": "씻다",
+    "topic": "verbs",
+    "example": "Please wash your hands.",
+    "exampleVi": "Hãy rửa tay đi."
+  },
+  {
+    "word": "open",
+    "phonetic": "/ˈoʊpən/",
+    "vi": "mở",
+    "ja": "開ける",
+    "ko": "열다",
+    "topic": "verbs",
+    "example": "Please open the door.",
+    "exampleVi": "Xin hãy mở cửa."
+  },
+  {
+    "word": "close",
+    "phonetic": "/kloʊz/",
+    "vi": "đóng",
+    "ja": "閉める",
+    "ko": "닫다",
+    "topic": "verbs",
+    "example": "Please close the window.",
+    "exampleVi": "Xin hãy đóng cửa sổ."
+  },
+  {
+    "word": "buy",
+    "phonetic": "/baɪ/",
+    "vi": "mua",
+    "ja": "買う",
+    "ko": "사다",
+    "topic": "verbs",
+    "example": "We buy fruit at the market.",
+    "exampleVi": "Chúng tôi mua trái cây ở chợ."
+  },
+  {
+    "word": "sell",
+    "phonetic": "/sel/",
+    "vi": "bán",
+    "ja": "売る",
+    "ko": "팔다",
+    "topic": "verbs",
+    "example": "The farmer sells vegetables.",
+    "exampleVi": "Người nông dân bán rau."
+  },
+  {
+    "word": "give",
+    "phonetic": "/ɡɪv/",
+    "vi": "cho, đưa",
+    "ja": "あげる",
+    "ko": "주다",
+    "topic": "verbs",
+    "example": "She gave me a gift.",
+    "exampleVi": "Cô ấy đã cho tôi một món quà."
+  },
+  {
+    "word": "take",
+    "phonetic": "/teɪk/",
+    "vi": "lấy",
+    "ja": "取る",
+    "ko": "가지다",
+    "topic": "verbs",
+    "example": "Please take an umbrella.",
+    "exampleVi": "Hãy mang theo một cái ô."
+  },
+  {
+    "word": "make",
+    "phonetic": "/meɪk/",
+    "vi": "làm",
+    "ja": "作る",
+    "ko": "만들다",
+    "topic": "verbs",
+    "example": "I can make a sandwich.",
+    "exampleVi": "Tôi có thể làm một chiếc bánh sandwich."
+  },
+  {
+    "word": "build",
+    "phonetic": "/bɪld/",
+    "vi": "xây dựng",
+    "ja": "建てる",
+    "ko": "짓다",
+    "topic": "verbs",
+    "example": "They build a new house.",
+    "exampleVi": "Họ đang xây một ngôi nhà mới."
+  },
+  {
+    "word": "draw",
+    "phonetic": "/drɔː/",
+    "vi": "vẽ",
+    "ja": "描く",
+    "ko": "그리다",
+    "topic": "verbs",
+    "example": "She likes to draw animals.",
+    "exampleVi": "Cô bé thích vẽ các loài vật."
+  },
+  {
+    "word": "paint",
+    "phonetic": "/peɪnt/",
+    "vi": "sơn, vẽ màu",
+    "ja": "塗る",
+    "ko": "페인트칠하다",
+    "topic": "verbs",
+    "example": "He painted the wall blue.",
+    "exampleVi": "Cậu ấy sơn bức tường màu xanh."
+  },
+  {
+    "word": "cut",
+    "phonetic": "/kʌt/",
+    "vi": "cắt",
+    "ja": "切る",
+    "ko": "자르다",
+    "topic": "verbs",
+    "example": "Please cut the paper carefully.",
+    "exampleVi": "Hãy cắt tờ giấy cẩn thận."
+  },
+  {
+    "word": "cry",
+    "phonetic": "/kraɪ/",
+    "vi": "khóc",
+    "ja": "泣く",
+    "ko": "울다",
+    "topic": "verbs",
+    "example": "The baby started to cry.",
+    "exampleVi": "Em bé bắt đầu khóc."
+  },
+  {
+    "word": "laugh",
+    "phonetic": "/læf/",
+    "vi": "cười to",
+    "ja": "笑う",
+    "ko": "웃다",
+    "topic": "verbs",
+    "example": "We laughed at the funny movie.",
+    "exampleVi": "Chúng tôi cười to vì bộ phim vui nhộn."
+  },
+  {
+    "word": "smile",
+    "phonetic": "/smaɪl/",
+    "vi": "mỉm cười",
+    "ja": "ほほえむ",
+    "ko": "미소짓다",
+    "topic": "verbs",
+    "example": "She always smiles at me.",
+    "exampleVi": "Cô ấy luôn mỉm cười với tôi."
+  },
+  {
+    "word": "listen",
+    "phonetic": "/ˈlɪsən/",
+    "vi": "lắng nghe",
+    "ja": "聞く",
+    "ko": "듣다",
+    "topic": "verbs",
+    "example": "Please listen to the teacher.",
+    "exampleVi": "Hãy lắng nghe cô giáo."
+  },
+  {
+    "word": "speak",
+    "phonetic": "/spiːk/",
+    "vi": "nói",
+    "ja": "話す",
+    "ko": "말하다",
+    "topic": "verbs",
+    "example": "He can speak two languages.",
+    "exampleVi": "Cậu ấy có thể nói hai ngôn ngữ."
+  },
+  {
+    "word": "watch",
+    "phonetic": "/wɒtʃ/",
+    "vi": "xem",
+    "ja": "見る",
+    "ko": "보다",
+    "topic": "verbs",
+    "example": "We watch cartoons on Sunday.",
+    "exampleVi": "Chúng tôi xem hoạt hình vào Chủ nhật."
+  },
+  {
+    "word": "big",
+    "phonetic": "/bɪɡ/",
+    "vi": "to lớn",
+    "ja": "大きい",
+    "ko": "큰",
+    "topic": "adjectives",
+    "example": "The elephant is very big.",
+    "exampleVi": "Con voi rất to lớn."
+  },
+  {
+    "word": "small",
+    "phonetic": "/smɔːl/",
+    "vi": "nhỏ",
+    "ja": "小さい",
+    "ko": "작은",
+    "topic": "adjectives",
+    "example": "The mouse is small.",
+    "exampleVi": "Con chuột nhỏ bé."
+  },
+  {
+    "word": "tall",
+    "phonetic": "/tɔːl/",
+    "vi": "cao",
+    "ja": "背が高い",
+    "ko": "키가 큰",
+    "topic": "adjectives",
+    "example": "My brother is very tall.",
+    "exampleVi": "Anh trai tôi rất cao."
+  },
+  {
+    "word": "short",
+    "phonetic": "/ʃɔːrt/",
+    "vi": "thấp, ngắn",
+    "ja": "短い",
+    "ko": "짧은",
+    "topic": "adjectives",
+    "example": "The pencil is very short.",
+    "exampleVi": "Cây bút chì rất ngắn."
+  },
+  {
+    "word": "long",
+    "phonetic": "/lɒŋ/",
+    "vi": "dài",
+    "ja": "長い",
+    "ko": "긴",
+    "topic": "adjectives",
+    "example": "The snake has a long body.",
+    "exampleVi": "Con rắn có thân dài."
+  },
+  {
+    "word": "fast",
+    "phonetic": "/fæst/",
+    "vi": "nhanh",
+    "ja": "速い",
+    "ko": "빠른",
+    "topic": "adjectives",
+    "example": "The cheetah is very fast.",
+    "exampleVi": "Con báo gêpa chạy rất nhanh."
+  },
+  {
+    "word": "slow",
+    "phonetic": "/sloʊ/",
+    "vi": "chậm",
+    "ja": "遅い",
+    "ko": "느린",
+    "topic": "adjectives",
+    "example": "The turtle is very slow.",
+    "exampleVi": "Con rùa đi rất chậm."
+  },
+  {
+    "word": "new",
+    "phonetic": "/njuː/",
+    "vi": "mới",
+    "ja": "新しい",
+    "ko": "새로운",
+    "topic": "adjectives",
+    "example": "I got a new bike.",
+    "exampleVi": "Tôi có một chiếc xe đạp mới."
+  },
+  {
+    "word": "old",
+    "phonetic": "/oʊld/",
+    "vi": "cũ, già",
+    "ja": "古い",
+    "ko": "오래된",
+    "topic": "adjectives",
+    "example": "This is an old book.",
+    "exampleVi": "Đây là một cuốn sách cũ."
+  },
+  {
+    "word": "young",
+    "phonetic": "/jʌŋ/",
+    "vi": "trẻ",
+    "ja": "若い",
+    "ko": "어린",
+    "topic": "adjectives",
+    "example": "The dog is still young.",
+    "exampleVi": "Con chó vẫn còn trẻ."
+  },
+  {
+    "word": "good",
+    "phonetic": "/ɡʊd/",
+    "vi": "tốt",
+    "ja": "良い",
+    "ko": "좋은",
+    "topic": "adjectives",
+    "example": "That was a good idea.",
+    "exampleVi": "Đó là một ý tưởng hay."
+  },
+  {
+    "word": "bad",
+    "phonetic": "/bæd/",
+    "vi": "xấu, tệ",
+    "ja": "悪い",
+    "ko": "나쁜",
+    "topic": "adjectives",
+    "example": "He is in a bad mood today.",
+    "exampleVi": "Hôm nay cậu ấy tâm trạng không tốt."
+  },
+  {
+    "word": "easy",
+    "phonetic": "/ˈiːzi/",
+    "vi": "dễ",
+    "ja": "簡単な",
+    "ko": "쉬운",
+    "topic": "adjectives",
+    "example": "This exam is easy.",
+    "exampleVi": "Bài kiểm tra này dễ."
+  },
+  {
+    "word": "hard",
+    "phonetic": "/hɑːrd/",
+    "vi": "khó, cứng",
+    "ja": "難しい",
+    "ko": "어려운",
+    "topic": "adjectives",
+    "example": "This math problem is hard.",
+    "exampleVi": "Bài toán này khó."
+  },
+  {
+    "word": "heavy",
+    "phonetic": "/ˈhevi/",
+    "vi": "nặng",
+    "ja": "重い",
+    "ko": "무거운",
+    "topic": "adjectives",
+    "example": "The box is very heavy.",
+    "exampleVi": "Cái hộp rất nặng."
+  },
+  {
+    "word": "light",
+    "phonetic": "/laɪt/",
+    "vi": "nhẹ",
+    "ja": "軽い",
+    "ko": "가벼운",
+    "topic": "adjectives",
+    "example": "This bag is very light.",
+    "exampleVi": "Chiếc túi này rất nhẹ."
+  },
+  {
+    "word": "clean",
+    "phonetic": "/kliːn/",
+    "vi": "sạch",
+    "ja": "きれいな",
+    "ko": "깨끗한",
+    "topic": "adjectives",
+    "example": "Please keep your room clean.",
+    "exampleVi": "Hãy giữ phòng của con sạch sẽ."
+  },
+  {
+    "word": "dirty",
+    "phonetic": "/ˈdɜːrti/",
+    "vi": "bẩn",
+    "ja": "汚い",
+    "ko": "더러운",
+    "topic": "adjectives",
+    "example": "My shoes are dirty.",
+    "exampleVi": "Giày của tôi bị bẩn."
+  },
+  {
+    "word": "full",
+    "phonetic": "/fʊl/",
+    "vi": "đầy",
+    "ja": "いっぱいの",
+    "ko": "가득 찬",
+    "topic": "adjectives",
+    "example": "The glass is full of water.",
+    "exampleVi": "Cái ly đầy nước."
+  },
+  {
+    "word": "empty",
+    "phonetic": "/ˈempti/",
+    "vi": "rỗng, trống",
+    "ja": "空の",
+    "ko": "빈",
+    "topic": "adjectives",
+    "example": "The box is empty now.",
+    "exampleVi": "Cái hộp giờ đã trống rỗng."
+  },
+  {
+    "word": "rich",
+    "phonetic": "/rɪtʃ/",
+    "vi": "giàu",
+    "ja": "金持ちの",
+    "ko": "부유한",
+    "topic": "adjectives",
+    "example": "He became rich after years of work.",
+    "exampleVi": "Anh ấy trở nên giàu có sau nhiều năm làm việc."
+  },
+  {
+    "word": "poor",
+    "phonetic": "/pʊər/",
+    "vi": "nghèo",
+    "ja": "貧しい",
+    "ko": "가난한",
+    "topic": "adjectives",
+    "example": "They were poor but happy.",
+    "exampleVi": "Họ nghèo nhưng hạnh phúc."
+  },
+  {
+    "word": "strong",
+    "phonetic": "/strɒŋ/",
+    "vi": "khoẻ mạnh, mạnh",
+    "ja": "強い",
+    "ko": "강한",
+    "topic": "adjectives",
+    "example": "The horse is very strong.",
+    "exampleVi": "Con ngựa rất khoẻ mạnh."
+  },
+  {
+    "word": "weak",
+    "phonetic": "/wiːk/",
+    "vi": "yếu",
+    "ja": "弱い",
+    "ko": "약한",
+    "topic": "adjectives",
+    "example": "He felt weak after being sick.",
+    "exampleVi": "Cậu ấy cảm thấy yếu sau khi bị ốm."
+  },
+  {
+    "word": "beautiful",
+    "phonetic": "/ˈbjuːtɪfəl/",
+    "vi": "đẹp",
+    "ja": "美しい",
+    "ko": "아름다운",
+    "topic": "adjectives",
+    "example": "The garden looks beautiful.",
+    "exampleVi": "Khu vườn trông thật đẹp."
+  },
+  {
+    "word": "ugly",
+    "phonetic": "/ˈʌɡli/",
+    "vi": "xấu xí",
+    "ja": "醜い",
+    "ko": "못생긴",
+    "topic": "adjectives",
+    "example": "The monster in the story is ugly.",
+    "exampleVi": "Con quái vật trong câu chuyện rất xấu xí."
+  },
+  {
+    "word": "kind",
+    "phonetic": "/kaɪnd/",
+    "vi": "tốt bụng",
+    "ja": "親切な",
+    "ko": "친절한",
+    "topic": "adjectives",
+    "example": "My teacher is very kind.",
+    "exampleVi": "Giáo viên của tôi rất tốt bụng."
+  },
+  {
+    "word": "funny",
+    "phonetic": "/ˈfʌni/",
+    "vi": "vui nhộn",
+    "ja": "面白い",
+    "ko": "재미있는",
+    "topic": "adjectives",
+    "example": "That joke was really funny.",
+    "exampleVi": "Câu chuyện cười đó thật vui nhộn."
+  },
+  {
+    "word": "quiet",
+    "phonetic": "/ˈkwaɪət/",
+    "vi": "yên tĩnh",
+    "ja": "静かな",
+    "ko": "조용한",
+    "topic": "adjectives",
+    "example": "The library is very quiet.",
+    "exampleVi": "Thư viện rất yên tĩnh."
+  },
+  {
+    "word": "loud",
+    "phonetic": "/laʊd/",
+    "vi": "ồn ào",
+    "ja": "うるさい",
+    "ko": "시끄러운",
+    "topic": "adjectives",
+    "example": "The music was too loud.",
+    "exampleVi": "Nhạc quá ồn ào."
+  },
+  {
+    "word": "tree",
+    "phonetic": "/triː/",
+    "vi": "cây",
+    "ja": "木",
+    "ko": "나무",
+    "topic": "nature",
+    "example": "A big tree grows in the yard.",
+    "exampleVi": "Một cây to mọc trong sân."
+  },
+  {
+    "word": "flower",
+    "phonetic": "/ˈflaʊər/",
+    "vi": "hoa",
+    "ja": "花",
+    "ko": "꽃",
+    "topic": "nature",
+    "example": "She picked a yellow flower.",
+    "exampleVi": "Cô ấy hái một bông hoa vàng."
+  },
+  {
+    "word": "grass",
+    "phonetic": "/ɡræs/",
+    "vi": "cỏ",
+    "ja": "草",
+    "ko": "풀",
+    "topic": "nature",
+    "example": "The grass is green and soft.",
+    "exampleVi": "Cỏ xanh và mềm."
+  },
+  {
+    "word": "leaf",
+    "phonetic": "/liːf/",
+    "vi": "chiếc lá",
+    "ja": "葉",
+    "ko": "나뭇잎",
+    "topic": "nature",
+    "example": "A leaf fell from the tree.",
+    "exampleVi": "Một chiếc lá rơi từ trên cây."
+  },
+  {
+    "word": "sun",
+    "phonetic": "/sʌn/",
+    "vi": "mặt trời",
+    "ja": "太陽",
+    "ko": "해",
+    "topic": "nature",
+    "example": "The sun rises in the morning.",
+    "exampleVi": "Mặt trời mọc vào buổi sáng."
+  },
+  {
+    "word": "moon",
+    "phonetic": "/muːn/",
+    "vi": "mặt trăng",
+    "ja": "月",
+    "ko": "달",
+    "topic": "nature",
+    "example": "We can see the moon at night.",
+    "exampleVi": "Chúng ta có thể nhìn thấy mặt trăng vào ban đêm."
+  },
+  {
+    "word": "star",
+    "phonetic": "/stɑːr/",
+    "vi": "ngôi sao",
+    "ja": "星",
+    "ko": "별",
+    "topic": "nature",
+    "example": "I saw a bright star in the sky.",
+    "exampleVi": "Tôi nhìn thấy một ngôi sao sáng trên bầu trời."
+  },
+  {
+    "word": "sky",
+    "phonetic": "/skaɪ/",
+    "vi": "bầu trời",
+    "ja": "空",
+    "ko": "하늘",
+    "topic": "nature",
+    "example": "The sky is clear today.",
+    "exampleVi": "Bầu trời hôm nay trong xanh."
+  },
+  {
+    "word": "cloud",
+    "phonetic": "/klaʊd/",
+    "vi": "đám mây",
+    "ja": "雲",
+    "ko": "구름",
+    "topic": "nature",
+    "example": "A white cloud floated by.",
+    "exampleVi": "Một đám mây trắng trôi qua."
+  },
+  {
+    "word": "mountain",
+    "phonetic": "/ˈmaʊntən/",
+    "vi": "núi",
+    "ja": "山",
+    "ko": "산",
+    "topic": "nature",
+    "example": "We climbed a tall mountain.",
+    "exampleVi": "Chúng tôi leo lên một ngọn núi cao."
+  },
+  {
+    "word": "river",
+    "phonetic": "/ˈrɪvər/",
+    "vi": "sông",
+    "ja": "川",
+    "ko": "강",
+    "topic": "nature",
+    "example": "A river flows through the town.",
+    "exampleVi": "Một con sông chảy qua thị trấn."
+  },
+  {
+    "word": "lake",
+    "phonetic": "/leɪk/",
+    "vi": "hồ",
+    "ja": "湖",
+    "ko": "호수",
+    "topic": "nature",
+    "example": "We swam in the lake.",
+    "exampleVi": "Chúng tôi bơi trong hồ."
+  },
+  {
+    "word": "sea",
+    "phonetic": "/siː/",
+    "vi": "biển",
+    "ja": "海",
+    "ko": "바다",
+    "topic": "nature",
+    "example": "We played by the sea.",
+    "exampleVi": "Chúng tôi chơi bên bờ biển."
+  },
+  {
+    "word": "ocean",
+    "phonetic": "/ˈoʊʃən/",
+    "vi": "đại dương",
+    "ja": "大洋",
+    "ko": "대양",
+    "topic": "nature",
+    "example": "The ocean is very deep.",
+    "exampleVi": "Đại dương rất sâu."
+  },
+  {
+    "word": "forest",
+    "phonetic": "/ˈfɒrɪst/",
+    "vi": "rừng",
+    "ja": "森",
+    "ko": "숲",
+    "topic": "nature",
+    "example": "Many animals live in the forest.",
+    "exampleVi": "Nhiều loài vật sống trong rừng."
+  },
+  {
+    "word": "island",
+    "phonetic": "/ˈaɪlənd/",
+    "vi": "hòn đảo",
+    "ja": "島",
+    "ko": "섬",
+    "topic": "nature",
+    "example": "They sailed to a small island.",
+    "exampleVi": "Họ đi thuyền đến một hòn đảo nhỏ."
+  },
+  {
+    "word": "rock",
+    "phonetic": "/rɒk/",
+    "vi": "tảng đá",
+    "ja": "岩",
+    "ko": "바위",
+    "topic": "nature",
+    "example": "He sat on a big rock.",
+    "exampleVi": "Cậu ấy ngồi trên một tảng đá lớn."
+  },
+  {
+    "word": "sand",
+    "phonetic": "/sænd/",
+    "vi": "cát",
+    "ja": "砂",
+    "ko": "모래",
+    "topic": "nature",
+    "example": "The kids played in the sand.",
+    "exampleVi": "Bọn trẻ chơi trên cát."
+  },
+  {
+    "word": "wave",
+    "phonetic": "/weɪv/",
+    "vi": "con sóng",
+    "ja": "波",
+    "ko": "파도",
+    "topic": "nature",
+    "example": "A big wave hit the boat.",
+    "exampleVi": "Một con sóng lớn đập vào thuyền."
+  },
+  {
+    "word": "wind",
+    "phonetic": "/wɪnd/",
+    "vi": "gió",
+    "ja": "風",
+    "ko": "바람",
+    "topic": "nature",
+    "example": "The wind blew the leaves away.",
+    "exampleVi": "Gió thổi bay những chiếc lá."
+  },
+  {
+    "word": "fire",
+    "phonetic": "/ˈfaɪər/",
+    "vi": "lửa",
+    "ja": "火",
+    "ko": "불",
+    "topic": "nature",
+    "example": "We sat by the fire at night.",
+    "exampleVi": "Chúng tôi ngồi bên đống lửa vào ban đêm."
+  },
+  {
+    "word": "ice",
+    "phonetic": "/aɪs/",
+    "vi": "băng",
+    "ja": "氷",
+    "ko": "얼음",
+    "topic": "nature",
+    "example": "The lake froze into ice.",
+    "exampleVi": "Hồ nước đóng băng."
+  },
+  {
+    "word": "snow",
+    "phonetic": "/snoʊ/",
+    "vi": "tuyết",
+    "ja": "雪",
+    "ko": "눈",
+    "topic": "nature",
+    "example": "The snow covered the mountain.",
+    "exampleVi": "Tuyết phủ trên ngọn núi."
+  },
+  {
+    "word": "rain",
+    "phonetic": "/reɪn/",
+    "vi": "mưa",
+    "ja": "雨",
+    "ko": "비",
+    "topic": "nature",
+    "example": "The rain fell all day.",
+    "exampleVi": "Mưa rơi suốt cả ngày."
+  },
+  {
+    "word": "earth",
+    "phonetic": "/ɜːrθ/",
+    "vi": "trái đất",
+    "ja": "地球",
+    "ko": "지구",
+    "topic": "nature",
+    "example": "The Earth is our home.",
+    "exampleVi": "Trái đất là ngôi nhà của chúng ta."
+  },
+  {
+    "word": "root",
+    "phonetic": "/ruːt/",
+    "vi": "rễ cây",
+    "ja": "根",
+    "ko": "뿌리",
+    "topic": "nature",
+    "example": "The tree has deep roots.",
+    "exampleVi": "Cây có rễ ăn sâu."
+  },
+  {
+    "word": "branch",
+    "phonetic": "/bræntʃ/",
+    "vi": "cành cây",
+    "ja": "枝",
+    "ko": "나뭇가지",
+    "topic": "nature",
+    "example": "A bird sat on the branch.",
+    "exampleVi": "Một con chim đậu trên cành cây."
+  },
+  {
+    "word": "seed",
+    "phonetic": "/siːd/",
+    "vi": "hạt giống",
+    "ja": "種",
+    "ko": "씨앗",
+    "topic": "nature",
+    "example": "She planted a small seed.",
+    "exampleVi": "Cô ấy trồng một hạt giống nhỏ."
+  },
+  {
+    "word": "volcano",
+    "phonetic": "/vɒlˈkeɪnoʊ/",
+    "vi": "núi lửa",
+    "ja": "火山",
+    "ko": "화산",
+    "topic": "nature",
+    "example": "The volcano erupted with smoke.",
+    "exampleVi": "Núi lửa phun trào khói."
+  },
+  {
+    "word": "desert",
+    "phonetic": "/ˈdezərt/",
+    "vi": "sa mạc",
+    "ja": "砂漠",
+    "ko": "사막",
+    "topic": "nature",
+    "example": "It is very hot in the desert.",
+    "exampleVi": "Sa mạc rất nóng."
+  },
+  {
+    "word": "house",
+    "phonetic": "/haʊs/",
+    "vi": "ngôi nhà",
+    "ja": "家",
+    "ko": "집",
+    "topic": "home",
+    "example": "We live in a small house.",
+    "exampleVi": "Chúng tôi sống trong một ngôi nhà nhỏ."
+  },
+  {
+    "word": "room",
+    "phonetic": "/ruːm/",
+    "vi": "phòng",
+    "ja": "部屋",
+    "ko": "방",
+    "topic": "home",
+    "example": "My room is upstairs.",
+    "exampleVi": "Phòng của tôi ở trên lầu."
+  },
+  {
+    "word": "kitchen",
+    "phonetic": "/ˈkɪtʃən/",
+    "vi": "nhà bếp",
+    "ja": "台所",
+    "ko": "부엌",
+    "topic": "home",
+    "example": "Mom is cooking in the kitchen.",
+    "exampleVi": "Mẹ đang nấu ăn trong nhà bếp."
+  },
+  {
+    "word": "bedroom",
+    "phonetic": "/ˈbedruːm/",
+    "vi": "phòng ngủ",
+    "ja": "寝室",
+    "ko": "침실",
+    "topic": "home",
+    "example": "My bedroom is very cozy.",
+    "exampleVi": "Phòng ngủ của tôi rất ấm cúng."
+  },
+  {
+    "word": "bathroom",
+    "phonetic": "/ˈbæθruːm/",
+    "vi": "phòng tắm",
+    "ja": "浴室",
+    "ko": "욕실",
+    "topic": "home",
+    "example": "The bathroom is next to my room.",
+    "exampleVi": "Phòng tắm ở cạnh phòng tôi."
+  },
+  {
+    "word": "living room",
+    "phonetic": "/ˈlɪvɪŋ ruːm/",
+    "vi": "phòng khách",
+    "ja": "リビング",
+    "ko": "거실",
+    "topic": "home",
+    "example": "We watch TV in the living room.",
+    "exampleVi": "Chúng tôi xem tivi trong phòng khách."
+  },
+  {
+    "word": "door",
+    "phonetic": "/dɔːr/",
+    "vi": "cửa",
+    "ja": "ドア",
+    "ko": "문",
+    "topic": "home",
+    "example": "Please close the door.",
+    "exampleVi": "Hãy đóng cửa lại."
+  },
+  {
+    "word": "window",
+    "phonetic": "/ˈwɪndoʊ/",
+    "vi": "cửa sổ",
+    "ja": "窓",
+    "ko": "창문",
+    "topic": "home",
+    "example": "I opened the window for fresh air.",
+    "exampleVi": "Tôi mở cửa sổ để lấy không khí trong lành."
+  },
+  {
+    "word": "wall",
+    "phonetic": "/wɔːl/",
+    "vi": "tường",
+    "ja": "壁",
+    "ko": "벽",
+    "topic": "home",
+    "example": "She hung a picture on the wall.",
+    "exampleVi": "Cô ấy treo một bức tranh lên tường."
+  },
+  {
+    "word": "floor",
+    "phonetic": "/flɔːr/",
+    "vi": "sàn nhà",
+    "ja": "床",
+    "ko": "바닥",
+    "topic": "home",
+    "example": "The toy fell on the floor.",
+    "exampleVi": "Món đồ chơi rơi xuống sàn nhà."
+  },
+  {
+    "word": "roof",
+    "phonetic": "/ruːf/",
+    "vi": "mái nhà",
+    "ja": "屋根",
+    "ko": "지붕",
+    "topic": "home",
+    "example": "Snow covered the roof.",
+    "exampleVi": "Tuyết phủ trên mái nhà."
+  },
+  {
+    "word": "table",
+    "phonetic": "/ˈteɪbl/",
+    "vi": "cái bàn",
+    "ja": "テーブル",
+    "ko": "테이블",
+    "topic": "home",
+    "example": "Dinner is on the table.",
+    "exampleVi": "Bữa tối đã ở trên bàn."
+  },
+  {
+    "word": "bed",
+    "phonetic": "/bed/",
+    "vi": "cái giường",
+    "ja": "ベッド",
+    "ko": "침대",
+    "topic": "home",
+    "example": "I sleep in my bed.",
+    "exampleVi": "Tôi ngủ trên giường."
+  },
+  {
+    "word": "sofa",
+    "phonetic": "/ˈsoʊfə/",
+    "vi": "ghế sofa",
+    "ja": "ソファー",
+    "ko": "소파",
+    "topic": "home",
+    "example": "We sat on the sofa together.",
+    "exampleVi": "Chúng tôi cùng ngồi trên ghế sofa."
+  },
+  {
+    "word": "lamp",
+    "phonetic": "/læmp/",
+    "vi": "đèn",
+    "ja": "ランプ",
+    "ko": "램프",
+    "topic": "home",
+    "example": "She turned on the lamp.",
+    "exampleVi": "Cô ấy bật đèn."
+  },
+  {
+    "word": "mirror",
+    "phonetic": "/ˈmɪrər/",
+    "vi": "gương",
+    "ja": "鏡",
+    "ko": "거울",
+    "topic": "home",
+    "example": "He looked in the mirror.",
+    "exampleVi": "Cậu ấy nhìn vào gương."
+  },
+  {
+    "word": "shelf",
+    "phonetic": "/ʃelf/",
+    "vi": "kệ",
+    "ja": "棚",
+    "ko": "선반",
+    "topic": "home",
+    "example": "The books are on the shelf.",
+    "exampleVi": "Sách ở trên kệ."
+  },
+  {
+    "word": "closet",
+    "phonetic": "/ˈklɒzɪt/",
+    "vi": "tủ đồ",
+    "ja": "クローゼット",
+    "ko": "옷장",
+    "topic": "home",
+    "example": "I keep my clothes in the closet.",
+    "exampleVi": "Tôi để quần áo trong tủ đồ."
+  },
+  {
+    "word": "curtain",
+    "phonetic": "/ˈkɜːrtən/",
+    "vi": "rèm cửa",
+    "ja": "カーテン",
+    "ko": "커튼",
+    "topic": "home",
+    "example": "She closed the curtain at night.",
+    "exampleVi": "Cô ấy kéo rèm cửa vào ban đêm."
+  },
+  {
+    "word": "carpet",
+    "phonetic": "/ˈkɑːrpɪt/",
+    "vi": "thảm",
+    "ja": "カーペット",
+    "ko": "카펫",
+    "topic": "home",
+    "example": "The carpet is soft and warm.",
+    "exampleVi": "Tấm thảm mềm và ấm."
+  },
+  {
+    "word": "stairs",
+    "phonetic": "/steərz/",
+    "vi": "cầu thang",
+    "ja": "階段",
+    "ko": "계단",
+    "topic": "home",
+    "example": "He ran up the stairs.",
+    "exampleVi": "Cậu ấy chạy lên cầu thang."
+  },
+  {
+    "word": "garden",
+    "phonetic": "/ˈɡɑːrdən/",
+    "vi": "khu vườn",
+    "ja": "庭",
+    "ko": "정원",
+    "topic": "home",
+    "example": "We grow flowers in the garden.",
+    "exampleVi": "Chúng tôi trồng hoa trong khu vườn."
+  },
+  {
+    "word": "fence",
+    "phonetic": "/fens/",
+    "vi": "hàng rào",
+    "ja": "フェンス",
+    "ko": "울타리",
+    "topic": "home",
+    "example": "A dog jumped over the fence.",
+    "exampleVi": "Một con chó nhảy qua hàng rào."
+  },
+  {
+    "word": "key",
+    "phonetic": "/kiː/",
+    "vi": "chìa khoá",
+    "ja": "鍵",
+    "ko": "열쇠",
+    "topic": "home",
+    "example": "I lost my house key.",
+    "exampleVi": "Tôi làm mất chìa khoá nhà."
+  },
+  {
+    "word": "clock",
+    "phonetic": "/klɒk/",
+    "vi": "đồng hồ",
+    "ja": "時計",
+    "ko": "시계",
+    "topic": "home",
+    "example": "The clock shows six o'clock.",
+    "exampleVi": "Đồng hồ chỉ sáu giờ."
+  },
+  {
+    "word": "phone",
+    "phonetic": "/foʊn/",
+    "vi": "điện thoại",
+    "ja": "電話",
+    "ko": "전화",
+    "topic": "home",
+    "example": "My phone is ringing.",
+    "exampleVi": "Điện thoại của tôi đang reo."
+  },
+  {
+    "word": "television",
+    "phonetic": "/ˈtelɪvɪʒən/",
+    "vi": "tivi",
+    "ja": "テレビ",
+    "ko": "텔레비전",
+    "topic": "home",
+    "example": "We watch television after dinner.",
+    "exampleVi": "Chúng tôi xem tivi sau bữa tối."
+  },
+  {
+    "word": "refrigerator",
+    "phonetic": "/rɪˈfrɪdʒəreɪtər/",
+    "vi": "tủ lạnh",
+    "ja": "冷蔵庫",
+    "ko": "냉장고",
+    "topic": "home",
+    "example": "The milk is in the refrigerator.",
+    "exampleVi": "Sữa ở trong tủ lạnh."
+  },
+  {
+    "word": "sink",
+    "phonetic": "/sɪŋk/",
+    "vi": "bồn rửa",
+    "ja": "シンク",
+    "ko": "싱크대",
+    "topic": "home",
+    "example": "He washed his hands in the sink.",
+    "exampleVi": "Cậu ấy rửa tay ở bồn rửa."
+  },
+  {
+    "word": "bathtub",
+    "phonetic": "/ˈbæθtʌb/",
+    "vi": "bồn tắm",
+    "ja": "浴槽",
+    "ko": "욕조",
+    "topic": "home",
+    "example": "The baby loves the bathtub.",
+    "exampleVi": "Em bé rất thích bồn tắm."
+  },
+  {
+    "word": "doctor",
+    "phonetic": "/ˈdɒktər/",
+    "vi": "bác sĩ",
+    "ja": "医者",
+    "ko": "의사",
+    "topic": "jobs",
+    "example": "The doctor helps sick people.",
+    "exampleVi": "Bác sĩ giúp đỡ người bệnh."
+  },
+  {
+    "word": "nurse",
+    "phonetic": "/nɜːrs/",
+    "vi": "y tá",
+    "ja": "看護師",
+    "ko": "간호사",
+    "topic": "jobs",
+    "example": "The nurse takes care of patients.",
+    "exampleVi": "Y tá chăm sóc bệnh nhân."
+  },
+  {
+    "word": "farmer",
+    "phonetic": "/ˈfɑːrmər/",
+    "vi": "nông dân",
+    "ja": "農家",
+    "ko": "농부",
+    "topic": "jobs",
+    "example": "The farmer grows rice in the field.",
+    "exampleVi": "Người nông dân trồng lúa trên cánh đồng."
+  },
+  {
+    "word": "police officer",
+    "phonetic": "/pəˈliːs ˈɒfɪsər/",
+    "vi": "cảnh sát",
+    "ja": "警察官",
+    "ko": "경찰관",
+    "topic": "jobs",
+    "example": "The police officer keeps us safe.",
+    "exampleVi": "Cảnh sát giữ an toàn cho chúng ta."
+  },
+  {
+    "word": "firefighter",
+    "phonetic": "/ˈfaɪərfaɪtər/",
+    "vi": "lính cứu hỏa",
+    "ja": "消防士",
+    "ko": "소방관",
+    "topic": "jobs",
+    "example": "The firefighter put out the fire.",
+    "exampleVi": "Lính cứu hỏa dập tắt đám cháy."
+  },
+  {
+    "word": "driver",
+    "phonetic": "/ˈdraɪvər/",
+    "vi": "tài xế",
+    "ja": "運転手",
+    "ko": "운전사",
+    "topic": "jobs",
+    "example": "The bus driver drives every morning.",
+    "exampleVi": "Tài xế xe buýt lái xe mỗi sáng."
+  },
+  {
+    "word": "chef",
+    "phonetic": "/ʃef/",
+    "vi": "đầu bếp",
+    "ja": "シェフ",
+    "ko": "요리사",
+    "topic": "jobs",
+    "example": "The chef cooks delicious food.",
+    "exampleVi": "Đầu bếp nấu những món ăn ngon."
+  },
+  {
+    "word": "artist",
+    "phonetic": "/ˈɑːrtɪst/",
+    "vi": "hoạ sĩ",
+    "ja": "芸術家",
+    "ko": "예술가",
+    "topic": "jobs",
+    "example": "The artist painted a beautiful picture.",
+    "exampleVi": "Hoạ sĩ vẽ một bức tranh đẹp."
+  },
+  {
+    "word": "singer",
+    "phonetic": "/ˈsɪŋər/",
+    "vi": "ca sĩ",
+    "ja": "歌手",
+    "ko": "가수",
+    "topic": "jobs",
+    "example": "The singer sang a happy song.",
+    "exampleVi": "Ca sĩ hát một bài hát vui vẻ."
+  },
+  {
+    "word": "dancer",
+    "phonetic": "/ˈdænsər/",
+    "vi": "vũ công",
+    "ja": "ダンサー",
+    "ko": "무용수",
+    "topic": "jobs",
+    "example": "The dancer moves so gracefully.",
+    "exampleVi": "Vũ công di chuyển thật uyển chuyển."
+  },
+  {
+    "word": "writer",
+    "phonetic": "/ˈraɪtər/",
+    "vi": "nhà văn",
+    "ja": "作家",
+    "ko": "작가",
+    "topic": "jobs",
+    "example": "The writer wrote a new story.",
+    "exampleVi": "Nhà văn viết một câu chuyện mới."
+  },
+  {
+    "word": "engineer",
+    "phonetic": "/ˌendʒɪˈnɪər/",
+    "vi": "kỹ sư",
+    "ja": "エンジニア",
+    "ko": "엔지니어",
+    "topic": "jobs",
+    "example": "The engineer built a strong bridge.",
+    "exampleVi": "Kỹ sư đã xây một cây cầu vững chắc."
+  },
+  {
+    "word": "scientist",
+    "phonetic": "/ˈsaɪəntɪst/",
+    "vi": "nhà khoa học",
+    "ja": "科学者",
+    "ko": "과학자",
+    "topic": "jobs",
+    "example": "The scientist studies the stars.",
+    "exampleVi": "Nhà khoa học nghiên cứu các vì sao."
+  },
+  {
+    "word": "pilot",
+    "phonetic": "/ˈpaɪlət/",
+    "vi": "phi công",
+    "ja": "パイロット",
+    "ko": "조종사",
+    "topic": "jobs",
+    "example": "The pilot flies the airplane.",
+    "exampleVi": "Phi công lái máy bay."
+  },
+  {
+    "word": "dentist",
+    "phonetic": "/ˈdentɪst/",
+    "vi": "nha sĩ",
+    "ja": "歯医者",
+    "ko": "치과의사",
+    "topic": "jobs",
+    "example": "The dentist checked my teeth.",
+    "exampleVi": "Nha sĩ đã kiểm tra răng của tôi."
+  },
+  {
+    "word": "vet",
+    "phonetic": "/vet/",
+    "vi": "bác sĩ thú y",
+    "ja": "獣医",
+    "ko": "수의사",
+    "topic": "jobs",
+    "example": "The vet took care of my dog.",
+    "exampleVi": "Bác sĩ thú y đã chăm sóc con chó của tôi."
+  },
+  {
+    "word": "waiter",
+    "phonetic": "/ˈweɪtər/",
+    "vi": "bồi bàn",
+    "ja": "ウェイター",
+    "ko": "웨이터",
+    "topic": "jobs",
+    "example": "The waiter brought us the menu.",
+    "exampleVi": "Bồi bàn mang thực đơn cho chúng tôi."
+  },
+  {
+    "word": "cashier",
+    "phonetic": "/kæˈʃɪər/",
+    "vi": "thu ngân",
+    "ja": "レジ係",
+    "ko": "계산원",
+    "topic": "jobs",
+    "example": "The cashier counted the money.",
+    "exampleVi": "Thu ngân đếm tiền."
+  },
+  {
+    "word": "athlete",
+    "phonetic": "/ˈæθliːt/",
+    "vi": "vận động viên",
+    "ja": "選手",
+    "ko": "운동선수",
+    "topic": "jobs",
+    "example": "The athlete runs very fast.",
+    "exampleVi": "Vận động viên chạy rất nhanh."
+  },
+  {
+    "word": "astronaut",
+    "phonetic": "/ˈæstrənɔːt/",
+    "vi": "phi hành gia",
+    "ja": "宇宙飛行士",
+    "ko": "우주비행사",
+    "topic": "jobs",
+    "example": "The astronaut flew into space.",
+    "exampleVi": "Phi hành gia bay vào vũ trụ."
+  },
+  {
+    "word": "today",
+    "phonetic": "/təˈdeɪ/",
+    "vi": "hôm nay",
+    "ja": "今日",
+    "ko": "오늘",
+    "topic": "time",
+    "example": "I feel happy today.",
+    "exampleVi": "Hôm nay tôi cảm thấy vui."
+  },
+  {
+    "word": "tomorrow",
+    "phonetic": "/təˈmɒroʊ/",
+    "vi": "ngày mai",
+    "ja": "明日",
+    "ko": "내일",
+    "topic": "time",
+    "example": "We will go to the zoo tomorrow.",
+    "exampleVi": "Ngày mai chúng tôi sẽ đi sở thú."
+  },
+  {
+    "word": "yesterday",
+    "phonetic": "/ˈjestərdeɪ/",
+    "vi": "hôm qua",
+    "ja": "昨日",
+    "ko": "어제",
+    "topic": "time",
+    "example": "It rained yesterday.",
+    "exampleVi": "Hôm qua trời đã mưa."
+  },
+  {
+    "word": "morning",
+    "phonetic": "/ˈmɔːrnɪŋ/",
+    "vi": "buổi sáng",
+    "ja": "朝",
+    "ko": "아침",
+    "topic": "time",
+    "example": "I drink milk every morning.",
+    "exampleVi": "Tôi uống sữa mỗi buổi sáng."
+  },
+  {
+    "word": "afternoon",
+    "phonetic": "/ˌæftərˈnuːn/",
+    "vi": "buổi chiều",
+    "ja": "午後",
+    "ko": "오후",
+    "topic": "time",
+    "example": "We play soccer in the afternoon.",
+    "exampleVi": "Chúng tôi chơi bóng đá vào buổi chiều."
+  },
+  {
+    "word": "evening",
+    "phonetic": "/ˈiːvnɪŋ/",
+    "vi": "buổi tối",
+    "ja": "夕方",
+    "ko": "저녁",
+    "topic": "time",
+    "example": "We eat dinner in the evening.",
+    "exampleVi": "Chúng tôi ăn tối vào buổi tối."
+  },
+  {
+    "word": "night",
+    "phonetic": "/naɪt/",
+    "vi": "ban đêm",
+    "ja": "夜",
+    "ko": "밤",
+    "topic": "time",
+    "example": "The stars shine at night.",
+    "exampleVi": "Các vì sao lấp lánh vào ban đêm."
+  },
+  {
+    "word": "week",
+    "phonetic": "/wiːk/",
+    "vi": "tuần",
+    "ja": "週",
+    "ko": "주",
+    "topic": "time",
+    "example": "I have school five days a week.",
+    "exampleVi": "Tôi đi học năm ngày một tuần."
+  },
+  {
+    "word": "month",
+    "phonetic": "/mʌnθ/",
+    "vi": "tháng",
+    "ja": "月",
+    "ko": "달",
+    "topic": "time",
+    "example": "My birthday is next month.",
+    "exampleVi": "Sinh nhật của tôi là tháng sau."
+  },
+  {
+    "word": "year",
+    "phonetic": "/jɪər/",
+    "vi": "năm",
+    "ja": "年",
+    "ko": "년",
+    "topic": "time",
+    "example": "I turn eight years old this year.",
+    "exampleVi": "Năm nay tôi tám tuổi."
+  },
+  {
+    "word": "hour",
+    "phonetic": "/ˈaʊər/",
+    "vi": "giờ",
+    "ja": "時間",
+    "ko": "시간",
+    "topic": "time",
+    "example": "The trip takes one hour.",
+    "exampleVi": "Chuyến đi mất một giờ."
+  },
+  {
+    "word": "minute",
+    "phonetic": "/ˈmɪnɪt/",
+    "vi": "phút",
+    "ja": "分",
+    "ko": "분",
+    "topic": "time",
+    "example": "Wait for me for one minute.",
+    "exampleVi": "Hãy đợi tôi một phút."
+  },
+  {
+    "word": "Monday",
+    "phonetic": "/ˈmʌndeɪ/",
+    "vi": "thứ Hai",
+    "ja": "月曜日",
+    "ko": "월요일",
+    "topic": "time",
+    "example": "School starts on Monday.",
+    "exampleVi": "Trường học bắt đầu vào thứ Hai."
+  },
+  {
+    "word": "Tuesday",
+    "phonetic": "/ˈtjuːzdeɪ/",
+    "vi": "thứ Ba",
+    "ja": "火曜日",
+    "ko": "화요일",
+    "topic": "time",
+    "example": "We have art class on Tuesday.",
+    "exampleVi": "Chúng tôi có tiết mỹ thuật vào thứ Ba."
+  },
+  {
+    "word": "Wednesday",
+    "phonetic": "/ˈwenzdeɪ/",
+    "vi": "thứ Tư",
+    "ja": "水曜日",
+    "ko": "수요일",
+    "topic": "time",
+    "example": "We visit grandma on Wednesday.",
+    "exampleVi": "Chúng tôi thăm bà vào thứ Tư."
+  },
+  {
+    "word": "Thursday",
+    "phonetic": "/ˈθɜːrzdeɪ/",
+    "vi": "thứ Năm",
+    "ja": "木曜日",
+    "ko": "목요일",
+    "topic": "time",
+    "example": "I have swimming lessons on Thursday.",
+    "exampleVi": "Tôi học bơi vào thứ Năm."
+  },
+  {
+    "word": "Friday",
+    "phonetic": "/ˈfraɪdeɪ/",
+    "vi": "thứ Sáu",
+    "ja": "金曜日",
+    "ko": "금요일",
+    "topic": "time",
+    "example": "We watch movies on Friday.",
+    "exampleVi": "Chúng tôi xem phim vào thứ Sáu."
+  },
+  {
+    "word": "Saturday",
+    "phonetic": "/ˈsætərdeɪ/",
+    "vi": "thứ Bảy",
+    "ja": "土曜日",
+    "ko": "토요일",
+    "topic": "time",
+    "example": "We go to the park on Saturday.",
+    "exampleVi": "Chúng tôi đi công viên vào thứ Bảy."
+  },
+  {
+    "word": "Sunday",
+    "phonetic": "/ˈsʌndeɪ/",
+    "vi": "chủ nhật",
+    "ja": "日曜日",
+    "ko": "일요일",
+    "topic": "time",
+    "example": "We rest on Sunday.",
+    "exampleVi": "Chúng tôi nghỉ ngơi vào Chủ nhật."
+  },
+  {
+    "word": "birthday",
+    "phonetic": "/ˈbɜːrθdeɪ/",
+    "vi": "sinh nhật",
+    "ja": "誕生日",
+    "ko": "생일",
+    "topic": "time",
+    "example": "Today is my birthday.",
+    "exampleVi": "Hôm nay là sinh nhật của tôi."
+  },
+  {
+    "word": "park",
+    "phonetic": "/pɑːrk/",
+    "vi": "công viên",
+    "ja": "公園",
+    "ko": "공원",
+    "topic": "places",
+    "example": "We play in the park.",
+    "exampleVi": "Chúng tôi chơi trong công viên."
+  },
+  {
+    "word": "zoo",
+    "phonetic": "/zuː/",
+    "vi": "sở thú",
+    "ja": "動物園",
+    "ko": "동물원",
+    "topic": "places",
+    "example": "We saw a lion at the zoo.",
+    "exampleVi": "Chúng tôi đã thấy một con sư tử ở sở thú."
+  },
+  {
+    "word": "hospital",
+    "phonetic": "/ˈhɒspɪtəl/",
+    "vi": "bệnh viện",
+    "ja": "病院",
+    "ko": "병원",
+    "topic": "places",
+    "example": "My mom works at the hospital.",
+    "exampleVi": "Mẹ tôi làm việc ở bệnh viện."
+  },
+  {
+    "word": "restaurant",
+    "phonetic": "/ˈrestrɒnt/",
+    "vi": "nhà hàng",
+    "ja": "レストラン",
+    "ko": "식당",
+    "topic": "places",
+    "example": "We ate dinner at a restaurant.",
+    "exampleVi": "Chúng tôi ăn tối tại một nhà hàng."
+  },
+  {
+    "word": "supermarket",
+    "phonetic": "/ˈsuːpərmɑːrkɪt/",
+    "vi": "siêu thị",
+    "ja": "スーパー",
+    "ko": "슈퍼마켓",
+    "topic": "places",
+    "example": "We buy food at the supermarket.",
+    "exampleVi": "Chúng tôi mua đồ ăn ở siêu thị."
+  },
+  {
+    "word": "market",
+    "phonetic": "/ˈmɑːrkɪt/",
+    "vi": "chợ",
+    "ja": "市場",
+    "ko": "시장",
+    "topic": "places",
+    "example": "Grandma buys vegetables at the market.",
+    "exampleVi": "Bà mua rau ở chợ."
+  },
+  {
+    "word": "beach",
+    "phonetic": "/biːtʃ/",
+    "vi": "bãi biển",
+    "ja": "ビーチ",
+    "ko": "해변",
+    "topic": "places",
+    "example": "We built sandcastles at the beach.",
+    "exampleVi": "Chúng tôi xây lâu đài cát ở bãi biển."
+  },
+  {
+    "word": "city",
+    "phonetic": "/ˈsɪti/",
+    "vi": "thành phố",
+    "ja": "都市",
+    "ko": "도시",
+    "topic": "places",
+    "example": "The city has many tall buildings.",
+    "exampleVi": "Thành phố có nhiều toà nhà cao tầng."
+  },
+  {
+    "word": "town",
+    "phonetic": "/taʊn/",
+    "vi": "thị trấn",
+    "ja": "町",
+    "ko": "소도시",
+    "topic": "places",
+    "example": "I live in a small town.",
+    "exampleVi": "Tôi sống ở một thị trấn nhỏ."
+  },
+  {
+    "word": "village",
+    "phonetic": "/ˈvɪlɪdʒ/",
+    "vi": "làng quê",
+    "ja": "村",
+    "ko": "마을",
+    "topic": "places",
+    "example": "My grandparents live in a village.",
+    "exampleVi": "Ông bà tôi sống ở một làng quê."
+  },
+  {
+    "word": "airport",
+    "phonetic": "/ˈeərpɔːrt/",
+    "vi": "sân bay",
+    "ja": "空港",
+    "ko": "공항",
+    "topic": "places",
+    "example": "We arrived early at the airport.",
+    "exampleVi": "Chúng tôi đến sân bay sớm."
+  },
+  {
+    "word": "station",
+    "phonetic": "/ˈsteɪʃən/",
+    "vi": "nhà ga",
+    "ja": "駅",
+    "ko": "역",
+    "topic": "places",
+    "example": "The train stopped at the station.",
+    "exampleVi": "Tàu hoả dừng ở nhà ga."
+  },
+  {
+    "word": "bridge",
+    "phonetic": "/brɪdʒ/",
+    "vi": "cây cầu",
+    "ja": "橋",
+    "ko": "다리",
+    "topic": "places",
+    "example": "We walked across the bridge.",
+    "exampleVi": "Chúng tôi đi bộ qua cây cầu."
+  },
+  {
+    "word": "street",
+    "phonetic": "/striːt/",
+    "vi": "đường phố",
+    "ja": "通り",
+    "ko": "거리",
+    "topic": "places",
+    "example": "Cars drive down the street.",
+    "exampleVi": "Xe cộ chạy trên đường phố."
+  },
+  {
+    "word": "farm",
+    "phonetic": "/fɑːrm/",
+    "vi": "nông trại",
+    "ja": "農場",
+    "ko": "농장",
+    "topic": "places",
+    "example": "Cows and pigs live on the farm.",
+    "exampleVi": "Bò và lợn sống trên nông trại."
+  },
+  {
+    "word": "church",
+    "phonetic": "/tʃɜːrtʃ/",
+    "vi": "nhà thờ",
+    "ja": "教会",
+    "ko": "교회",
+    "topic": "places",
+    "example": "They go to church on Sunday.",
+    "exampleVi": "Họ đi nhà thờ vào Chủ nhật."
+  },
+  {
+    "word": "museum",
+    "phonetic": "/mjuːˈziːəm/",
+    "vi": "bảo tàng",
+    "ja": "博物館",
+    "ko": "박물관",
+    "topic": "places",
+    "example": "We saw old paintings at the museum.",
+    "exampleVi": "Chúng tôi xem những bức tranh cổ ở bảo tàng."
+  },
+  {
+    "word": "hotel",
+    "phonetic": "/hoʊˈtel/",
+    "vi": "khách sạn",
+    "ja": "ホテル",
+    "ko": "호텔",
+    "topic": "places",
+    "example": "We stayed at a nice hotel.",
+    "exampleVi": "Chúng tôi đã ở tại một khách sạn đẹp."
+  },
+  {
+    "word": "playground",
+    "phonetic": "/ˈpleɪɡraʊnd/",
+    "vi": "sân chơi",
+    "ja": "遊び場",
+    "ko": "놀이터",
+    "topic": "places",
+    "example": "Kids are playing at the playground.",
+    "exampleVi": "Bọn trẻ đang chơi ở sân chơi."
+  },
+  {
+    "word": "bakery",
+    "phonetic": "/ˈbeɪkəri/",
+    "vi": "tiệm bánh",
+    "ja": "パン屋",
+    "ko": "빵집",
+    "topic": "places",
+    "example": "The bakery sells fresh bread.",
+    "exampleVi": "Tiệm bánh bán bánh mì tươi."
+  },
+  {
+    "word": "soccer",
+    "phonetic": "/ˈsɒkər/",
+    "vi": "bóng đá",
+    "ja": "サッカー",
+    "ko": "축구",
+    "topic": "hobbies",
+    "example": "He plays soccer after school.",
+    "exampleVi": "Cậu ấy chơi bóng đá sau giờ học."
+  },
+  {
+    "word": "basketball",
+    "phonetic": "/ˈbæskɪtbɔːl/",
+    "vi": "bóng rổ",
+    "ja": "バスケットボール",
+    "ko": "농구",
+    "topic": "hobbies",
+    "example": "We play basketball on weekends.",
+    "exampleVi": "Chúng tôi chơi bóng rổ vào cuối tuần."
+  },
+  {
+    "word": "tennis",
+    "phonetic": "/ˈtenɪs/",
+    "vi": "quần vợt",
+    "ja": "テニス",
+    "ko": "테니스",
+    "topic": "hobbies",
+    "example": "She learns to play tennis.",
+    "exampleVi": "Cô ấy học chơi quần vợt."
+  },
+  {
+    "word": "swimming",
+    "phonetic": "/ˈswɪmɪŋ/",
+    "vi": "bơi lội",
+    "ja": "水泳",
+    "ko": "수영",
+    "topic": "hobbies",
+    "example": "Swimming is my favorite hobby.",
+    "exampleVi": "Bơi lội là sở thích yêu thích của tôi."
+  },
+  {
+    "word": "running",
+    "phonetic": "/ˈrʌnɪŋ/",
+    "vi": "chạy bộ",
+    "ja": "ランニング",
+    "ko": "달리기",
+    "topic": "hobbies",
+    "example": "Running keeps me healthy.",
+    "exampleVi": "Chạy bộ giúp tôi khoẻ mạnh."
+  },
+  {
+    "word": "painting",
+    "phonetic": "/ˈpeɪntɪŋ/",
+    "vi": "hội hoạ",
+    "ja": "絵画",
+    "ko": "그림 그리기",
+    "topic": "hobbies",
+    "example": "Painting makes her happy.",
+    "exampleVi": "Hội hoạ khiến cô ấy vui vẻ."
+  },
+  {
+    "word": "drawing",
+    "phonetic": "/ˈdrɔːɪŋ/",
+    "vi": "vẽ tranh",
+    "ja": "描画",
+    "ko": "그림",
+    "topic": "hobbies",
+    "example": "He loves drawing animals.",
+    "exampleVi": "Cậu ấy thích vẽ tranh các loài vật."
+  },
+  {
+    "word": "singing",
+    "phonetic": "/ˈsɪŋɪŋ/",
+    "vi": "ca hát",
+    "ja": "歌うこと",
+    "ko": "노래하기",
+    "topic": "hobbies",
+    "example": "Singing is fun for the kids.",
+    "exampleVi": "Ca hát rất vui đối với bọn trẻ."
+  },
+  {
+    "word": "dancing",
+    "phonetic": "/ˈdænsɪŋ/",
+    "vi": "khiêu vũ",
+    "ja": "ダンス",
+    "ko": "춤추기",
+    "topic": "hobbies",
+    "example": "She takes dancing lessons.",
+    "exampleVi": "Cô ấy học các lớp khiêu vũ."
+  },
+  {
+    "word": "reading",
+    "phonetic": "/ˈriːdɪŋ/",
+    "vi": "đọc sách",
+    "ja": "読書",
+    "ko": "독서",
+    "topic": "hobbies",
+    "example": "Reading is good for the mind.",
+    "exampleVi": "Đọc sách tốt cho trí óc."
+  },
+  {
+    "word": "cooking",
+    "phonetic": "/ˈkʊkɪŋ/",
+    "vi": "nấu ăn",
+    "ja": "料理",
+    "ko": "요리",
+    "topic": "hobbies",
+    "example": "My mom enjoys cooking.",
+    "exampleVi": "Mẹ tôi thích nấu ăn."
+  },
+  {
+    "word": "camping",
+    "phonetic": "/ˈkæmpɪŋ/",
+    "vi": "cắm trại",
+    "ja": "キャンプ",
+    "ko": "캠핑",
+    "topic": "hobbies",
+    "example": "We went camping in the mountains.",
+    "exampleVi": "Chúng tôi đã đi cắm trại trên núi."
+  },
+  {
+    "word": "fishing",
+    "phonetic": "/ˈfɪʃɪŋ/",
+    "vi": "câu cá",
+    "ja": "釣り",
+    "ko": "낚시",
+    "topic": "hobbies",
+    "example": "My dad likes fishing on weekends.",
+    "exampleVi": "Bố tôi thích câu cá vào cuối tuần."
+  },
+  {
+    "word": "cycling",
+    "phonetic": "/ˈsaɪklɪŋ/",
+    "vi": "đạp xe",
+    "ja": "サイクリング",
+    "ko": "자전거 타기",
+    "topic": "hobbies",
+    "example": "Cycling is good exercise.",
+    "exampleVi": "Đạp xe là bài tập thể dục tốt."
+  },
+  {
+    "word": "skating",
+    "phonetic": "/ˈskeɪtɪŋ/",
+    "vi": "trượt băng",
+    "ja": "スケート",
+    "ko": "스케이트",
+    "topic": "hobbies",
+    "example": "She is learning skating.",
+    "exampleVi": "Cô bé đang học trượt băng."
+  },
+  {
+    "word": "skiing",
+    "phonetic": "/ˈskiːɪŋ/",
+    "vi": "trượt tuyết",
+    "ja": "スキー",
+    "ko": "스키",
+    "topic": "hobbies",
+    "example": "We went skiing in winter.",
+    "exampleVi": "Chúng tôi đã đi trượt tuyết vào mùa đông."
+  },
+  {
+    "word": "hiking",
+    "phonetic": "/ˈhaɪkɪŋ/",
+    "vi": "leo núi",
+    "ja": "ハイキング",
+    "ko": "하이킹",
+    "topic": "hobbies",
+    "example": "We enjoy hiking on weekends.",
+    "exampleVi": "Chúng tôi thích leo núi vào cuối tuần."
+  },
+  {
+    "word": "chess",
+    "phonetic": "/tʃes/",
+    "vi": "cờ vua",
+    "ja": "チェス",
+    "ko": "체스",
+    "topic": "hobbies",
+    "example": "He plays chess with his dad.",
+    "exampleVi": "Cậu ấy chơi cờ vua với bố."
+  },
+  {
+    "word": "puzzle",
+    "phonetic": "/ˈpʌzəl/",
+    "vi": "trò chơi ghép hình",
+    "ja": "パズル",
+    "ko": "퍼즐",
+    "topic": "hobbies",
+    "example": "She loves solving a puzzle.",
+    "exampleVi": "Cô bé rất thích chơi trò ghép hình."
+  },
+  {
+    "word": "video game",
+    "phonetic": "/ˈvɪdioʊ ɡeɪm/",
+    "vi": "trò chơi điện tử",
+    "ja": "テレビゲーム",
+    "ko": "비디오 게임",
+    "topic": "hobbies",
+    "example": "He plays a video game after homework.",
+    "exampleVi": "Cậu ấy chơi trò chơi điện tử sau khi làm bài tập."
+  },
+  {
+    "word": "circle",
+    "phonetic": "/ˈsɜːrkl/",
+    "vi": "hình tròn",
+    "ja": "円",
+    "ko": "원",
+    "topic": "shapes",
+    "example": "The clock is shaped like a circle.",
+    "exampleVi": "Đồng hồ có hình tròn."
+  },
+  {
+    "word": "square",
+    "phonetic": "/skweər/",
+    "vi": "hình vuông",
+    "ja": "正方形",
+    "ko": "정사각형",
+    "topic": "shapes",
+    "example": "He drew a square on paper.",
+    "exampleVi": "Cậu ấy vẽ một hình vuông trên giấy."
+  },
+  {
+    "word": "triangle",
+    "phonetic": "/ˈtraɪæŋɡl/",
+    "vi": "hình tam giác",
+    "ja": "三角形",
+    "ko": "삼각형",
+    "topic": "shapes",
+    "example": "A triangle has three sides.",
+    "exampleVi": "Hình tam giác có ba cạnh."
+  },
+  {
+    "word": "rectangle",
+    "phonetic": "/ˈrektæŋɡl/",
+    "vi": "hình chữ nhật",
+    "ja": "長方形",
+    "ko": "직사각형",
+    "topic": "shapes",
+    "example": "The door is shaped like a rectangle.",
+    "exampleVi": "Cánh cửa có hình chữ nhật."
+  },
+  {
+    "word": "oval",
+    "phonetic": "/ˈoʊvəl/",
+    "vi": "hình bầu dục",
+    "ja": "楕円形",
+    "ko": "타원형",
+    "topic": "shapes",
+    "example": "The mirror is oval shaped.",
+    "exampleVi": "Chiếc gương có hình bầu dục."
+  },
+  {
+    "word": "diamond",
+    "phonetic": "/ˈdaɪəmənd/",
+    "vi": "hình thoi",
+    "ja": "ひし形",
+    "ko": "마름모",
+    "topic": "shapes",
+    "example": "The kite looks like a diamond.",
+    "exampleVi": "Con diều trông giống hình thoi."
+  },
+  {
+    "word": "cube",
+    "phonetic": "/kjuːb/",
+    "vi": "hình lập phương",
+    "ja": "立方体",
+    "ko": "정육면체",
+    "topic": "shapes",
+    "example": "The box is shaped like a cube.",
+    "exampleVi": "Cái hộp có hình lập phương."
+  },
+  {
+    "word": "cone",
+    "phonetic": "/koʊn/",
+    "vi": "hình nón",
+    "ja": "円錐",
+    "ko": "원뿔",
+    "topic": "shapes",
+    "example": "The ice cream is in a cone.",
+    "exampleVi": "Kem được đựng trong một chiếc ốc quế hình nón."
+  },
+  {
+    "word": "line",
+    "phonetic": "/laɪn/",
+    "vi": "đường thẳng",
+    "ja": "線",
+    "ko": "선",
+    "topic": "shapes",
+    "example": "Draw a straight line here.",
+    "exampleVi": "Hãy vẽ một đường thẳng ở đây."
+  },
+  {
+    "word": "dot",
+    "phonetic": "/dɒt/",
+    "vi": "chấm",
+    "ja": "点",
+    "ko": "점",
+    "topic": "shapes",
+    "example": "She drew a small dot.",
+    "exampleVi": "Cô bé vẽ một chấm nhỏ."
+  },
+  {
+    "word": "hello",
+    "phonetic": "/həˈloʊ/",
+    "vi": "xin chào",
+    "ja": "こんにちは",
+    "ko": "안녕하세요",
+    "topic": "greetings",
+    "example": "I say hello to my friends.",
+    "exampleVi": "Tôi chào xin chào bạn bè của mình."
+  },
+  {
+    "word": "goodbye",
+    "phonetic": "/ˌɡʊdˈbaɪ/",
+    "vi": "tạm biệt",
+    "ja": "さようなら",
+    "ko": "안녕히 가세요",
+    "topic": "greetings",
+    "example": "We waved and said goodbye.",
+    "exampleVi": "Chúng tôi vẫy tay và nói tạm biệt."
+  },
+  {
+    "word": "please",
+    "phonetic": "/pliːz/",
+    "vi": "làm ơn",
+    "ja": "お願いします",
+    "ko": "부탁해요",
+    "topic": "greetings",
+    "example": "Please pass me the salt.",
+    "exampleVi": "Làm ơn đưa tôi lọ muối."
+  },
+  {
+    "word": "sorry",
+    "phonetic": "/ˈsɒri/",
+    "vi": "xin lỗi",
+    "ja": "ごめんなさい",
+    "ko": "미안해요",
+    "topic": "greetings",
+    "example": "I said sorry for being late.",
+    "exampleVi": "Tôi đã xin lỗi vì đến muộn."
+  },
+  {
+    "word": "yes",
+    "phonetic": "/jes/",
+    "vi": "có, vâng",
+    "ja": "はい",
+    "ko": "네",
+    "topic": "greetings",
+    "example": "Yes, I would love to come.",
+    "exampleVi": "Có, tôi rất muốn đến."
+  },
+  {
+    "word": "no",
+    "phonetic": "/noʊ/",
+    "vi": "không",
+    "ja": "いいえ",
+    "ko": "아니요",
+    "topic": "greetings",
+    "example": "No, thank you, I'm full.",
+    "exampleVi": "Không, cảm ơn, tôi no rồi."
+  },
+  {
+    "word": "welcome",
+    "phonetic": "/ˈwelkəm/",
+    "vi": "chào mừng",
+    "ja": "ようこそ",
+    "ko": "환영해요",
+    "topic": "greetings",
+    "example": "Welcome to our new school!",
+    "exampleVi": "Chào mừng đến với trường mới của chúng ta!"
+  },
+  {
+    "word": "congratulations",
+    "phonetic": "/kənˌɡrætʃəˈleɪʃənz/",
+    "vi": "chúc mừng",
+    "ja": "おめでとう",
+    "ko": "축하해요",
+    "topic": "greetings",
+    "example": "Congratulations on your new job!",
+    "exampleVi": "Chúc mừng bạn với công việc mới!"
+  },
+  {
+    "word": "computer",
+    "phonetic": "/kəmˈpjuːtər/",
+    "vi": "máy tính",
+    "ja": "コンピューター",
+    "ko": "컴퓨터",
+    "topic": "technology",
+    "example": "I use a computer for homework.",
+    "exampleVi": "Tôi dùng máy tính để làm bài tập."
+  },
+  {
+    "word": "tablet",
+    "phonetic": "/ˈtæblɪt/",
+    "vi": "máy tính bảng",
+    "ja": "タブレット",
+    "ko": "태블릿",
+    "topic": "technology",
+    "example": "She draws on her tablet.",
+    "exampleVi": "Cô bé vẽ trên máy tính bảng."
+  },
+  {
+    "word": "camera",
+    "phonetic": "/ˈkæmərə/",
+    "vi": "máy ảnh",
+    "ja": "カメラ",
+    "ko": "카메라",
+    "topic": "technology",
+    "example": "He took a photo with his camera.",
+    "exampleVi": "Cậu ấy chụp ảnh bằng máy ảnh."
+  },
+  {
+    "word": "internet",
+    "phonetic": "/ˈɪntərnet/",
+    "vi": "mạng internet",
+    "ja": "インターネット",
+    "ko": "인터넷",
+    "topic": "technology",
+    "example": "We learn new things on the internet.",
+    "exampleVi": "Chúng tôi học những điều mới trên mạng internet."
+  },
+  {
+    "word": "screen",
+    "phonetic": "/skriːn/",
+    "vi": "màn hình",
+    "ja": "画面",
+    "ko": "화면",
+    "topic": "technology",
+    "example": "The screen is too bright.",
+    "exampleVi": "Màn hình quá sáng."
+  },
+  {
+    "word": "keyboard",
+    "phonetic": "/ˈkiːbɔːrd/",
+    "vi": "bàn phím",
+    "ja": "キーボード",
+    "ko": "키보드",
+    "topic": "technology",
+    "example": "She types fast on the keyboard.",
+    "exampleVi": "Cô ấy gõ nhanh trên bàn phím."
+  },
+  {
+    "word": "headphones",
+    "phonetic": "/ˈhedfoʊnz/",
+    "vi": "tai nghe",
+    "ja": "ヘッドホン",
+    "ko": "헤드폰",
+    "topic": "technology",
+    "example": "He listens to music with headphones.",
+    "exampleVi": "Cậu ấy nghe nhạc bằng tai nghe."
+  },
+  {
+    "word": "speaker",
+    "phonetic": "/ˈspiːkər/",
+    "vi": "loa",
+    "ja": "スピーカー",
+    "ko": "스피커",
+    "topic": "technology",
+    "example": "The speaker is very loud.",
+    "exampleVi": "Chiếc loa rất to."
+  },
+  {
+    "word": "battery",
+    "phonetic": "/ˈbætəri/",
+    "vi": "pin",
+    "ja": "バッテリー",
+    "ko": "배터리",
+    "topic": "technology",
+    "example": "The battery is almost dead.",
+    "exampleVi": "Pin gần hết rồi."
+  }
+]

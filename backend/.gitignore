@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+storage/
+# Prisma Client output — regenerate with `npm run prisma:generate` (see README).
+src/generated/

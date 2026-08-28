@@ -1,0 +1,1083 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  PARENT
+  ADMIN
+}
+
+/// vi/ko/ja = "tiếng mẹ đẻ" thật — vừa đổi chrome UI vừa đổi ngôn ngữ giải
+/// nghĩa nội dung học trong mọi game (xem catalog.service.ts's pickLang()).
+/// en giữ lại đúng hành vi CŨ (chỉ đổi chrome UI, nghĩa từ vẫn tiếng Việt) —
+/// không có khái niệm "dạy tiếng Anh cho người nói tiếng Anh" nên en không
+/// đổi nội dung, tránh phá trải nghiệm của user "en" hiện tại.
+enum Language {
+  vi
+  en
+  ja
+  ko
+}
+
+/// Tài khoản phụ huynh — người duy nhất có thể đăng nhập vào app.
+/// role = ADMIN mở thêm quyền vào trang /admin (quản lý user/bài học/pet);
+/// tài khoản admin vẫn là 1 Parent bình thường, chỉ khác quyền.
+model Parent {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  phone        String?
+  /// NULL cho tài khoản đăng nhập thuần qua social (Google/Facebook/Apple)
+  /// chưa từng đặt mật khẩu — xem loginParent() trong auth.service.ts, chặn
+  /// đăng nhập bằng email/mật khẩu rõ ràng thay vì lỗi argon2.verify() mơ hồ.
+  passwordHash String?
+  /// 3 cột định danh social login (xem lib/socialProviders.ts + auth.service.ts's
+  /// loginWithSocial()) — 1 Parent có thể có nhiều social ID cùng lúc nếu đăng
+  /// nhập cả email lẫn 1-2 bên social đều trỏ về cùng địa chỉ email đó (tự
+  /// động "gộp" vào tài khoản có sẵn theo email khi lần đầu liên kết).
+  googleId     String?   @unique
+  facebookId   String?   @unique
+  appleId      String?   @unique
+  role         Role      @default(PARENT)
+  /// Ngôn ngữ mẹ đẻ đã chọn — đổi cả chrome UI lẫn ngôn ngữ giải nghĩa nội
+  /// dung học (xem catalog.service.ts's pickLang()), trừ "en" (xem enum ở
+  /// trên). NULL = chưa từng chọn — dùng để quyết định có hiện màn hình
+  /// chọn ngôn ngữ lần đầu vào app hay không (xem LanguagePicker.tsx/App.tsx);
+  /// tài khoản tạo trước khi có tính năng này giữ nguyên giá trị cũ, không
+  /// bị đổi về NULL, nên không bị hiện lại màn chọn ngôn ngữ ngoài ý muốn.
+  language     Language?
+  /// Bật lên khi bấm "Dùng thử 7 ngày" ở trang Premium (app chưa tích hợp
+  /// cổng thanh toán thật nên đây là cờ demo, không có ngày hết hạn) — mở
+  /// khoá giới hạn "Nội dung của tôi" (xem services/premium.service.ts).
+  isPremium    Boolean   @default(false)
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  children            Child[]
+  ownLessons          Lesson[]
+  ownStories          Story[]
+  ownMiniGames        MiniGameTopic[]
+  ownWordCatches      WordCatchTopic[]
+  ownShopTopics       ShopTopic[]
+  ownHomeTopics       HomeTopic[]
+  ownRpgTopics        RpgTopic[]
+  ownWordTrainTopics  WordTrainTopic[]
+  ownDetectiveCases   DetectiveCase[]
+  ownEchoParrotTopics EchoParrotTopic[]
+  ownChatBuddyTopics  ChatBuddyTopic[]
+
+  @@map("parents")
+}
+
+/// Hồ sơ trẻ, thuộc về 1 Parent. displayName là tên gọi ở nhà,
+/// KHÔNG phải tên thật — birthYear chỉ lưu năm sinh, không lưu ngày
+/// sinh đầy đủ, để hạn chế dữ liệu cá nhân nhạy cảm của trẻ.
+model Child {
+  id          String   @id @default(cuid())
+  parentId    String
+  displayName String
+  avatarId    String
+  birthYear   Int?
+  createdAt   DateTime @default(now())
+
+  parent             Parent               @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  progress           Progress?
+  vocab              ChildVocab[]
+  items              ChildItem[]
+  petStats           PetStats[]
+  dailyQuestProgress DailyQuestProgress[]
+  fightRoomsHosted   FightRoom[]          @relation("FightRoomHost")
+  fightRoomsWon      FightRoom[]          @relation("FightRoomWinner")
+  fightParticipation FightParticipant[]
+  savedWords         SavedWord[]
+  notifications      Notification[]
+  battlePassProgress ChildBattlePassProgress[]
+
+  @@index([parentId])
+  @@map("children")
+}
+
+enum NotificationKind {
+  lesson
+  petUnlock
+  checkin
+  quest
+}
+
+/// Nguồn cho Notifications.tsx — mỗi dòng là 1 việc THẬT xảy ra (không phải
+/// dữ liệu mẫu tĩnh như trước): pet mới mở khoá (purchasePet/fusePets/
+/// claimMonthlyLegendaryPets), điểm danh (checkIn), nhiệm vụ hoàn thành
+/// (claimQuest) đều do chính server tạo ngay tại thời điểm xảy ra — chỉ
+/// riêng `lesson` (xong bài học) là do client báo lên (xem
+/// notification.service.ts's createLessonNotification()), vì kết quả bài
+/// học vốn đã được tin theo client trong toàn app (progress sync
+/// offline-first, xem mergeProgress() — không có bảng "lịch sử làm bài" nào
+/// ở server để tự xác nhận). `readAt` null = chưa đọc; lưu ở server (không
+/// phải localStorage) nên đã đọc thì đã đọc thật, không bị "hiện lại chưa
+/// đọc" mỗi lần mở app như bug cũ.
+model Notification {
+  id        String           @id @default(cuid())
+  childId   String
+  kind      NotificationKind
+  title     String
+  body      String
+  createdAt DateTime         @default(now())
+  readAt    DateTime?
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId, createdAt])
+  @@map("notifications")
+}
+
+/// Tiến độ học, quan hệ 1-1 với Child. localVersion dùng để resolve
+/// conflict khi client (offline-first) sync progress lên server.
+model Progress {
+  id              String    @id @default(cuid())
+  childId         String    @unique
+  coins           Int       @default(0)
+  gems            Int       @default(0)
+  unlockedPets    Json      @default("[]")
+  /// Số bản pet đang sở hữu theo key, ví dụ { "ember": 3, "buddy": 5 }.
+  /// unlockedPets vẫn giữ danh sách loài duy nhất để tương thích client cũ.
+  petCopies       Json      @default("{}")
+  /// Trứng dự phòng chưa được nuôi, tách khỏi pet chính có PetStats riêng.
+  petEggs         Json      @default("{}")
+  unlockedWorlds  Json      @default("[]")
+  /// Pet đang chọn làm bạn đồng hành — hiển thị ở Home, PetCare mặc định
+  /// chọn đúng con này. null nghĩa là chưa chọn (client tự fallback về
+  /// unlockedPets[0]).
+  activePetId     String?
+  streakDays      Int       @default(0)
+  lastActiveDate  DateTime?
+  /// Ngày cuối bấm "Điểm danh" nhận thưởng — TÁCH RIÊNG khỏi lastActiveDate.
+  /// lastActiveDate được cập nhật bởi bất kỳ lần sync progress nào (học bài,
+  /// mua đồ...), nên nếu dùng chung 1 field thì chơi 1 bài học trước sẽ làm
+  /// nút "Điểm danh" hiện "đã nhận" dù trẻ chưa bấm — tách field để việc
+  /// nhận thưởng điểm danh độc lập với các hoạt động khác trong ngày.
+  lastCheckinDate DateTime?
+  /// Điểm xếp hạng "Đường đua Hạng" — chỉ đổi khi thắng/thua 1 trận Đấu
+  /// trường (xem services/fight/rank.ts), KHÔNG liên quan gì đến coins/gems.
+  /// Không zero-sum như Elo thật: thắng cộng nhiều hơn thua trừ, để không
+  /// làm trẻ nản — xem RANK_WIN/RANK_LOSS trong rank.ts.
+  rating          Int       @default(0)
+  /// Tổng XP tích luỹ từ Word RPG (xem services/rpg.service.ts's getLevel())
+  /// — tách hẳn khỏi coins/gems, chỉ dùng để tính Level hiển thị trong game.
+  /// Cộng dồn mãi mãi (không reset theo lượt chơi/theo dungeon) — mỗi lần hạ
+  /// gục quái đều cộng thẳng vào đây ngay lúc đó (services/rpg.service.ts's
+  /// defeatMonster()), không đợi hết dungeon mới cộng, nên 1 lượt chơi thua
+  /// giữa chừng vẫn giữ nguyên XP đã kiếm được tới lúc đó.
+  rpgXp           Int       @default(0)
+  /// Tháng gần nhất đã nhận thưởng "+2 pet Legendary/tháng" của Premium (xem
+  /// services/progress.service.ts's claimMonthlyLegendaryPets()) — cùng kiểu
+  /// "action rõ ràng, idempotent theo field riêng" như lastCheckinDate ở
+  /// trên, chỉ khác đơn vị idempotency là THÁNG thay vì NGÀY.
+  lastLegendaryGrantAt DateTime?
+  /// "Phối pet" (fusion) — mảnh vụn theo bậc rarity, sinh ra khi 1 lần phối
+  /// ra trúng con pet ĐÃ sở hữu rồi (không thể có 2 pet cùng key trong
+  /// `unlockedPets`, nên quy đổi thành 1 mảnh của ĐÚNG bậc vừa ra thay vì bỏ
+  /// phí) — xem services/petFusion.service.ts. Không có cột riêng cho
+  /// Legendary vì không có công thức nào tiêu pet Legendary để phối lên nữa.
+  commonShards    Int       @default(0)
+  rareShards      Int       @default(0)
+  epicShards      Int       @default(0)
+  /// Settings.tsx's "Cho phép bảng xếp hạng" toggle — true excludes this
+  /// child from the global leaderboard entirely (leaderboard.service.ts's
+  /// getLeaderboard()/getMyRank()), both showing their name to others AND
+  /// counting toward everyone else's rank position. Default false (opted IN)
+  /// to match the leaderboard's pre-existing behavior for every account
+  /// created before this setting existed.
+  hiddenFromRank  Boolean   @default(false)
+  localVersion    Int       @default(0)
+  updatedAt       DateTime  @updatedAt
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId])
+  @@map("progress")
+}
+
+/// Từ vựng theo từng world.
+model Vocab {
+  id        String  @id @default(cuid())
+  word      String
+  worldId   String
+  meaningVi String
+  /// Nghĩa tiếng Nhật/Hàn — tuỳ chọn, rỗng thì pickLang() tự rơi về meaningVi
+  /// (xem catalog.service.ts). Xem enum Language ở trên về ý nghĩa 4 giá trị.
+  meaningJa String?
+  meaningKo String?
+
+  learnedBy ChildVocab[]
+
+  @@index([worldId])
+  @@map("vocab")
+}
+
+/// Bảng trung gian nhiều-nhiều giữa Child và Vocab.
+model ChildVocab {
+  childId       String
+  vocabId       String
+  learnedAt     DateTime @default(now())
+  timesReviewed Int      @default(0)
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+  vocab Vocab @relation(fields: [vocabId], references: [id], onDelete: Cascade)
+
+  @@id([childId, vocabId])
+  @@index([childId])
+  @@index([vocabId])
+  @@map("child_vocab")
+}
+
+/// 1 từ trẻ đã "lưu" từ màn Từ điển (frontend/public/dictionary/words.json —
+/// từ điển lớn bundle sẵn trong app để tra cứu offline, KHÔNG lưu ở đây, chỉ
+/// lưu word key). Khác ChildVocab (vốn dành cho "đã học qua bài học", không
+/// ai dùng tới) — SavedWord là "bé tự bấm lưu vì thích/thấy khó", nghĩa/phiên
+/// âm được frontend tự tra lại từ file từ điển bundle theo `word`, không lưu
+/// lặp lại ở đây. Nguồn cho "Từ đã lưu" ở Topics.tsx/SrsCard.tsx và gợi ý ở
+/// MyContent.tsx.
+model SavedWord {
+  id        String   @id @default(cuid())
+  childId   String
+  word      String
+  createdAt DateTime @default(now())
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, word])
+  @@index([childId])
+  @@map("saved_words")
+}
+
+enum Rarity {
+  Common
+  Rare
+  Epic
+  Legendary
+}
+
+enum Currency {
+  coin
+  gem
+}
+
+/// Danh mục pet có thể mở khoá trong Shop — quản lý ở trang Admin.
+/// `key` là slug ổn định dùng làm tên file ảnh (/pets/<key>.png) và giá trị
+/// lưu trong Progress.unlockedPets, nên không đổi sau khi tạo.
+model Pet {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  name      String
+  species   String
+  rarity    Rarity   @default(Common)
+  price     Int      @default(0)
+  currency  Currency @default(coin)
+  imagePath String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("pets")
+}
+
+/// Một khu vực trên World Map (Forest, Town, ...) — quản lý ở trang Admin.
+model World {
+  id            String   @id @default(cuid())
+  key           String   @unique
+  name          String
+  topic         String
+  colorTheme    String
+  requiredStars Int      @default(0)
+  order         Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  lessons Lesson[]
+
+  @@map("worlds")
+}
+
+/// Một bài học (gồm nhiều câu hỏi trắc nghiệm) thuộc 1 World.
+/// parentId = null → bài học hệ thống (admin tạo, ai cũng thấy). parentId
+/// khớp 1 Parent → bài học phụ huynh đó tự soạn cho con mình, CHỈ con của
+/// chính họ thấy được (xem catalog.service.ts's viewerId filter) — admin
+/// vẫn quản lý/xoá được vì /admin/* routes không truyền ownerId filter.
+model Lesson {
+  id        String   @id @default(cuid())
+  worldId   String
+  parentId  String?
+  title     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  world      World       @relation(fields: [worldId], references: [id], onDelete: Cascade)
+  parent     Parent?     @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  questions  Question[]
+  fightRooms FightRoom[]
+
+  @@index([worldId])
+  @@index([parentId])
+  @@map("lessons")
+}
+
+/// Một câu hỏi trắc nghiệm trong Lesson — `options` gồm cả đáp án đúng.
+model Question {
+  id        String   @id @default(cuid())
+  lessonId  String
+  prompt    String
+  hint      String?
+  answer    String
+  options   Json
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([lessonId])
+  @@map("questions")
+}
+
+enum ItemCategory {
+  food
+  toy
+  accessory
+  special
+}
+
+/// Danh mục vật phẩm trong Kho đồ (Bag) — quản lý ở trang Admin, giống Pet.
+/// `effects` là mảng { stat, delta }: stat "hunger"/"happiness"/"health" áp
+/// vào PetStats của pet đang active khi dùng; stat "coins" cộng thẳng vào
+/// Progress.coins. Đồ phụ kiện (accessory) và vật phẩm đặc biệt (special)
+/// có thể để effects rỗng — dùng thuần cho vui / trang trí.
+model Item {
+  id          String       @id @default(cuid())
+  key         String       @unique
+  name        String
+  category    ItemCategory
+  color       String
+  radius      String       @default("12px")
+  description String
+  effects     Json         @default("[]")
+  price       Int          @default(0)
+  currency    Currency     @default(coin)
+  imagePath   String       @default("")
+  /// Số lượng cấp sẵn cho MỖI hồ sơ trẻ mới tạo (xem child.service.ts).
+  defaultQty  Int          @default(0)
+  order       Int          @default(0)
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  ownedBy ChildItem[]
+
+  @@map("items")
+}
+
+/// Số lượng 1 vật phẩm mà 1 trẻ đang sở hữu.
+model ChildItem {
+  childId  String
+  itemId   String
+  quantity Int    @default(0)
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+  item  Item  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([childId, itemId])
+  @@index([childId])
+  @@map("child_items")
+}
+
+/// Chỉ số chăm sóc của 1 pet, theo từng trẻ — 1 trẻ nuôi nhiều pet thì mỗi
+/// pet có chỉ số riêng (petKey là Pet.key, không phải FK cứng — giống cách
+/// Vocab.worldId không phải FK, để admin xoá/đổi pet không kẹt migration).
+model PetStats {
+  childId    String
+  petKey     String
+  hunger     Int      @default(70)
+  happiness  Int      @default(70)
+  health     Int      @default(70)
+  experience Int      @default(0)
+  level      Int      @default(1)
+  updatedAt  DateTime @updatedAt
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@id([childId, petKey])
+  @@index([childId])
+  @@map("pet_stats")
+}
+
+enum QuestTrackKind {
+  lessons
+  miniGame
+  petCare
+}
+
+/// Nhiệm vụ hằng ngày ("Nhiệm vụ hôm nay") — quản lý ở trang Admin, giống
+/// Pet/Item. trackKind quyết định hành động thật nào tự động cộng progress
+/// (xem bumpQuestProgress() trong quest.service.ts) — không có cách nào để
+/// trẻ tự "gian lận" tăng progress từ client vì tiến độ chỉ tăng khi server
+/// tự xác nhận hành động đã xảy ra (học xong bài, thắng mini-game, chăm pet).
+model DailyQuest {
+  id          String         @id @default(cuid())
+  key         String         @unique
+  title       String
+  trackKind   QuestTrackKind
+  target      Int
+  rewardCoins Int
+  color       String
+  order       Int            @default(0)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  progress DailyQuestProgress[]
+
+  @@map("daily_quests")
+}
+
+/// Tiến độ 1 nhiệm vụ của 1 trẻ cho 1 ngày cụ thể (`date` = nửa đêm giờ
+/// server, cùng cách tính "hôm nay" với Progress.lastCheckinDate).
+model DailyQuestProgress {
+  childId  String
+  questId  String
+  date     DateTime
+  progress Int      @default(0)
+  claimed  Boolean  @default(false)
+
+  child Child      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  quest DailyQuest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@id([childId, questId, date])
+  @@index([childId])
+  @@map("daily_quest_progress")
+}
+
+/// Một truyện song ngữ (Đọc truyện) — quản lý ở trang Admin, giống World.
+/// Trang "Đọc truyện" giờ hiện danh sách Story trước, chọn xong mới vào đọc
+/// từng StoryPage — thay vì 1 truyện cứng duy nhất như trước.
+/// parentId: xem ghi chú ở model Lesson — cùng quy tắc sở hữu/hiển thị.
+model Story {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  parentId   String?
+  title      String
+  topic      String
+  colorTheme String
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  parent Parent?     @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  pages  StoryPage[]
+
+  @@index([parentId])
+  @@map("stories")
+}
+
+/// Một trang trong Story. `words` là mảng [{en, vi, ja?, ko?, color}] — từ
+/// vựng mới giới thiệu ở trang này, giống hình khối "Từ mới trang này" trên
+/// UI; ja/ko tuỳ chọn, rỗng thì pickLang() rơi về vi (xem catalog.service.ts).
+/// img1/img2 là Pet.key có sẵn (tái dùng bộ ảnh pet làm nhân vật minh hoạ,
+/// giống cách PetCollection/Rank/MiniGame đã tái dùng chung bộ ảnh này).
+model StoryPage {
+  id      String  @id @default(cuid())
+  storyId String
+  en      String
+  vi      String
+  ja      String?
+  ko      String?
+  img1    String
+  img2    String
+  label   String
+  sceneBg String
+  ground  String
+  words   Json    @default("[]")
+  order   Int     @default(0)
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+
+  @@index([storyId])
+  @@map("story_pages")
+}
+
+/// Một chủ đề Memory Match (ghép từ với hình) — quản lý ở trang Admin.
+/// Trang Memory Match giờ hiện danh sách chủ đề trước, chọn xong mới chơi.
+/// parentId: xem ghi chú ở model Lesson — cùng quy tắc sở hữu/hiển thị.
+model MiniGameTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  color     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent?        @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  words  MiniGameWord[]
+
+  @@index([parentId])
+  @@map("minigame_topics")
+}
+
+/// Một cặp từ trong 1 chủ đề Memory Match. `img` là Pet.key (chủ đề Animals)
+/// HOẶC 1 emoji (chủ đề khác không có sẵn ảnh minh hoạ riêng) — frontend
+/// phân biệt 2 trường hợp bằng cách thử match với danh sách Pet.key.
+model MiniGameWord {
+  id      String  @id @default(cuid())
+  topicId String
+  en      String
+  vi      String
+  /// Tuỳ chọn — rỗng thì pickLang() rơi về vi (xem catalog.service.ts).
+  ja      String?
+  ko      String?
+  img     String
+  order   Int     @default(0)
+
+  topic MiniGameTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("minigame_words")
+}
+
+/// Một chủ đề Word Catch (bắt từ đúng nghĩa trước khi rơi) — quản lý ở
+/// trang Admin. Trang Word Catch giờ hiện danh sách chủ đề trước, chọn
+/// xong mới chơi.
+/// parentId: xem ghi chú ở model Lesson — cùng quy tắc sở hữu/hiển thị.
+model WordCatchTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent?          @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  rounds WordCatchRound[]
+
+  @@index([parentId])
+  @@map("wordcatch_topics")
+}
+
+/// Một lượt trong 1 chủ đề Word Catch — `options` gồm cả đáp án đúng,
+/// giống Question.options.
+model WordCatchRound {
+  id      String  @id @default(cuid())
+  topicId String
+  vi      String
+  /// Tuỳ chọn — rỗng thì pickLang() rơi về vi (xem catalog.service.ts).
+  ja      String?
+  ko      String?
+  answer  String
+  options Json
+  order   Int     @default(0)
+
+  topic WordCatchTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("wordcatch_rounds")
+}
+
+/// "English Shop" — nhiệm vụ mua sắm: bé đọc 1 danh sách cần mua bằng tiếng
+/// Anh, chọn đúng món (+ đúng số lượng) trên kệ hàng có cả món gây nhiễu,
+/// rồi thấy tổng tiền. Cùng cấu trúc topic hệ thống/tự tạo như
+/// MiniGameTopic/WordCatchTopic ở trên.
+model ShopTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  color     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent?     @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  rounds ShopRound[]
+
+  @@index([parentId])
+  @@map("shop_topics")
+}
+
+/// 1 lượt mua sắm. `shelf` là TOÀN BỘ kệ hàng hiện ra (JSON mảng
+/// {en, vi, ja?, ko?, emoji, price}) — gồm cả món cần mua lẫn món/số lượng dư
+/// ra để gây nhiễu (ja/ko tuỳ chọn, rỗng thì pickLang() rơi về vi — xem
+/// catalog.service.ts); `required` là {en, qty}[] — món nào + bao nhiêu cái
+/// thực sự cần bỏ vào giỏ để qua lượt, khớp `shelf` bằng khoá `en` (tiếng Anh
+/// luôn cố định) nên không cần dịch. Validate ở app layer (không phải DB)
+/// rằng shelf có đủ số lượng mỗi món required cần — xem schemas/admin.schema.ts.
+model ShopRound {
+  id            String  @id @default(cuid())
+  topicId       String
+  instructionEn String
+  instructionVi String
+  instructionJa String?
+  instructionKo String?
+  shelf         Json
+  required      Json
+  order         Int     @default(0)
+
+  topic ShopTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("shop_rounds")
+}
+
+/// "English Home" — nhiệm vụ đặt đồ vật đúng chỗ: bé đọc 1 câu lệnh tiếng
+/// Anh kiểu "Put the red ball under the table." (màu + danh từ + giới từ +
+/// nội thất), chọn đúng đồ vật (trong vài lựa chọn màu/danh từ gây nhiễu)
+/// rồi chọn đúng vị trí (trong vài lựa chọn giới từ+nội thất gây nhiễu).
+/// Cùng cấu trúc topic hệ thống/tự tạo như ShopTopic/MiniGameTopic ở trên —
+/// mỗi topic là 1 căn phòng (Bedroom, Kitchen, Bathroom, Garden...).
+model HomeTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  color     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent?     @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  rounds HomeRound[]
+
+  @@index([parentId])
+  @@map("home_topics")
+}
+
+/// 1 lượt đặt đồ. `objects` là JSON mảng {key, en, emoji, color}[] — các lựa
+/// chọn đồ vật (đúng + gây nhiễu khác màu/khác danh từ); `correctObjectKey`
+/// trỏ vào 1 phần tử đó. `zones` là JSON mảng {key, label, emoji}[] — các vị
+/// trí có thể đặt (đúng + gây nhiễu khác giới từ/nội thất);
+/// `correctZoneKey` trỏ vào 1 phần tử đó. Validate ở app layer (không phải
+/// DB) rằng 2 key đó thực sự tồn tại trong mảng tương ứng — xem
+/// schemas/admin.schema.ts.
+model HomeRound {
+  id               String  @id @default(cuid())
+  topicId          String
+  instructionEn    String
+  instructionVi    String
+  /// Tuỳ chọn — rỗng thì pickLang() rơi về instructionVi (catalog.service.ts).
+  /// objects/zones KHÔNG cần dịch — nhãn của chúng luôn là tiếng Anh theo
+  /// đúng thiết kế game (đối tượng tương tác luôn tiếng Anh, chỉ mỗi câu
+  /// lệnh trên cùng được giải nghĩa).
+  instructionJa    String?
+  instructionKo    String?
+  objects          Json
+  correctObjectKey String
+  zones            Json
+  correctZoneKey   String
+  order            Int     @default(0)
+
+  topic HomeTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("home_rounds")
+}
+
+/// "Word RPG" — 1 "hầm ngục" (dungeon) là 1 chuỗi quái vật phải đánh bại lần
+/// lượt bằng cách trả lời đúng câu hỏi nghĩa từ vựng ("What does 'hungry'
+/// mean?"); trả lời đúng thì quái mất máu, trả lời sai thì NGƯỜI CHƠI mất
+/// máu (xem services/rpg.service.ts). Cùng cấu trúc topic hệ thống/tự tạo
+/// như ShopTopic/HomeTopic ở trên.
+model RpgTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  color     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent   Parent?      @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  monsters RpgMonster[]
+
+  @@index([parentId])
+  @@map("rpg_topics")
+}
+
+/// 1 quái vật trong hầm ngục — "HP" của nó chính là số câu hỏi trong
+/// `questions` (mỗi câu đúng trừ 1/N thanh máu, N = số câu), không lưu số
+/// máu riêng để khỏi phải đồng bộ 2 con số. `questions` là JSON mảng
+/// {en, answer, options}[] — `en` là từ tiếng Anh được hỏi nghĩa, `answer`
+/// là nghĩa tiếng Việt đúng, `options` là các lựa chọn (gồm cả answer).
+/// `isBoss` chỉ ảnh hưởng phần thưởng (xem RPG_MONSTER_REWARD/RPG_BOSS_REWARD
+/// trong services/rpg.service.ts), không đổi luật chơi.
+model RpgMonster {
+  id        String  @id @default(cuid())
+  topicId   String
+  name      String
+  emoji     String
+  isBoss    Boolean @default(false)
+  questions Json
+  order     Int     @default(0)
+
+  topic RpgTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("rpg_monsters")
+}
+
+/// "Word Train" — 2 kiểu lượt chơi trong cùng 1 "chuyến tàu" (topic): điền
+/// chữ cái còn thiếu vào 1 từ ("kind: fill", vd "C _ T" → chọn "A"), hoặc
+/// sắp xếp đúng thứ tự từ trong 1 câu ("kind: scramble"). Đúng thì tàu chạy
+/// tiếp sang lượt kế. Cùng cấu trúc topic hệ thống/tự tạo như các game
+/// ShopTopic/HomeTopic/RpgTopic ở trên.
+model WordTrainTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  color     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent?          @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  rounds WordTrainRound[]
+
+  @@index([parentId])
+  @@map("word_train_topics")
+}
+
+/// `data` phụ thuộc `kind`: kind="fill" → {word, blankIndex, options}
+/// (word đã viết hoa, blankIndex là vị trí chữ bị che, options là các chữ
+/// cái cho chọn gồm cả chữ đúng); kind="scramble" → {words} (mảng từ ĐÚNG
+/// THỨ TỰ — client tự xáo trộn để hiển thị, so khớp lại thứ tự này để chấm
+/// đúng/sai). `vi` là gợi ý tiếng Việt hiện cho cả 2 kind; ja/ko tuỳ chọn,
+/// rỗng thì pickLang() rơi về vi (xem catalog.service.ts). Validate ở app
+/// layer (không phải DB) — xem schemas/admin.schema.ts.
+model WordTrainRound {
+  id      String  @id @default(cuid())
+  topicId String
+  kind    String
+  vi      String
+  ja      String?
+  ko      String?
+  data    Json
+  order   Int     @default(0)
+
+  topic WordTrainTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("word_train_rounds")
+}
+
+/// "English Detective" — mỗi "vụ án" (topic) là 1 tình huống trinh thám kể
+/// bằng tiếng Anh; người chơi hỏi cung từng nghi phạm ("kind: interrogate")
+/// rồi buộc tội thủ phạm ở lượt cuối ("kind: accuse"). Nhắm tới người lớn/trẻ
+/// lớn hơn (xem TASKS.md), nhưng dùng chung màn "More" với các mini-game
+/// khác. Cùng cấu trúc topic hệ thống/tự tạo như ShopTopic/HomeTopic/RpgTopic/
+/// WordTrainTopic ở trên.
+model DetectiveCase {
+  id         String   @id @default(cuid())
+  key        String   @unique
+  parentId   String?
+  name       String
+  scenario   String
+  scenarioVi String
+  /// Tuỳ chọn — rỗng thì pickLang() rơi về scenarioVi (catalog.service.ts).
+  scenarioJa String?
+  scenarioKo String?
+  color      String
+  order      Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  parent Parent?          @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  rounds DetectiveRound[]
+
+  @@index([parentId])
+  @@map("detective_cases")
+}
+
+/// `data` phụ thuộc `kind`: kind="interrogate" → {npcName, npcEmoji, testimony,
+/// testimonyVi, testimonyJa?, testimonyKo?, question, options, answerIndex,
+/// clueVi, clueJa?, clueKo?} (hỏi cung 1 nghi phạm — đọc lời khai tiếng Anh,
+/// trả lời đúng câu hỏi hiểu ý thì lộ ra gợi ý bằng ngôn ngữ mẹ đẻ — clueVi
+/// là tên cũ "clue", đổi tên khi thêm đa ngôn ngữ, KHÔNG lộ ra ngoài vì
+/// catalog.service.ts luôn trả về đúng 1 field `clue` đã pickLang() sẵn);
+/// kind="accuse" → {suspects, correctSuspect} (lượt cuối, chọn đúng thủ phạm
+/// trong danh sách nghi phạm để phá án). `vi`/ja?/ko? là gợi ý hiện cho cả 2
+/// kind, ja/ko rỗng thì rơi về vi. Validate ở app layer, không phải DB — xem
+/// schemas/admin.schema.ts.
+model DetectiveRound {
+  id     String  @id @default(cuid())
+  caseId String
+  kind   String
+  vi     String
+  ja     String?
+  ko     String?
+  data   Json
+  order  Int     @default(0)
+
+  case DetectiveCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([caseId])
+  @@map("detective_rounds")
+}
+
+/// "Vẹt Con Tập Nói" (Echo Parrot) — luyện nói + phát âm, khác hẳn mọi game
+/// khác trong app (toàn bộ còn lại chỉ luyện nghe/đọc/nhận biết, chưa có
+/// chiều bé tự nói). Mỗi round là 1 từ/câu tiếng Anh ngắn — bé nghe mẫu
+/// (server TTS, xem lib/tts.ts) rồi tự nói lại, app dùng speech-to-text
+/// (native trên app thật, Web Speech API khi test trên trình duyệt — xem
+/// frontend/src/lib/useSpeechRecognition.ts) so khớp văn bản nhận được với
+/// `en` để chấm, không chấm phát âm/âm vị chi tiết ở bản đầu. Cùng cấu trúc
+/// topic hệ thống/tự tạo như các game khác ở trên.
+model EchoParrotTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  color     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent?           @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  rounds EchoParrotRound[]
+
+  @@index([parentId])
+  @@map("echo_parrot_topics")
+}
+
+/// `phonetic` là gợi ý IPA tuỳ chọn (vd "/ˈæp.əl/") hiện kèm cho bé/phụ
+/// huynh tham khảo, không dùng để chấm điểm — chấm điểm chỉ so khớp `en`
+/// với văn bản nhận dạng được từ giọng nói (xem EchoParrot.tsx). ja/ko tuỳ
+/// chọn, rỗng thì pickLang() rơi về vi (xem catalog.service.ts).
+model EchoParrotRound {
+  id       String  @id @default(cuid())
+  topicId  String
+  en       String
+  vi       String
+  ja       String?
+  ko       String?
+  phonetic String?
+  order    Int     @default(0)
+
+  topic EchoParrotTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("echo_parrot_rounds")
+}
+
+/// "Trò Chuyện Cùng Bạn Thú" (Chat with Buddy) — luyện hội thoại tương tác,
+/// bản nhẹ hơn dành cho trẻ em so với "hỏi cung NPC" của English Detective
+/// (nhắm người lớn/trẻ lớn hơn — xem TASKS.md). Mỗi topic là 1 tình huống
+/// hội thoại (vd "Chào buổi sáng", "Xin đồ ăn") gồm nhiều lượt (round) nối
+/// tiếp nhau: pet hỏi 1 câu tiếng Anh (TTS), bé chọn 1 trong vài câu trả lời
+/// phù hợp ngữ cảnh, đúng thì pet phản hồi tích cực (cũng TTS) rồi sang lượt
+/// kế — tạo cảm giác đang trò chuyện thật qua nhiều lượt, khác với 1 câu hỏi
+/// độc lập như phần lớn game khác. Sai chỉ rung nút, không tính, không phạt
+/// (giống mọi game khác). Cùng cấu trúc topic hệ thống/tự tạo (`parentId`)
+/// như Shop/Home/Rpg/WordTrain/Detective/EchoParrot ở trên, nhưng CHƯA có UI
+/// admin/self-serve để soạn — giống hệt 4 game đó, nội dung hiện chỉ seed
+/// sẵn qua seed.ts (xem TASKS.md).
+model ChatBuddyTopic {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  parentId  String?
+  name      String
+  color     String
+  order     Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  parent Parent?          @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  rounds ChatBuddyRound[]
+
+  @@index([parentId])
+  @@map("chat_buddy_topics")
+}
+
+/// `data`: {petLine, petLineVi, petLineJa?, petLineKo?, options: string[],
+/// optionsVi: string[], optionsJa?: string[], optionsKo?: string[],
+/// answerIndex, replyLine, replyLineVi, replyLineJa?, replyLineKo?}. petLine/
+/// replyLine luôn tiếng Anh (TTS qua lib/tts.ts, giống EchoParrot/Detective).
+/// Chỉ 1 "kind" duy nhất (không như DetectiveRound có interrogate/accuse) nên
+/// không cần discriminated union. ja/ko rỗng thì pickLang() rơi về bản vi
+/// tương ứng (catalog.service.ts). Validate ở app layer, không phải DB — xem
+/// schemas/admin.schema.ts.
+model ChatBuddyRound {
+  id      String @id @default(cuid())
+  topicId String
+  data    Json
+  order   Int    @default(0)
+
+  topic ChatBuddyTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
+
+  @@index([topicId])
+  @@map("chat_buddy_rounds")
+}
+
+enum FightRoomStatus {
+  waiting
+  active
+  finished
+  abandoned
+}
+
+/// Phòng "Đấu trường" — tối đa 10 trẻ vào cùng 1 phòng bằng mã 6 ký tự (ai có
+/// mã thì vào được, không cần hệ thống bạn bè), trả lời cùng bộ câu hỏi của 1
+/// Lesson có sẵn theo thời gian thực qua WebSocket (xem services/fight/).
+/// Phòng ở trạng thái "waiting" (mở cho người vào) cho tới khi host bấm Bắt
+/// đầu — status chỉ chuyển "active" lúc đó, không phải lúc đủ người.
+/// Thắng thua và cộng coin đều do SERVER tính từ thứ tự trả lời nhận được —
+/// không tin điểm số do client tự báo lên, giống triết lý anti-cheat của
+/// mọi tính năng thưởng coin khác trong app (quest, pet care...).
+/// Điểm rank (Đường đua Hạng) chỉ áp dụng cho phòng ĐÚNG 2 người — phòng
+/// đông hơn chỉ có coin thưởng cho người #1, không đổi rating (xem rank.ts).
+model FightRoom {
+  id            String          @id @default(cuid())
+  code          String          @unique
+  lessonId      String
+  hostChildId   String
+  status        FightRoomStatus @default(waiting)
+  winnerChildId String?
+  rewardCoins   Int             @default(50)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  lesson       Lesson             @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  host         Child              @relation("FightRoomHost", fields: [hostChildId], references: [id], onDelete: Cascade)
+  winner       Child?             @relation("FightRoomWinner", fields: [winnerChildId], references: [id], onDelete: SetNull)
+  participants FightParticipant[]
+
+  @@index([hostChildId])
+  @@map("fight_rooms")
+}
+
+/// 1 trẻ trong 1 FightRoom — tối đa 10 dòng/phòng (host + tối đa 9 khách).
+model FightParticipant {
+  id       String   @id @default(cuid())
+  roomId   String
+  childId  String
+  score    Int      @default(0)
+  joinedAt DateTime @default(now())
+
+  room  FightRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  child Child     @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, childId])
+  @@index([childId])
+  @@map("fight_participants")
+}
+
+/// "Battle Pass" theo mùa (2026-08-28) — TÁCH RIÊNG HOÀN TOÀN khỏi Premium (đã
+/// hỏi user trước khi làm): ai cũng mua được gói VIP mùa dù có Premium hay
+/// không, và Premium không tự động có VIP mùa. Mỗi mùa kéo dài 30 ngày, XP mùa
+/// reset về 0 khi mùa mới bắt đầu (mỗi mùa có `ChildBattlePassProgress` riêng,
+/// không mang XP mùa cũ sang). Toàn bộ nội dung 30 mốc × 2 track (free/VIP) do
+/// ADMIN tự soạn qua trang Admin (theo đúng yêu cầu), không có bảng mẫu cứng
+/// trong code.
+model BattlePassSeason {
+  id        String   @id @default(cuid())
+  name      String
+  startsAt  DateTime
+  endsAt    DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tiers    BattlePassTier[]
+  progress ChildBattlePassProgress[]
+
+  @@map("battle_pass_seasons")
+}
+
+/// 1 trong tối đa 30 mốc của 1 mùa — `xpRequired` là XP TÍCH LUỸ cần đạt để mở
+/// khoá mốc này (không phải XP riêng của mốc), cho phép admin đặt khoảng cách
+/// không đều giữa các mốc giống ảnh tham khảo user gửi. `*RewardKind` là 1
+/// trong: coins/gems/commonShards/rareShards/epicShards/petEggCommon/
+/// petEggRare/petEggEpic/petEggLegendary/item — xem battlePass.service.ts's
+/// grantReward() để biết từng loại cộng gì; `item` cần thêm `*RewardItemKey`
+/// (Item.key có sẵn trong Shop).
+model BattlePassTier {
+  id       String @id @default(cuid())
+  seasonId String
+  tier     Int
+
+  xpRequired Int
+
+  freeRewardKind    String
+  freeRewardAmount  Int     @default(0)
+  freeRewardItemKey String?
+
+  vipRewardKind    String
+  vipRewardAmount  Int     @default(0)
+  vipRewardItemKey String?
+
+  season BattlePassSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+
+  @@unique([seasonId, tier])
+  @@map("battle_pass_tiers")
+}
+
+/// Tiến độ Battle Pass của 1 TRẺ (không phải phụ huynh) trong 1 mùa — theo
+/// child vì XP đến từ nhiệm vụ hằng ngày vốn đã tính riêng theo từng trẻ
+/// (DailyQuestProgress), và nhiều trẻ dưới cùng 1 phụ huynh có thể tiến độ
+/// khác nhau — cùng cách VIP mùa cũng mua riêng theo từng trẻ (`hasVip`), nhất
+/// quán với mọi tiến trình khác trong app (pet, quest...) đều theo child.
+model ChildBattlePassProgress {
+  id       String @id @default(cuid())
+  childId  String
+  seasonId String
+
+  xp     Int     @default(0)
+  hasVip Boolean @default(false)
+
+  /// Chặn cộng 120 điểm nhiều lần trong cùng 1 ngày khi làm full nhiệm vụ —
+  /// cùng khuôn với Progress.lastCheckinDate.
+  lastQuestBumpDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  child  Child            @relation(fields: [childId], references: [id], onDelete: Cascade)
+  season BattlePassSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  claims BattlePassClaim[]
+
+  @@unique([childId, seasonId])
+  @@map("battle_pass_progress")
+}
+
+/// Đánh dấu 1 (mốc, track) đã nhận quà — tách bảng riêng (không phải 1 cột
+/// JSON) để chống nhận trùng bằng constraint DB thật (`@@unique`) thay vì tự
+/// kiểm tra ở app layer.
+model BattlePassClaim {
+  id         String   @id @default(cuid())
+  progressId String
+  tier       Int
+  track      String // "free" | "vip"
+  claimedAt  DateTime @default(now())
+
+  progress ChildBattlePassProgress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+
+  @@unique([progressId, tier, track])
+  @@map("battle_pass_claims")
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "progress" ADD COLUMN "hiddenFromRank" BOOLEAN NOT NULL DEFAULT false;

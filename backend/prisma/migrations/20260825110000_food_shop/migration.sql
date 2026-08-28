@@ -1,0 +1,4 @@
+ALTER TABLE "items"
+ADD COLUMN "price" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN "currency" "Currency" NOT NULL DEFAULT 'coin',
+ADD COLUMN "imagePath" TEXT NOT NULL DEFAULT '';
