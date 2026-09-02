@@ -20,6 +20,7 @@ export const PET_CUTE_MOTION: Record<string, PetCuteMotion> = {
   biscuit: "wiggle", cocoa: "wiggle", waffle: "wiggle", nimbus: "wiggle", bamboo: "wiggle", berry: "wiggle", glacio: "wiggle",
   poppy: "hop", snowy: "hop", ducky: "hop", frosty: "hop", kiwi: "hop",
   leo: "stretch", stripe: "stretch", ellie: "stretch", sunny: "stretch", gargo: "stretch", stella: "stretch", aqua: "stretch",
+  maru: "wiggle", dori: "hop", kitsune: "tilt", haetae: "stretch",
 };
 
 export const RARITY: Record<Rarity, { tint: string; slot: string; price: number; currency: Currency }> = {
@@ -83,6 +84,10 @@ const PET_DATA: [string, string, string, Rarity][] = [
   ["Umbra", "umbra", "Rồng bóng tối", "Legendary"],
   ["Void", "void", "Rồng hư không", "Legendary"],
   ["Ember", "ember", "Rồng lửa", "Legendary"],
+  ["Maru", "maru", "Chó Shiba Nhật Bản", "Common"],
+  ["Dori", "dori", "Chó Jindo Hàn Quốc", "Rare"],
+  ["Kitsune", "kitsune", "Linh hồ Nhật Bản", "Epic"],
+  ["Haetae", "haetae", "Linh thú hộ mệnh Hàn Quốc", "Legendary"],
 ];
 
 export const PETS: PetDef[] = PET_DATA.map(([name, id, species, rarity]) => ({

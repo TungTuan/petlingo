@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { api, ApiError, type EchoParrotRoundData, type EchoParrotTopicDetail, type EchoParrotTopicListItem } from "../lib/api";
 import { BackIcon, CoinIcon, RewardModal, SpeakerIcon, SpeechBubble } from "../components/ui";
+import PetPortrait from "../components/PetPortrait";
 import { useT } from "../lib/i18n";
 import { speak } from "../lib/tts";
 import { isCloseSpeechMatch, useSpeechRecognition } from "../lib/useSpeechRecognition";
 
 interface EchoParrotProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
 /** Vẹt Con Tập Nói (Echo Parrot) — the one game in the app that practices
@@ -16,7 +18,7 @@ interface EchoParrotProps {
  * lib/useSpeechRecognition.ts for the native-vs-web recognition split and
  * why iOS specifically needs the native path). No punish-on-wrong, matching
  * every other game's philosophy: a miss just invites another try. */
-export default function EchoParrot({ onExit }: EchoParrotProps) {
+export default function EchoParrot({ onExit, onComplete }: EchoParrotProps) {
   const t = useT();
   const [list, setList] = useState<EchoParrotTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<EchoParrotTopicDetail | null>(null);
@@ -39,7 +41,7 @@ export default function EchoParrot({ onExit }: EchoParrotProps) {
     }
   }
 
-  if (topic) return <EchoParrotPlay topic={topic} onExit={() => setTopic(null)} />;
+  if (topic) return <EchoParrotPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#FFE8CF] to-[#FFF6E9]">
@@ -84,9 +86,10 @@ export default function EchoParrot({ onExit }: EchoParrotProps) {
 }
 
 /** The actual practice loop, once a topic has been picked. */
-function EchoParrotPlay({ topic, onExit }: { topic: EchoParrotTopicDetail; onExit: () => void }) {
+function EchoParrotPlay({ topic, onExit, onComplete }: { topic: EchoParrotTopicDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
-  const rounds = topic.rounds;
+  const makeSession = () => [...topic.rounds].sort(() => Math.random() - 0.5).slice(0, Math.min(5, topic.rounds.length));
+  const [rounds, setRounds] = useState(makeSession);
   const [roundIdx, setRoundIdx] = useState(0);
   const [coins, setCoins] = useState(0);
   const [coinPop, setCoinPop] = useState(0);
@@ -94,6 +97,7 @@ function EchoParrotPlay({ topic, onExit }: { topic: EchoParrotTopicDetail; onExi
   const round = rounds[roundIdx]!;
 
   function reset() {
+    setRounds(makeSession());
     setRoundIdx(0);
     setCoins(0);
     setFinished(false);
@@ -103,7 +107,7 @@ function EchoParrotPlay({ topic, onExit }: { topic: EchoParrotTopicDetail; onExi
     setCoins((c) => c + 10);
     setCoinPop((p) => p + 1);
     setTimeout(() => {
-      if (roundIdx + 1 >= rounds.length) setFinished(true);
+      if (roundIdx + 1 >= rounds.length) { setFinished(true); onComplete?.(); }
       else setRoundIdx((i) => i + 1);
     }, 1300);
   }
@@ -175,6 +179,11 @@ function EchoRound({ data, onCorrect, onSkip }: { data: EchoParrotRoundData; onC
 
   return (
     <div className="flex w-full max-w-xl flex-col items-center gap-6">
+      {/* Rounds that talk ABOUT a specific pet ("This is Buddy.") carry
+       * `petKey` so the round shows that pet's real portrait instead of
+       * being pure text — plain vocabulary rounds ("Cat", "Hello!") leave it
+       * null and render nothing here. */}
+      {data.petKey && <PetPortrait petId={data.petKey} name={data.en} animated className="h-[130px] w-[130px] drop-shadow-[0_10px_10px_rgba(80,57,28,.18)]" />}
       <SpeechBubble className="text-center">
         <div className="font-baloo text-[32px] font-extrabold">{data.en}</div>
         {data.phonetic && <div className="mt-1 font-baloo text-base font-semibold text-[#8A7A62]">{data.phonetic}</div>}

@@ -1,5 +1,5 @@
 import { useState, type CSSProperties } from "react";
-import { Palette } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarCheck2, Check, Gift, Palette, Trophy } from "lucide-react";
 import { ChunkyButton, CoinIcon, GearIcon, GemIcon, HeartIcon, StarIcon } from "../components/ui";
 import BottomTabs from "../components/BottomTabs";
 import PetPortrait from "../components/PetPortrait";
@@ -8,12 +8,7 @@ import type { NavTab } from "../types/nav";
 import { getPetEvolutionStage, getPetMood } from "../lib/petEvolution";
 import HomeCustomizationModal from "../components/HomeCustomizationModal";
 import { HOME_BACKGROUNDS, type HomeCustomization } from "../lib/homeCustomization";
-import type { InventoryEntry } from "../lib/api";
-
-interface Quest {
-  label: string;
-  done: boolean;
-}
+import type { InventoryEntry, Quest } from "../lib/api";
 
 type ParticleStyle = CSSProperties & Record<`--${string}`, string>;
 
@@ -91,7 +86,7 @@ interface HomeProps {
   petId: string;
   petName: string;
   petStats: import("../lib/api").PetStatsState | null;
-  quests: Quest[];
+  quests: Quest[] | null;
   onNavigate: (tab: NavTab) => void;
   onPlayLesson: () => void;
   onOpenDailyQuest: () => void;
@@ -136,6 +131,9 @@ export default function Home({
   const mood = getPetMood(petStats?.hunger ?? 70);
   const xpInLevel = (petStats?.experience ?? 0) % 100;
   const activeBackground = HOME_BACKGROUNDS.find((bg) => bg.id === customization.backgroundId) ?? HOME_BACKGROUNDS[0]!;
+  const questList = quests ?? [];
+  const completedQuests = questList.filter((quest) => quest.progress >= quest.target).length;
+  const allQuestsCompleted = questList.length > 0 && completedQuests === questList.length;
 
   async function purchaseBackground(entry: InventoryEntry) {
     setBusyBackground(entry.item.key);
@@ -190,38 +188,23 @@ export default function Home({
       </div>
 
       <div className="relative flex flex-1 px-5">
-        <div className="flex flex-col gap-3">
+        <div className="flex w-[210px] flex-col justify-center gap-3">
+          <div className="mb-0.5 px-1">
+            <div className="font-baloo text-[10px] font-extrabold uppercase tracking-[.14em] text-white/75">Hoạt động hôm nay</div>
+            <div className="mt-0.5 font-baloo text-[13px] font-extrabold text-white">Mỗi ngày một niềm vui mới</div>
+          </div>
           <button
             onClick={onOpenDailyQuest}
-            className="relative grid h-[92px] w-[108px] place-items-center gap-1 rounded-[22px] border-[3px] border-[#E6D8B5] bg-[#FFF9E9]/95 shadow-[0_6px_0_#C9B78D,0_12px_24px_rgba(49,77,42,.18)] transition-transform active:translate-y-1"
+            className="group relative flex min-h-[86px] items-center gap-3 overflow-hidden rounded-[22px] border-[3px] border-white/80 bg-[#FFF9E9]/95 px-3.5 text-left shadow-[0_6px_0_#C9B78D,0_12px_24px_rgba(49,77,42,.18)] transition-transform hover:-translate-y-1 active:translate-y-1"
           >
-            <svg width="38" height="38" viewBox="0 0 24 24">
-              <rect x="3" y="5" width="18" height="16" rx="3" fill="#EF6A5A" />
-              <rect x="3" y="5" width="18" height="5" rx="2.5" fill="#C74B3D" />
-              <rect x="7" y="13" width="10" height="2.6" rx="1.3" fill="#fff" />
-              <rect x="7" y="17" width="6" height="2.6" rx="1.3" fill="#fff" />
-            </svg>
-            <span className="font-baloo text-xs font-bold text-[#6E6047]">{t("Nhiệm vụ hôm nay")}</span>
-            <span className="animate-pulse-soft absolute -right-1.5 -top-1.5 grid h-[26px] w-[26px] place-items-center rounded-full bg-[#EF6A5A] font-baloo text-sm font-extrabold text-white shadow-[0_2px_0_#C74B3D]">
-              {quests.filter((q) => !q.done).length}
-            </span>
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[16px] bg-[#EF6A5A] text-white shadow-[0_4px_0_#C74B3D]"><CalendarCheck2 size={26} strokeWidth={2.6} /></span>
+            <span className="min-w-0 flex-1"><span className="block pr-9 font-baloo text-[14px] font-extrabold text-[#56483C]">{t("Nhiệm vụ hôm nay")}</span><span className="mt-1 block font-baloo text-[10px] font-bold text-[#917F6B]">{quests === null ? "Đang cập nhật…" : questList.length ? `${completedQuests}/${questList.length} đã hoàn thành` : "Chưa có nhiệm vụ mới"}</span><span className="mt-1.5 block h-2 overflow-hidden rounded-full bg-[#E9DDC5]"><span className="block h-full rounded-full bg-[#77C653] transition-[width]" style={{ width: `${questList.length ? (completedQuests / questList.length) * 100 : 0}%` }} /></span></span>
+            {quests !== null && questList.length > 0 && (allQuestsCompleted ? <span className="absolute right-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-[#77C653] text-white"><Check size={15} strokeWidth={3} /></span> : <span className="absolute right-2 top-2 grid h-6 min-w-8 place-items-center rounded-full bg-[#EF6A5A] px-1.5 font-baloo text-[10px] font-extrabold text-white">{completedQuests}/{questList.length}</span>)}
           </button>
-          {/* USED to be a dead "Quà" (gift box) placeholder with no onClick at
-           * all — repurposed as the Home entry point for Battle Pass on
-           * request (moved out of More.tsx's "..." menu into here instead),
-           * keeping the same gift-box art since it already reads as
-           * "rewards waiting" for a tiered reward system. */}
-          <button onClick={onOpenBattlePass} className="grid h-[92px] w-[108px] place-items-center gap-1 rounded-[22px] border-[3px] border-[#E6D8B5] bg-[#FFF9E9]/95 shadow-[0_6px_0_#C9B78D,0_12px_24px_rgba(49,77,42,.18)] transition-transform active:translate-y-1">
-            <svg width="38" height="38" viewBox="0 0 24 24">
-              <rect x="3" y="9" width="18" height="12" rx="2.4" fill="#F79BB0" />
-              <rect x="3" y="7" width="18" height="4.4" rx="2" fill="#EF6A5A" />
-              <rect x="10.6" y="7" width="2.8" height="14" fill="#FFD75E" />
-            </svg>
-            <span className="font-baloo text-xs font-bold text-[#6E6047]">{t("Battle Pass")}</span>
-          </button>
-          <button className="grid h-[92px] w-[108px] place-items-center gap-1 rounded-[22px] border-[3px] border-[#E6D8B5] bg-[#FFF9E9]/95 shadow-[0_6px_0_#C9B78D,0_12px_24px_rgba(49,77,42,.18)] transition-transform active:translate-y-1">
-            <span className="text-[34px]">🎉</span>
-            <span className="font-baloo text-xs font-bold text-[#6E6047]">Event</span>
+          <button onClick={onOpenBattlePass} className="group relative flex min-h-[86px] items-center gap-3 overflow-hidden rounded-[22px] border-[3px] border-white/80 bg-[linear-gradient(135deg,#FFF6D9,#F5E8FF)] px-3.5 text-left shadow-[0_6px_0_#CDBB9E,0_12px_24px_rgba(49,77,42,.18)] transition-transform hover:-translate-y-1 active:translate-y-1">
+            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-[16px] bg-[linear-gradient(135deg,#9B7EDE,#6D56B1)] text-[#FFE785] shadow-[0_4px_0_#594392]"><Trophy size={27} strokeWidth={2.5} /></span>
+            <span className="min-w-0 flex-1"><span className="block font-baloo text-[14px] font-extrabold text-[#56483C]">{t("Battle Pass")}</span><span className="mt-1 block font-baloo text-[10px] font-bold leading-tight text-[#917F6B]">Làm nhiệm vụ · mở khóa quà mùa</span></span>
+            <ArrowRight className="shrink-0 text-[#795CB6] transition-transform group-hover:translate-x-1" size={18} />
           </button>
         </div>
 
@@ -248,18 +231,14 @@ export default function Home({
           </div>
         </div>
 
-        <div className="flex w-[250px] flex-col justify-center gap-3.5">
-          <ChunkyButton shine onClick={onPlayLesson} className="!py-4 text-xl">
-            {t("Học ngay")}
-          </ChunkyButton>
-          <button className="flex items-center justify-center gap-2.5 rounded-[20px] bg-brand-brown py-3.5 font-baloo text-base font-bold text-white shadow-[0_5px_0_#6B4429] transition-transform active:translate-y-1 active:shadow-[0_1px_0_#6B4429]">
-            <svg width="24" height="24" viewBox="0 0 24 24">
-              <rect x="3" y="9" width="18" height="11" rx="2" fill="#D9A517" />
-              <rect x="3" y="6" width="18" height="5" rx="2.4" fill="#FFD75E" />
-              <rect x="10.4" y="6" width="3.2" height="14" fill="#8A5A3B" />
-            </svg>
-            {t("Phần thưởng")}
-          </button>
+        <div className="flex w-[235px] flex-col justify-center">
+          <div className="overflow-hidden rounded-[26px] border-[3px] border-white/85 bg-[#FFF9EA]/95 p-4 shadow-[0_7px_0_#CBB98E,0_14px_28px_rgba(53,71,34,.18)] backdrop-blur-sm">
+            <div className="flex items-center gap-3"><span className="grid h-12 w-12 shrink-0 place-items-center rounded-[16px] bg-[#F5822B] text-white shadow-[0_4px_0_#C65D17]"><BookOpen size={27} /></span><span><span className="block font-baloo text-[10px] font-extrabold uppercase tracking-[.12em] text-[#A17A49]">Bài học tiếp theo</span><span className="block font-baloo text-[16px] font-extrabold text-[#55463A]">Cùng pet khám phá</span></span></div>
+            <div className="my-3 flex items-center justify-between rounded-[15px] bg-[#F4EAD5] px-3 py-2"><span className="flex items-center gap-1.5 font-baloo text-[10px] font-extrabold text-[#8C7252]"><Gift size={15} className="text-[#D89B1D]" /> Thưởng hoàn thành</span><span className="font-baloo text-[11px] font-extrabold text-[#B27A10]">+50 coin · +30 XP</span></div>
+            <ChunkyButton shine onClick={onPlayLesson} className="w-full !py-3.5 text-[17px]">
+              <span className="flex items-center justify-center gap-2">{t("Học ngay")} <ArrowRight size={19} /></span>
+            </ChunkyButton>
+          </div>
         </div>
       </div>
 

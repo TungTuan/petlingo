@@ -6,6 +6,7 @@ import { useT } from "../lib/i18n";
 
 interface EnglishShopProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
 const SHOP_TOPIC_ICON: Record<string, string> = {
@@ -19,7 +20,7 @@ const SHOP_TOPIC_ICON: Record<string, string> = {
  * picker first, then plays whichever topic was tapped. Unrelated to the
  * coin/gem "Pet Shop" (pages/Shop.tsx) despite the name overlap — this is a
  * vocabulary mini-game, not a purchase screen. */
-export default function EnglishShop({ onExit }: EnglishShopProps) {
+export default function EnglishShop({ onExit, onComplete }: EnglishShopProps) {
   const t = useT();
   const [list, setList] = useState<ShopTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<ShopTopicDetail | null>(null);
@@ -42,7 +43,7 @@ export default function EnglishShop({ onExit }: EnglishShopProps) {
     }
   }
 
-  if (topic) return <EnglishShopPlay topic={topic} onExit={() => setTopic(null)} />;
+  if (topic) return <EnglishShopPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#FFE4B8,#FFF6E6_48%,#EAF6E4)]">
@@ -87,7 +88,7 @@ export default function EnglishShop({ onExit }: EnglishShopProps) {
 }
 
 /** The actual shopping game, once a topic has been picked. */
-function EnglishShopPlay({ topic, onExit }: { topic: ShopTopicDetail; onExit: () => void }) {
+function EnglishShopPlay({ topic, onExit, onComplete }: { topic: ShopTopicDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
   const rounds = topic.rounds;
   const [roundIdx, setRoundIdx] = useState(0);
@@ -136,6 +137,7 @@ function EnglishShopPlay({ topic, onExit }: { topic: ShopTopicDetail; onExit: ()
   function nextRound() {
     if (roundIdx + 1 >= rounds.length) {
       setFinished(true);
+      onComplete?.();
       return;
     }
     setRoundIdx((i) => i + 1);

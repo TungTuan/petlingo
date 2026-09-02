@@ -1,6 +1,6 @@
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../middleware/errorHandler.js";
-import { clampToInt32 } from "./progress.service.js";
+import { grantReward } from "./rewards.service.js";
 import type { BattlePassTierInput, UpdateBattlePassTierInput, BattlePassSeasonInput, UpdateBattlePassSeasonInput } from "../schemas/admin.schema.js";
 
 async function getOwnedChildOrThrow(childId: string, parentId: string) {
@@ -81,87 +81,8 @@ export async function getBattlePassState(childId: string, parentId: string): Pro
   };
 }
 
-/**
- * Applies one reward onto a child's account. Shared by claimTier()/claimAll()
- * below — every kind here maps 1:1 to something that already exists
- * elsewhere in the game's economy (coins/gems/fusion shards/a random pet
- * egg/a catalog item), nothing new invented just for Battle Pass.
- */
-async function grantReward(childId: string, kind: string, amount: number, itemKey: string | null): Promise<void> {
-  if (amount <= 0 && !kind.startsWith("petEgg")) return;
-  switch (kind) {
-    case "coins": {
-      const progress = await prisma.progress.findUniqueOrThrow({ where: { childId } });
-      await prisma.progress.update({ where: { childId }, data: { coins: clampToInt32(progress.coins + amount) } });
-      return;
-    }
-    case "gems": {
-      const progress = await prisma.progress.findUniqueOrThrow({ where: { childId } });
-      await prisma.progress.update({ where: { childId }, data: { gems: clampToInt32(progress.gems + amount) } });
-      return;
-    }
-    case "commonShards":
-      await prisma.progress.update({ where: { childId }, data: { commonShards: { increment: amount } } });
-      return;
-    case "rareShards":
-      await prisma.progress.update({ where: { childId }, data: { rareShards: { increment: amount } } });
-      return;
-    case "epicShards":
-      await prisma.progress.update({ where: { childId }, data: { epicShards: { increment: amount } } });
-      return;
-    case "petEggCommon":
-      return grantRandomPet(childId, "Common");
-    case "petEggRare":
-      return grantRandomPet(childId, "Rare");
-    case "petEggEpic":
-      return grantRandomPet(childId, "Epic");
-    case "petEggLegendary":
-      return grantRandomPet(childId, "Legendary");
-    case "item": {
-      if (!itemKey) return;
-      const item = await prisma.item.findUnique({ where: { key: itemKey } });
-      if (!item) return;
-      await prisma.childItem.upsert({
-        where: { childId_itemId: { childId, itemId: item.id } },
-        update: { quantity: { increment: Math.max(1, amount) } },
-        create: { childId, itemId: item.id, quantity: Math.max(1, amount) },
-      });
-      return;
-    }
-    default:
-      return;
-  }
-}
-
-/** Rolls 1 random pet of `rarity` and grants it — a NEW copy if the child
- * doesn't own that species yet (unlocks it for real, PetStats starts at
- * Level 1), or a shard/egg of that rarity if they already do (same
- * "duplicate becomes fusion material" rule the rest of the app already
- * follows — see petFusion.service.ts's doc comment). */
-async function grantRandomPet(childId: string, rarity: "Common" | "Rare" | "Epic" | "Legendary"): Promise<void> {
-  const catalog = await prisma.pet.findMany({ where: { rarity, isActive: true } });
-  if (catalog.length === 0) return;
-  const rolled = catalog[Math.floor(Math.random() * catalog.length)]!;
-
-  const progress = await prisma.progress.findUniqueOrThrow({ where: { childId } });
-  const unlockedPets = Array.isArray(progress.unlockedPets) ? (progress.unlockedPets as string[]) : [];
-  const petCopies = (progress.petCopies && typeof progress.petCopies === "object" ? (progress.petCopies as Record<string, number>) : {}) ?? {};
-  const petEggs = (progress.petEggs && typeof progress.petEggs === "object" ? (progress.petEggs as Record<string, number>) : {}) ?? {};
-  const alreadyOwned = unlockedPets.includes(rolled.key);
-
-  await prisma.progress.update({
-    where: { childId },
-    data: {
-      unlockedPets: alreadyOwned ? unlockedPets : [...unlockedPets, rolled.key],
-      petCopies: { ...petCopies, [rolled.key]: (petCopies[rolled.key] ?? (alreadyOwned ? 1 : 0)) + 1 },
-      petEggs: alreadyOwned ? { ...petEggs, [rolled.key]: (petEggs[rolled.key] ?? 0) + 1 } : petEggs,
-      activePetId: alreadyOwned ? progress.activePetId : (progress.activePetId ?? rolled.key),
-    },
-  });
-  if (!alreadyOwned) {
-    await prisma.petStats.upsert({ where: { childId_petKey: { childId, petKey: rolled.key } }, update: {}, create: { childId, petKey: rolled.key, experience: 0, level: 1 } });
-  }
-}
+// grantReward()/grantRandomPet() moved to rewards.service.ts (2026-08-28) so
+// packages.service.ts can share them — see that file's doc comment.
 
 export interface ClaimBattlePassResult {
   state: BattlePassStateDto;

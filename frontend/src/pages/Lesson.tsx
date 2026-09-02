@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { AdSlot, BackIcon, HeartRow, SpeakerIcon } from "../components/ui";
+import { AdSlot, BackIcon, CoinIcon, HeartRow, TopicIcon } from "../components/ui";
+import { ArrowRight, Check, Gift, RotateCcw, Sparkles, Trophy, Volume2, X } from "lucide-react";
 import { useT } from "../lib/i18n";
 import { speak } from "../lib/tts";
 import { getAutoSpeak } from "../lib/ttsPrefs";
@@ -14,24 +15,72 @@ export interface LessonQuestion {
 interface LessonProps {
   questions: LessonQuestion[];
   isPremium: boolean;
+  topicLabel?: string;
   onExit: () => void;
-  onComplete: (result: { correct: number; total: number; coinsEarned: number }) => void;
+  onComplete: (result: { correct: number; total: number; coinsEarned: number; learnedWords: string[] }) => void;
   onGoShop: () => void;
 }
 
 const COINS_PER_LESSON = 50;
 const ANSWER_DELAY_MS = 1100;
+const OPTION_COLORS = ["#5C7BC9", "#F5822B", "#57B6AD", "#9B7EDE"];
+// Forest and Town ship with complete local image packs. Keeping this explicit
+// avoids requesting missing assets for worlds that have not been illustrated yet.
+const GENERATED_LESSON_IMAGES = new Set([
+  "flower", "bird", "tree", "sun", "river",
+  "deer", "owl", "squirrel", "fox", "butterfly", "bee",
+  "waterfall", "leaf", "mushroom", "fish", "nest",
+  "whale", "dolphin", "shark", "octopus", "crab", "starfish", "jellyfish", "seahorse", "lobster", "squid", "seal", "penguin", "otter", "walrus", "eel", "clam", "stingray", "swordfish", "pelican",
+  "cow", "pig", "sheep", "goat", "horse", "chicken", "duck", "rooster", "turkey", "rabbit", "donkey", "llama", "hen", "calf", "lamb", "goose", "mule", "ox", "pony",
+  "ant", "ladybug", "spider", "grasshopper", "dragonfly", "mosquito", "fly", "worm", "snail", "caterpillar", "cricket", "beetle", "moth", "firefly", "wasp", "cockroach", "centipede",
+  "grass", "root", "branch", "seed", "bush", "vine", "petal", "stem", "bark", "moss", "fern", "thorn", "weed", "sprout", "blossom", "cactus",
+  "moon", "cloud", "rain", "snow", "wind", "storm", "rainbow", "lightning", "thunder", "fog", "star", "sky", "breeze", "mist", "hail", "sunshine", "drizzle", "hurricane",
+  "tent", "campfire", "backpack", "flashlight", "map", "compass", "rope", "boots", "lantern", "canoe", "trail", "cabin", "blanket", "matches", "whistle", "hammock", "kettle", "paddle", "binoculars",
+  "snake", "lizard", "turtle", "frog", "toad", "crocodile", "alligator", "gecko", "iguana", "chameleon", "newt", "salamander", "tortoise", "python", "cobra", "viper", "dinosaur", "tadpole", "skink",
+  "park", "hospital", "market", "bridge", "airport",
+  "police-officer", "doctor", "firefighter", "chef", "mailman", "farmer",
+  "bakery", "library", "bank", "hotel", "bus", "train", "bicycle",
+  "house", "apartment", "tower", "factory", "warehouse", "skyscraper", "cottage", "cabin", "mansion", "garage", "shed", "barn", "mall", "stadium", "theater", "palace", "cathedral", "lighthouse", "windmill",
+  "bookstore", "toy-store", "pharmacy", "supermarket", "butcher-shop", "florist", "jewelry-store", "shoe-store", "pet-store", "candy-store", "barber-shop", "laundromat", "gas-station", "car-wash", "ice-cream-shop", "coffee-shop", "flower-shop", "bike-shop",
+  "car", "bike", "motorbike", "taxi", "truck", "subway", "scooter", "ambulance", "fire-truck", "van", "tram", "ferry", "helicopter", "plane", "boat", "ship", "cable-car",
+  "mother", "father", "sister", "brother", "grandmother", "grandfather", "aunt", "uncle", "cousin", "baby", "friend", "neighbor", "classmate", "driver", "dentist", "nurse", "pilot", "sailor", "artist",
+  "traffic-light", "sidewalk", "crosswalk", "street", "sign", "lamp-post", "bench", "fountain", "statue", "trash-can", "mailbox", "fire-hydrant", "bus-stop", "parking-lot", "elevator", "escalator", "alley", "plaza", "tunnel",
+  "soccer-ball", "basketball", "tennis-racket", "swimming-pool", "running-shoes", "dance-shoes", "paintbrush", "microphone", "storybook", "sketchbook", "skateboard", "chessboard", "cooking-pot", "garden-hose", "camera", "jump-rope", "surfboard", "fishing-rod",
+  "shirt", "pants", "dress", "skirt", "shoe", "sock", "hat", "jacket", "coat", "glove", "scarf", "belt", "sweater", "shorts", "boot", "sandal", "t-shirt", "pajama", "button",
+]);
 
-/** Lesson — matches the reference sheet's "Phần 1 · Bài học + Test" panel. */
-export default function Lesson({ questions, isPremium, onExit, onComplete, onGoShop }: LessonProps) {
+function lessonImageKey(answer: string): string {
+  return answer.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function LessonVisual({ answer }: { answer: string }) {
+  const key = lessonImageKey(answer);
+  const isInLegacyManifest = GENERATED_LESSON_IMAGES.has(key);
+  return (
+    <div className="relative grid h-full w-full place-items-center bg-[radial-gradient(circle,#FFFDF6_0%,#F5EEDC_100%)]">
+      <TopicIcon label={answer} color="#57B6AD" size={112} />
+      <img
+        key={key}
+        src={`/lesson-images/${key}.webp`}
+        alt={answer}
+        data-legacy-manifest={isInLegacyManifest || undefined}
+        className="absolute inset-0 h-full w-full bg-[#FFFAF0] object-contain"
+        onError={(event) => { event.currentTarget.style.display = "none"; }}
+      />
+    </div>
+  );
+}
+
+export default function Lesson({ questions, isPremium, topicLabel, onExit, onComplete, onGoShop }: LessonProps) {
   const t = useT();
   const [step, setStep] = useState(0);
   const [chosen, setChosen] = useState<string | null>(null);
   const [right, setRight] = useState(0);
   const [hearts, setHearts] = useState(3);
   const [showResult, setShowResult] = useState(false);
-
+  const [learnedWords, setLearnedWords] = useState<Set<string>>(() => new Set());
   const q = questions[step]!;
+  const progress = Math.round(((step + (chosen ? 1 : 0)) / questions.length) * 100);
 
   useEffect(() => {
     if (getAutoSpeak()) speak(q.answer);
@@ -42,13 +91,13 @@ export default function Lesson({ questions, isPremium, onExit, onComplete, onGoS
     if (chosen) return;
     const ok = label === q.answer;
     setChosen(label);
-    setRight((r) => r + (ok ? 1 : 0));
-    if (!ok) setHearts((h) => Math.max(0, h - 1));
+    setRight((value) => value + (ok ? 1 : 0));
+    if (ok) setLearnedWords((value) => new Set(value).add(q.answer.trim().toLowerCase()));
+    if (!ok) setHearts((value) => Math.max(0, value - 1));
     setTimeout(() => {
-      if (step >= questions.length - 1) {
-        setShowResult(true);
-      } else {
-        setStep((s) => s + 1);
+      if (step >= questions.length - 1) setShowResult(true);
+      else {
+        setStep((value) => value + 1);
         setChosen(null);
       }
     }, ANSWER_DELAY_MS);
@@ -60,145 +109,123 @@ export default function Lesson({ questions, isPremium, onExit, onComplete, onGoS
     setRight(0);
     setHearts(3);
     setShowResult(false);
+    setLearnedWords(new Set());
   }
 
   return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-gradient-to-b from-[#CFEAF6] via-[#EAF6E4] via-55% to-[#DCEFC8]">
-      <div className="flex items-center gap-3.5 p-4">
-        <button onClick={onExit} className="grid h-[50px] w-[50px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F] transition-transform active:translate-y-[3px] active:shadow-[0_1px_0_#43609F]">
+    <div className="relative flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#C9EEF4_0%,#EAF7EA_54%,#F8F3DE_100%)]">
+      <div className="pointer-events-none absolute left-[6%] top-[16%] text-5xl opacity-45">☁️</div>
+      <div className="pointer-events-none absolute right-[5%] top-[25%] text-4xl opacity-35">☁️</div>
+
+      <header className="relative z-10 flex items-center gap-3.5 px-4.5 py-4">
+        <button onClick={onExit} aria-label={t("Quay lại")} className="grid h-[50px] w-[50px] shrink-0 place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F] transition-transform active:translate-y-[3px] active:shadow-[0_1px_0_#43609F]">
           <BackIcon />
         </button>
-        <HeartRow total={3} left={hearts} />
-        <div className="flex flex-1 items-center gap-3 rounded-full bg-white px-4.5 py-2 shadow-[0_3px_0_rgba(0,0,0,.1)]">
-          <span className="font-baloo text-base font-extrabold text-[#6E6047]">
-            {step + 1}/{questions.length}
-          </span>
-          <span className="h-3.5 flex-1 overflow-hidden rounded-full bg-[#EFE3CC]">
-            <span className="block h-full rounded-full bg-brand-green transition-[width] duration-300" style={{ width: `${Math.round((step / questions.length) * 100)}%` }} />
-          </span>
-          <span className="font-baloo text-[13px] font-bold text-[#8A7A62]">Topic: Nature</span>
-        </div>
-        <button className="grid h-[50px] w-[50px] place-items-center rounded-full bg-white shadow-[0_4px_0_rgba(0,0,0,.12)]">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="#6E6047">
-            <rect x="6" y="5" width="4" height="14" rx="1.6" />
-            <rect x="14" y="5" width="4" height="14" rx="1.6" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="flex flex-col items-center gap-5 px-10 pt-2">
-        <div className="flex items-center gap-4.5">
-          <img src="/pets/buddy.png" alt="Buddy" className="animate-bob h-[140px] w-[140px] object-contain" />
-          <div className="relative flex items-center gap-3.5 rounded-[24px] border-[3px] border-line bg-white px-6.5 py-4 shadow-[0_5px_0_#E7D4B2]">
-            <button
-              onClick={() => speak(q.answer)}
-              className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-full bg-brand-teal shadow-[0_4px_0_#37A0A0] transition-transform active:translate-y-[3px] active:shadow-[0_1px_0_#37A0A0]"
-            >
-              <SpeakerIcon />
-            </button>
-            <div className="flex flex-col">
-              <span className="font-baloo text-[30px] font-extrabold">{q.prompt}</span>
-              <span className="font-baloo text-sm font-semibold text-[#8A7A62]">{q.hint}</span>
-            </div>
-            <span className="absolute left-[-13px] top-[38px] h-5 w-5 rotate-45 border-b-[3px] border-l-[3px] border-line bg-white" />
+        <div className="flex min-w-0 flex-1 items-center gap-3 rounded-[22px] border-2 border-white/90 bg-white/85 px-4 py-2.5 shadow-[0_4px_0_rgba(74,96,80,.12)] backdrop-blur-sm">
+          <div className="shrink-0 font-baloo text-[14px] font-extrabold text-[#4C7E65]">{step + 1}/{questions.length}</div>
+          <div className="h-3 flex-1 overflow-hidden rounded-full bg-[#E8E1CF]">
+            <div className="h-full rounded-full bg-[linear-gradient(90deg,#67BB52,#A3D763)] transition-[width] duration-500" style={{ width: `${progress}%` }} />
           </div>
+          <span className="rounded-full bg-[#EAF6E4] px-3 py-1 font-baloo text-[11px] font-extrabold text-[#568B3B]">{progress}%</span>
+        </div>
+        <div className="rounded-[18px] border-2 border-white/80 bg-white/80 px-3 py-2 shadow-[0_3px_0_rgba(0,0,0,.08)]">
+          <HeartRow total={3} left={hearts} />
+        </div>
+      </header>
+
+      <main className="relative z-10 mx-auto flex min-h-0 w-full max-w-[980px] flex-1 flex-col px-6 pb-5">
+        <div className="mb-3 flex items-center justify-between px-1">
+          <div className="flex min-w-0 items-center gap-2 font-baloo text-[12px] font-extrabold uppercase tracking-[0.1em] text-[#598477]">
+            <Sparkles size={16} /> <span className="truncate">{topicLabel ?? t("Bài học tiếng Anh")}</span>
+          </div>
+          <div className="font-baloo text-[12px] font-bold text-[#8A7A62]">{t("Chọn đáp án đúng")}</div>
         </div>
 
-        <div className="grid w-full grid-cols-4 gap-5">
-          {q.options.map((label) => {
+        <section className="mb-4 grid min-h-[205px] grid-cols-[220px_1fr] items-center gap-5 rounded-[30px] border-[3px] border-white bg-white/78 p-4 shadow-[0_7px_0_#CFE1D4] backdrop-blur-sm">
+          <div className="relative h-[172px] overflow-hidden rounded-[24px] border-[3px] border-[#E9DABF] bg-[#FFF9ED] shadow-[0_5px_0_#E2D1B2]">
+            <LessonVisual answer={q.answer} />
+            <span className="absolute bottom-2 right-2 rounded-full bg-white/90 px-2.5 py-1 font-baloo text-[9px] font-extrabold uppercase tracking-wide text-[#8A7A62]">{t("Nhìn hình")}</span>
+          </div>
+          <div className="flex min-w-0 items-center gap-4">
+            <div className="relative shrink-0">
+              <div className="absolute inset-3 rounded-full bg-[#FFEBA8] blur-xl" />
+              <img src="/pets/buddy.png" alt="Buddy" className="animate-bob relative h-[100px] w-[100px] object-contain" />
+            </div>
+            <div className="relative min-w-0 flex-1 rounded-[25px] border-[3px] border-[#E7D4B2] bg-white px-5 py-4 shadow-[0_5px_0_#E7D4B2]">
+              <span className="absolute -left-[11px] top-1/2 h-5 w-5 -translate-y-1/2 rotate-45 border-b-[3px] border-l-[3px] border-[#E7D4B2] bg-white" />
+              <div className="flex items-center gap-3">
+                <button onClick={() => speak(q.answer)} aria-label={t("Nghe lại")} className="grid h-[48px] w-[48px] shrink-0 place-items-center rounded-full bg-[#38BFC4] text-white shadow-[0_4px_0_#28999D] transition-transform hover:scale-105 active:translate-y-1 active:shadow-none">
+                  <Volume2 size={24} strokeWidth={2.8} />
+                </button>
+                <div>
+                  <h1 className="font-baloo text-[29px] font-extrabold leading-tight text-[#3F352D]">What is this?</h1>
+                  <p className="mt-1 font-baloo text-[12px] font-semibold text-[#8A7A62]">{t("Nhìn hình và chọn đáp án đúng")}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="grid min-h-0 flex-1 grid-cols-2 gap-3.5">
+          {q.options.map((label, index) => {
             const picked = chosen === label;
-            const ok = label === q.answer;
-            const show = chosen !== null;
-            const bg = show && picked ? (ok ? "#EEF9E3" : "#FDE7E4") : show && ok ? "#EEF9E3" : "#fff";
-            const border = show && picked ? (ok ? "#7CC24A" : "#EF6A5A") : show && ok ? "#CDE7B4" : "#E7D4B2";
+            const correct = label === q.answer;
+            const revealed = chosen !== null;
+            const state = revealed && correct ? "correct" : revealed && picked ? "wrong" : "idle";
+            const border = state === "correct" ? "#75BA48" : state === "wrong" ? "#E65F55" : "#E3D5BA";
+            const background = state === "correct" ? "#EFF9E5" : state === "wrong" ? "#FDE9E6" : "rgba(255,255,255,.94)";
             return (
               <button
                 key={label}
                 onClick={() => answer(label)}
-                style={{ background: bg, borderColor: border, boxShadow: `0 6px 0 ${border}` }}
-                className="flex flex-col items-center gap-3 rounded-[26px] border-4 p-4 transition-transform hover:-translate-y-1"
+                disabled={revealed}
+                className="group relative flex min-h-[92px] items-center gap-4 overflow-hidden rounded-[24px] border-[3px] px-4 text-left transition-all hover:-translate-y-1 disabled:cursor-default disabled:hover:translate-y-0"
+                style={{ borderColor: border, background, boxShadow: `0 5px 0 ${border}` }}
               >
-                <span className="grid aspect-[1.15] w-full place-items-center rounded-[18px] border-2 border-dashed border-[#DFC9A2] bg-[#F3E9D6] font-mono text-[10px] text-[#A2947C]">
-                  {label.toLowerCase()}
+                <span className="grid h-[52px] w-[52px] shrink-0 place-items-center rounded-[17px] border-2 border-white font-baloo text-[22px] font-extrabold text-white shadow-[inset_0_-4px_0_rgba(0,0,0,.1),0_3px_0_rgba(0,0,0,.1)]" style={{ background: OPTION_COLORS[index % OPTION_COLORS.length] }}>{String.fromCharCode(65 + index)}</span>
+                <span className="min-w-0 flex-1">
+                  <span className="block font-baloo text-[20px] font-extrabold leading-tight text-[#40362F]">{label}</span>
+                  <span className="mt-1 block font-baloo text-[10px] font-extrabold uppercase tracking-[0.1em] text-[#A09282]">{t("Chọn đáp án này")}</span>
                 </span>
-                <span className="font-baloo text-[21px] font-extrabold text-ink">{label}</span>
+                {state === "correct" && <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#75BA48] text-white"><Check size={21} strokeWidth={3.5} /></span>}
+                {state === "wrong" && <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#E65F55] text-white"><X size={21} strokeWidth={3.5} /></span>}
               </button>
             );
           })}
         </div>
 
-        <div className="flex min-h-14 items-center gap-3.5">
-          {chosen !== null && (
-            <div
-              className="animate-pop flex items-center gap-3 rounded-[18px] border-[3px] px-6.5 py-3 font-baloo text-xl font-extrabold"
-              style={
-                chosen === q.answer
-                  ? { background: "#EEF9E3", borderColor: "#CDE7B4", color: "#4F7C2A" }
-                  : { background: "#FDE7E4", borderColor: "#F6C3BB", color: "#B3402F" }
-              }
-            >
-              {chosen === q.answer ? t("Đúng rồi! +10 coin") : `${t("Chưa đúng — đáp án là")} ${q.answer}`}
+        <div className="flex min-h-[62px] items-end justify-center pt-3">
+          {chosen && (
+            <div className={`animate-pop flex items-center gap-3 rounded-full border-[3px] px-6 py-2.5 font-baloo text-[17px] font-extrabold shadow-sm ${chosen === q.answer ? "border-[#B9DD9C] bg-[#F1FAE9] text-[#4E7D34]" : "border-[#F3B8B0] bg-[#FFF0ED] text-[#B3402F]"}`}>
+              {chosen === q.answer ? <Check size={22} strokeWidth={3.5} /> : <X size={22} strokeWidth={3.5} />}
+              {chosen === q.answer ? t("Chính xác! Buddy rất vui!") : `${t("Chưa đúng — đáp án là")} ${q.answer}`}
             </div>
           )}
         </div>
-      </div>
-
-      <div className="absolute bottom-6.5 left-6.5 flex gap-3.5">
-        <button className="grid h-16 w-16 place-items-center rounded-full bg-[#5C7BC9] shadow-[0_5px_0_#43609F]">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff">
-            <rect x="3" y="5" width="8.4" height="15" rx="1.6" />
-            <rect x="12.6" y="5" width="8.4" height="15" rx="1.6" />
-          </svg>
-        </button>
-        <button className="relative grid h-16 w-16 place-items-center rounded-full bg-brand-green shadow-[0_5px_0_#5C9C31]">
-          <svg width="30" height="30" viewBox="0 0 24 24" fill="#fff">
-            <circle cx="12" cy="10" r="6" />
-            <rect x="9.6" y="15.4" width="4.8" height="5" rx="1.6" />
-          </svg>
-          <span className="absolute -right-1.5 -top-1.5 grid h-[26px] w-[26px] place-items-center rounded-full bg-[#EF6A5A] font-baloo text-sm font-extrabold text-white shadow-[0_2px_0_#C74B3D]">
-            3
-          </span>
-        </button>
-      </div>
+      </main>
 
       {showResult && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-ink/[.42]">
-          <div className="animate-pop flex w-[92%] max-w-[620px] flex-col items-center gap-4 rounded-[30px] border-4 border-line2 bg-cream-card p-8 shadow-[0_14px_40px_rgba(0,0,0,.24)]">
-            <div className="font-baloo text-[30px] font-extrabold text-[#C7551A]">{t("Xong bài học!")}</div>
-            <div className="grid h-[120px] w-[120px] place-items-center rounded-full bg-[#FFF3D6]">
-              <svg width="72" height="72" viewBox="0 0 24 24" fill="#FFC93C">
-                <polygon points="12,3 14.7,9.2 21.4,9.8 16.4,14.2 17.9,20.8 12,17.3 6.1,20.8 7.6,14.2 2.6,9.8 9.3,9.2" />
-              </svg>
+        <div className="absolute inset-0 z-30 grid place-items-center bg-[#2F2A25]/55 p-5 backdrop-blur-[3px]">
+          <div className="animate-pop relative flex w-full max-w-[540px] flex-col items-center overflow-hidden rounded-[32px] border-4 border-white bg-[#FFFDF7] p-6 shadow-[0_18px_55px_rgba(0,0,0,.3)]">
+            <div className="absolute inset-x-0 top-0 h-24 bg-[linear-gradient(135deg,#FFF0B8,#DDF4D0)]" />
+            <div className="relative grid h-[92px] w-[92px] place-items-center rounded-full border-4 border-white bg-[#FFD85B] text-white shadow-[0_6px_0_#D8A91C]">
+              <Trophy size={50} strokeWidth={2.4} />
             </div>
-            <div className="flex gap-3">
-              <div className="flex items-center gap-1.5 rounded-full bg-white px-4.5 py-2 font-baloo text-[17px] font-extrabold text-[#B07A0C]">
-                <svg width="19" height="19" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" fill="#F2A81C" />
-                  <circle cx="12" cy="12" r="6.6" fill="#FFE08A" />
-                </svg>
-                +{COINS_PER_LESSON}
-              </div>
-              <div className="rounded-full bg-white px-4.5 py-2 font-baloo text-[17px] font-extrabold text-[#4F7C2A]">+30 XP</div>
-              <div className="rounded-full bg-white px-4.5 py-2 font-baloo text-[17px] font-extrabold text-[#3E7FB0]">
-                {right}/{questions.length} {t("đúng")}
-              </div>
+            <h2 className="relative mt-3 font-baloo text-[29px] font-extrabold text-[#C7551A]">{t("Hoàn thành bài học!")}</h2>
+            <p className="font-baloo text-[13px] font-semibold text-[#7E7062]">{t("Buddy rất tự hào về bạn")}</p>
+
+            <div className="my-4 grid w-full grid-cols-3 gap-2.5">
+              <div className="rounded-[18px] bg-[#FFF5D8] p-3 text-center"><div className="flex justify-center"><CoinIcon size={25} /></div><div className="mt-1 font-baloo text-lg font-extrabold text-[#A9730C]">+{COINS_PER_LESSON}</div><div className="font-baloo text-[10px] font-bold text-[#9A8A72]">COIN</div></div>
+              <div className="rounded-[18px] bg-[#EAF7E1] p-3 text-center"><Sparkles className="mx-auto text-[#6BA63E]" /><div className="mt-1 font-baloo text-lg font-extrabold text-[#568A35]">+30</div><div className="font-baloo text-[10px] font-bold text-[#78906A]">XP</div></div>
+              <div className="rounded-[18px] bg-[#E6F2FA] p-3 text-center"><Check className="mx-auto text-[#4387B1]" /><div className="mt-1 font-baloo text-lg font-extrabold text-[#36799F]">{right}/{questions.length}</div><div className="font-baloo text-[10px] font-bold text-[#718A98]">{t("ĐÚNG")}</div></div>
             </div>
-            <div className="w-full rounded-[18px] border-[3px] border-dashed border-[#DFC9A2] bg-cream p-3.5">
+
+            <div className="w-full rounded-[17px] border-2 border-dashed border-[#DFC9A2] bg-[#FFF9EC] p-2.5">
               <AdSlot kind="banner" premium={isPremium} note={t("Chỉ tài khoản người lớn thấy quảng cáo")} />
             </div>
-            <div className="flex w-full gap-3">
-              <button onClick={restart} className="flex-1 rounded-[18px] border-[3px] border-line bg-white py-3.5 font-baloo text-[17px] font-bold text-brand-brown">
-                {t("Học lại")}
-              </button>
-              <button
-                onClick={() => {
-                  onComplete({ correct: right, total: questions.length, coinsEarned: COINS_PER_LESSON });
-                  onGoShop();
-                }}
-                className="flex-1 rounded-[18px] bg-brand-green py-3.5 font-baloo text-[17px] font-extrabold text-white shadow-[0_5px_0_#5C9C31] transition-transform active:translate-y-1 active:shadow-[0_1px_0_#5C9C31]"
-              >
-                {t("Đổi thưởng")}
-              </button>
+            <div className="mt-4 flex w-full gap-3">
+              <button onClick={restart} className="flex flex-1 items-center justify-center gap-2 rounded-[18px] border-[3px] border-[#E3D3B5] bg-white py-3 font-baloo text-[16px] font-extrabold text-[#6E6047] shadow-[0_4px_0_#E3D3B5]"><RotateCcw size={19} /> {t("Học lại")}</button>
+              <button onClick={() => { onComplete({ correct: right, total: questions.length, coinsEarned: COINS_PER_LESSON, learnedWords: [...learnedWords] }); onGoShop(); }} className="flex flex-1 items-center justify-center gap-2 rounded-[18px] bg-[#75B94B] py-3 font-baloo text-[16px] font-extrabold text-white shadow-[0_5px_0_#579832] transition-transform active:translate-y-1 active:shadow-none"><Gift size={19} /> {t("Nhận thưởng")} <ArrowRight size={18} /></button>
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { api, ApiError, type MiniGameTopicDetail, type MiniGameTopicListItem } from "../lib/api";
-import { BackIcon, CoinIcon, MemoryCard, RewardModal, type MemoryCardDef } from "../components/ui";
+import { BackIcon, CoinIcon, MemoryCard, RewardModal, TopicIcon, type MemoryCardDef } from "../components/ui";
 import { PETS } from "../components/ui/tokens";
 import { useT } from "../lib/i18n";
 
@@ -86,7 +86,7 @@ export default function MiniGame({ onExit, onWin }: MiniGameProps) {
                 onClick={() => openTopic(tp.id)}
                 className="flex flex-col items-start gap-2.5 rounded-[22px] border-[3px] border-line2 bg-white p-4.5 text-left shadow-[0_5px_0_#EADAB8] transition-transform hover:-translate-y-1"
               >
-                <span className="h-10 w-10 rounded-2xl" style={{ background: tp.color }} />
+                <TopicIcon label={tp.name} color={tp.color} />
                 <span className="font-baloo text-base font-extrabold leading-snug">{tp.name}</span>
                 <span className="mt-auto font-baloo text-[11.5px] font-bold text-[#A2947C]">
                   {tp._count.words} {t("cặp từ")}

@@ -6,6 +6,7 @@ import { speak } from "../lib/tts";
 
 interface ChatBuddyProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
 /** Trò Chuyện Cùng Bạn Thú (Chat with Buddy) — luyện hội thoại tương tác,
@@ -16,7 +17,7 @@ interface ChatBuddyProps {
  * trò chuyện thật, khác với 1 câu hỏi độc lập như phần lớn game khác. Sai chỉ
  * rung nút, không tính, không phạt — giống mọi game khác trong app. Cùng
  * khung picker→play với English Detective/Echo Parrot. */
-export default function ChatBuddy({ onExit }: ChatBuddyProps) {
+export default function ChatBuddy({ onExit, onComplete }: ChatBuddyProps) {
   const t = useT();
   const [list, setList] = useState<ChatBuddyTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<ChatBuddyTopicDetail | null>(null);
@@ -39,7 +40,7 @@ export default function ChatBuddy({ onExit }: ChatBuddyProps) {
     }
   }
 
-  if (topic) return <ChatBuddyPlay topic={topic} onExit={() => setTopic(null)} />;
+  if (topic) return <ChatBuddyPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#FFF3D6] to-[#FFF9EC]">
@@ -84,7 +85,7 @@ export default function ChatBuddy({ onExit }: ChatBuddyProps) {
 }
 
 /** The actual conversation, once a topic has been picked. */
-function ChatBuddyPlay({ topic, onExit }: { topic: ChatBuddyTopicDetail; onExit: () => void }) {
+function ChatBuddyPlay({ topic, onExit, onComplete }: { topic: ChatBuddyTopicDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
   const rounds = topic.rounds;
   const [roundIdx, setRoundIdx] = useState(0);
@@ -103,7 +104,7 @@ function ChatBuddyPlay({ topic, onExit }: { topic: ChatBuddyTopicDetail; onExit:
     setCoins((c) => c + 10);
     setCoinPop((p) => p + 1);
     setTimeout(() => {
-      if (roundIdx + 1 >= rounds.length) setFinished(true);
+      if (roundIdx + 1 >= rounds.length) { setFinished(true); onComplete?.(); }
       else setRoundIdx((i) => i + 1);
     }, 1600);
   }

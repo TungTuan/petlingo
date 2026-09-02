@@ -1,340 +1,108 @@
-import { useEffect, useState } from "react";
-import { api, ApiError, type Child, type RpgStatus, type RpgTopicDetail, type RpgTopicListItem } from "../lib/api";
+import { useEffect, useMemo, useState } from "react";
+import { ArrowRight, Check, Crown, Flame, Shield, Sparkles, Swords, Trophy, X, Zap } from "lucide-react";
+import PetPortrait from "../components/PetPortrait";
 import { BackIcon, ChunkyButton, CoinIcon, SoftButton } from "../components/ui";
+import { PETS, RARITY } from "../components/ui/tokens";
+import { api, ApiError, type Child, type RpgStatus, type RpgTopicDetail, type RpgTopicListItem } from "../lib/api";
 import { useT } from "../lib/i18n";
 
-interface WordRpgProps {
-  child: Child;
-  onExit: () => void;
-}
-
+interface WordRpgProps { child: Child; onExit: () => void }
 const PLAYER_MAX_HP = 100;
 const PLAYER_DAMAGE = 25;
+const TOPIC_META: Record<string, { icon: string; eyebrow: string; description: string; backdrop: string; squad: string[] }> = {
+  "emotion-forest": { icon: "🌙", eyebrow: "Ải 1 · Cơ bản", description: "Đọc cảm xúc, kết bạn với đội thú trong rừng phép thuật.", backdrop: "linear-gradient(145deg,#46316F 0%,#694E91 52%,#2B2149 100%)", squad: ["mimi", "buddy", "lila", "sprout", "umbra"] },
+  "action-cave": { icon: "🔥", eyebrow: "Ải 2 · Thử thách", description: "Học động từ hành động và chinh phục hang động pha lê.", backdrop: "linear-gradient(145deg,#164E63 0%,#257A83 52%,#173B56 100%)", squad: ["kiwi", "stripe", "nocty", "gargo", "frostwing"] },
+};
+const DEFAULT_SQUAD = ["poppy", "leo", "mystic", "aqua", "ember"];
+const squadFor = (key: string) => TOPIC_META[key]?.squad ?? DEFAULT_SQUAD;
+function petFor(topicKey: string, index: number) {
+  const id = squadFor(topicKey)[index % squadFor(topicKey).length]!;
+  return PETS.find((pet) => pet.id === id) ?? PETS[0]!;
+}
+function HpBar({ percent, color, track = "#E8E0D2" }: { percent: number; color: string; track?: string }) {
+  return <div className="h-3 overflow-hidden rounded-full border border-white/20" style={{ background: track }}><div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${Math.max(0, percent)}%`, background: color }} /></div>;
+}
 
-/** Word RPG — a dungeon (topic) is a line of monsters; each monster is a
- * few "what does this word mean?" questions. Answer right and the monster
- * takes damage; answer wrong and YOU take damage (see the player HP bar) —
- * that real stakes-within-a-run is what makes this feel different from
- * Shop/Home's zero-penalty style. Coins + XP are credited to the real
- * backend Progress the instant a monster falls (services/rpg.service.ts),
- * not batched at the end, so even a mid-run game-over keeps what was
- * already earned — Level/XP persist across sessions (unlike Shop/Home's
- * purely session-local coin counters), which is the actual point of this
- * game per the original brief ("XP, level... giúp người chơi có lý do
- * quay lại"). Backed by real RpgTopic/RpgMonster catalog data (see
- * /catalog/rpg-topics): shows a dungeon picker first, then plays whichever
- * dungeon was tapped. */
 export default function WordRpg({ child, onExit }: WordRpgProps) {
   const t = useT();
   const [list, setList] = useState<RpgTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<RpgTopicDetail | null>(null);
   const [loadErr, setLoadErr] = useState("");
-
-  useEffect(() => {
-    api
-      .listRpgTopics()
-      .then((r) => setList(r.topics))
-      .catch((err) => setLoadErr(err instanceof ApiError ? t(err.message) : t("Không tải được danh sách chủ đề, thử lại nhé.")));
-  }, [t]);
-
+  const [loadingId, setLoadingId] = useState("");
+  useEffect(() => { api.listRpgTopics().then((r) => setList(r.topics)).catch((err) => setLoadErr(err instanceof ApiError ? t(err.message) : t("Không tải được danh sách chủ đề, thử lại nhé."))); }, [t]);
   async function openTopic(id: string) {
-    setLoadErr("");
-    try {
-      const { topic } = await api.getRpgTopic(id);
-      setTopic(topic);
-    } catch (err) {
-      setLoadErr(err instanceof ApiError ? t(err.message) : t("Không tải được chủ đề, thử lại nhé."));
-    }
+    setLoadErr(""); setLoadingId(id);
+    try { const result = await api.getRpgTopic(id); setTopic(result.topic); }
+    catch (err) { setLoadErr(err instanceof ApiError ? t(err.message) : t("Không tải được chủ đề, thử lại nhé.")); }
+    finally { setLoadingId(""); }
   }
-
   if (topic) return <WordRpgBattle child={child} topic={topic} onExit={() => setTopic(null)} />;
-
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-[#2A1F3D] via-[#3B2A52] to-[#241A38]">
-      <div className="flex items-center gap-3.5 p-4.5">
-        <button onClick={onExit} className="grid h-[50px] w-[50px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F]">
-          <BackIcon />
-        </button>
-        <div className="flex flex-col">
-          <span className="font-baloo text-[25px] font-extrabold text-white">Word RPG</span>
-          <span className="font-baloo text-[12.5px] font-semibold text-[#C9BEDD]">{t("Chọn 1 hầm ngục để bắt đầu phiêu lưu")}</span>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto px-6 pb-6">
-        {list === null ? (
-          <div className="grid h-full place-items-center font-baloo text-base font-bold text-white/40">{t("Đang tải danh sách chủ đề…")}</div>
-        ) : loadErr && list.length === 0 ? (
-          <div className="grid h-full place-items-center font-baloo text-base font-bold text-[#EF6A5A]">{loadErr}</div>
-        ) : (
-          <div className="grid grid-cols-5 gap-4.5">
-            {list.map((tp) => (
-              <button
-                key={tp.id}
-                onClick={() => openTopic(tp.id)}
-                className="flex flex-col items-start gap-2.5 rounded-[22px] border-[3px] border-white/15 bg-white/95 p-4.5 text-left shadow-[0_5px_0_rgba(0,0,0,.25)] transition-transform hover:-translate-y-1"
-              >
-                <span className="h-10 w-10 rounded-2xl" style={{ background: tp.color }} />
-                <span className="font-baloo text-base font-extrabold leading-snug">{tp.name}</span>
-                <span className="mt-auto font-baloo text-[11.5px] font-bold text-[#8A7A62]">
-                  {tp._count.monsters} {t("quái vật")}
-                </span>
-              </button>
-            ))}
+    <div className="relative flex h-full flex-col overflow-hidden bg-[radial-gradient(circle_at_50%_-10%,#CDEEFF_0%,#E9F7F0_42%,#FFF5DE_100%)]">
+      <div className="pointer-events-none absolute -left-20 top-20 h-64 w-64 rounded-full bg-[#82D4E8]/25 blur-3xl" />
+      <div className="pointer-events-none absolute -right-16 bottom-8 h-72 w-72 rounded-full bg-[#FFD36C]/25 blur-3xl" />
+      <header className="relative z-10 flex items-center gap-4 px-5 py-4">
+        <button onClick={onExit} aria-label={t("Quay lại")} className="grid h-[52px] w-[52px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_5px_0_#43609F] active:translate-y-1 active:shadow-none"><BackIcon /></button>
+        <div className="min-w-0 flex-1"><div className="flex items-center gap-2"><Swords className="text-[#E56738]" size={25} /><h1 className="font-baloo text-[27px] font-extrabold text-[#3D352D]">Word RPG</h1></div><p className="font-baloo text-[12px] font-semibold text-[#7E746A]">Chọn vùng đất · trả lời từ vựng · thu phục bạn thú</p></div>
+        <div className="rounded-[20px] border-2 border-white bg-white/85 px-4 py-2 text-right shadow-[0_4px_0_#D7E2D9]"><div className="font-baloo text-[10px] font-extrabold uppercase tracking-wider text-[#8C8176]">Nhà thám hiểm</div><div className="font-baloo text-[15px] font-extrabold text-[#4E7C68]">{child.displayName}</div></div>
+      </header>
+      <main className="relative z-10 min-h-0 flex-1 overflow-y-auto px-5 pb-6">
+        <section className="mx-auto mb-5 flex max-w-[1040px] items-center justify-between overflow-hidden rounded-[28px] border-[3px] border-white bg-[linear-gradient(120deg,#FFFAE9,#E9F7E5)] px-6 py-4 shadow-[0_7px_0_#CEE0D0]">
+          <div><div className="mb-1 flex items-center gap-2 font-baloo text-[11px] font-extrabold uppercase tracking-[.12em] text-[#71906A]"><Sparkles size={15} /> Hành trình hôm nay</div><h2 className="font-baloo text-[22px] font-extrabold text-[#43382E]">Đánh bại 5 đối thủ bằng vốn từ của bạn</h2><p className="mt-1 font-baloo text-[12px] font-semibold text-[#817567]">Trả lời đúng để tấn công. Thắng mỗi pet nhận coin và XP ngay lập tức.</p></div>
+          <div className="hidden gap-2 sm:flex"><div className="rounded-2xl bg-[#FFF1C6] px-4 py-2 text-center font-baloo font-extrabold text-[#A87517]"><div className="text-[10px] uppercase">Thường</div>+15 coin</div><div className="rounded-2xl bg-[#F0E9FF] px-4 py-2 text-center font-baloo font-extrabold text-[#7253A7]"><div className="text-[10px] uppercase">Boss</div>+40 coin</div></div>
+        </section>
+        {list === null ? <div className="grid h-64 place-items-center font-baloo font-bold text-[#81928B]">Đang mở bản đồ phiêu lưu…</div> : loadErr && list.length === 0 ? <div className="grid h-64 place-items-center font-baloo font-bold text-[#D45346]">{loadErr}</div> : (
+          <div className="mx-auto grid max-w-[1040px] gap-5 md:grid-cols-2">
+            {list.map((tp, index) => {
+              const meta = TOPIC_META[tp.key] ?? { icon: "✨", eyebrow: `Ải ${index + 1}`, description: "Một hành trình từ vựng mới đang chờ bạn.", backdrop: "linear-gradient(145deg,#566B8E,#768DB0 52%,#405574)", squad: DEFAULT_SQUAD };
+              const squad = squadFor(tp.key).slice(0, tp._count.monsters);
+              return <button key={tp.id} onClick={() => openTopic(tp.id)} disabled={!!loadingId} style={{ background: meta.backdrop }} className="group relative min-h-[300px] overflow-hidden rounded-[30px] border-[4px] border-white p-5 text-left shadow-[0_8px_0_rgba(63,56,48,.2)] transition-transform hover:-translate-y-1 disabled:cursor-wait">
+                <div className="absolute -right-10 -top-12 h-48 w-48 rounded-full bg-white/10" />
+                <div className="relative flex items-start justify-between"><div><span className="rounded-full bg-white/20 px-3 py-1 font-baloo text-[10px] font-extrabold uppercase tracking-wider text-white">{meta.eyebrow}</span><h3 className="mt-3 font-baloo text-[25px] font-extrabold text-white">{tp.name}</h3><p className="mt-1 max-w-[330px] font-baloo text-[12px] font-semibold text-white/75">{meta.description}</p></div><span className="text-[42px] drop-shadow-md">{meta.icon}</span></div>
+                <div className="relative mt-5 flex h-[104px] items-end justify-center -space-x-3">{squad.map((petId, petIndex) => { const pet = PETS.find((p) => p.id === petId)!; return <div key={petId} className="relative h-[92px] w-[92px] rounded-full border-[3px] border-white/75 bg-white/20 p-1 shadow-lg transition-transform group-hover:-translate-y-1" style={{ zIndex: petIndex }}><PetPortrait petId={pet.id} name={pet.name} level={petIndex === squad.length - 1 ? 30 : 20} className="h-full w-full" /></div>; })}</div>
+                <div className="relative mt-3 flex items-center justify-between"><div className="flex items-center gap-2 font-baloo text-[12px] font-extrabold text-white/85"><Shield size={17} /> {tp._count.monsters} đối thủ · 1 Boss</div><span className="flex items-center gap-2 rounded-full bg-white px-4 py-2 font-baloo text-[13px] font-extrabold text-[#4D4865] shadow-[0_4px_0_rgba(0,0,0,.15)]">{loadingId === tp.id ? "Đang vào…" : "Bắt đầu"}<ArrowRight size={17} /></span></div>
+              </button>;
+            })}
           </div>
         )}
-        {loadErr && list && list.length > 0 && <div className="mt-3 font-baloo text-sm font-bold text-[#EF6A5A]">{loadErr}</div>}
-      </div>
+      </main>
     </div>
   );
 }
 
-function HpBar({ percent, color, track = "#F1E7D3" }: { percent: number; color: string; track?: string }) {
-  return (
-    <div className="h-3.5 overflow-hidden rounded-full" style={{ background: track }}>
-      <div className="h-full rounded-full transition-[width] duration-300" style={{ width: `${Math.max(0, percent)}%`, background: color }} />
-    </div>
-  );
-}
-
-/** The actual dungeon crawl, once a topic has been picked. */
 function WordRpgBattle({ child, topic, onExit }: { child: Child; topic: RpgTopicDetail; onExit: () => void }) {
-  const t = useT();
   const monsters = topic.monsters;
-  const [monsterIdx, setMonsterIdx] = useState(0);
-  const [questionIdx, setQuestionIdx] = useState(0);
-  const [playerHp, setPlayerHp] = useState(PLAYER_MAX_HP);
-  const [chosen, setChosen] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<RpgStatus | null>(null);
-  const [runCoins, setRunCoins] = useState(0);
-  const [runXp, setRunXp] = useState(0);
-  const [leveledUp, setLeveledUp] = useState(false);
-  const [defeated, setDefeated] = useState(false);
-  const [gameOver, setGameOver] = useState(false);
-  const [victory, setVictory] = useState(false);
-
-  const monster = monsters[monsterIdx]!;
-  const question = monster.questions[questionIdx]!;
+  const [monsterIdx, setMonsterIdx] = useState(0); const [questionIdx, setQuestionIdx] = useState(0); const [playerHp, setPlayerHp] = useState(PLAYER_MAX_HP);
+  const [chosen, setChosen] = useState<string | null>(null); const [busy, setBusy] = useState(false); const [status, setStatus] = useState<RpgStatus | null>(null);
+  const [runCoins, setRunCoins] = useState(0); const [runXp, setRunXp] = useState(0); const [leveledUp, setLeveledUp] = useState(false);
+  const [defeated, setDefeated] = useState(false); const [gameOver, setGameOver] = useState(false); const [victory, setVictory] = useState(false);
+  const monster = monsters[monsterIdx]!; const question = monster.questions[questionIdx]!;
+  const pet = useMemo(() => petFor(topic.key, monsterIdx), [topic.key, monsterIdx]);
   const monsterHpPercent = Math.round(((monster.questions.length - questionIdx) / monster.questions.length) * 100);
-
-  useEffect(() => {
-    api
-      .getRpgStatus(child.id)
-      .then(setStatus)
-      .catch((err) => console.warn("Failed to load RPG status:", err));
-  }, [child.id]);
-
-  function reset() {
-    setMonsterIdx(0);
-    setQuestionIdx(0);
-    setPlayerHp(PLAYER_MAX_HP);
-    setChosen(null);
-    setBusy(false);
-    setRunCoins(0);
-    setRunXp(0);
-    setLeveledUp(false);
-    setDefeated(false);
-    setGameOver(false);
-    setVictory(false);
-  }
-
+  useEffect(() => { api.getRpgStatus(child.id).then(setStatus).catch(() => undefined); }, [child.id]);
+  function reset() { setMonsterIdx(0); setQuestionIdx(0); setPlayerHp(PLAYER_MAX_HP); setChosen(null); setBusy(false); setRunCoins(0); setRunXp(0); setLeveledUp(false); setDefeated(false); setGameOver(false); setVictory(false); }
   async function answer(opt: string) {
-    if (chosen || busy) return;
-    setChosen(opt);
-    setBusy(true);
-    const correct = opt === question.answer;
-
+    if (chosen || busy) return; setChosen(opt); setBusy(true); const correct = opt === question.answer;
     if (correct) {
-      const isLastQuestion = questionIdx + 1 >= monster.questions.length;
-      if (!isLastQuestion) {
-        setTimeout(() => {
-          setChosen(null);
-          setBusy(false);
-          setQuestionIdx((i) => i + 1);
-        }, 800);
-        return;
-      }
-      // Last hit — monster falls. Reward is computed and credited server-side.
-      try {
-        const result = await api.defeatRpgMonster(child.id, monster.id);
-        setRunCoins((c) => c + result.rewardCoins);
-        setRunXp((x) => x + result.rewardXp);
-        setStatus({ xp: result.xp, level: result.level, nextLevel: result.nextLevel });
-        if (result.leveledUp) setLeveledUp(true);
-      } catch (err) {
-        console.warn("Failed to credit monster defeat reward:", err);
-      }
-      setDefeated(true);
-      setTimeout(() => {
-        setDefeated(false);
-        setLeveledUp(false);
-        setChosen(null);
-        setBusy(false);
-        if (monsterIdx + 1 >= monsters.length) {
-          setVictory(true);
-        } else {
-          setMonsterIdx((i) => i + 1);
-          setQuestionIdx(0);
-        }
-      }, 1600);
-    } else {
-      const nextHp = Math.max(0, playerHp - PLAYER_DAMAGE);
-      setPlayerHp(nextHp);
-      setTimeout(() => {
-        setChosen(null);
-        setBusy(false);
-        if (nextHp <= 0) setGameOver(true);
-      }, 1100);
-    }
+      if (questionIdx + 1 < monster.questions.length) { setTimeout(() => { setChosen(null); setBusy(false); setQuestionIdx((i) => i + 1); }, 750); return; }
+      try { const result = await api.defeatRpgMonster(child.id, monster.id); setRunCoins((c) => c + result.rewardCoins); setRunXp((x) => x + result.rewardXp); setStatus({ xp: result.xp, level: result.level, nextLevel: result.nextLevel }); setLeveledUp(result.leveledUp); } catch { /* Server owns rewards. */ }
+      setDefeated(true); setTimeout(() => { setDefeated(false); setLeveledUp(false); setChosen(null); setBusy(false); if (monsterIdx + 1 >= monsters.length) setVictory(true); else { setMonsterIdx((i) => i + 1); setQuestionIdx(0); } }, 1450);
+    } else { const hp = Math.max(0, playerHp - PLAYER_DAMAGE); setPlayerHp(hp); setTimeout(() => { setChosen(null); setBusy(false); if (hp <= 0) setGameOver(true); }, 950); }
   }
-
-  return (
-    <div className="relative flex h-full flex-col overflow-hidden bg-gradient-to-b from-[#2A1F3D] via-[#3B2A52] to-[#241A38]">
-      <div className="flex items-center gap-3.5 p-4">
-        <button onClick={onExit} className="grid h-[50px] w-[50px] shrink-0 place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F]">
-          <BackIcon />
-        </button>
-        <div className="flex flex-col">
-          <span className="font-baloo text-2xl font-extrabold text-white">{topic.name}</span>
-          <span className="font-baloo text-[12.5px] font-semibold text-[#C9BEDD]">
-            {t("Quái")} {monsterIdx + 1}/{monsters.length}
-          </span>
-        </div>
-        <div className="flex-1" />
-        {status && (
-          <div className="flex flex-col items-end gap-1 rounded-2xl bg-white/10 px-3.5 py-2">
-            <span className="font-baloo text-xs font-extrabold text-[#FFC93C]">
-              {t("Cấp")} {status.level.level}
-            </span>
-            <div className="h-1.5 w-[90px] overflow-hidden rounded-full bg-white/20">
-              <div
-                className="h-full rounded-full bg-[#FFC93C]"
-                style={{ width: status.nextLevel ? `${Math.round(((status.xp - status.level.minXp) / (status.nextLevel.minXp - status.level.minXp)) * 100)}%` : "100%" }}
-              />
-            </div>
-          </div>
-        )}
-        <div className="flex items-center gap-2 rounded-full bg-white px-4.5 py-2 font-baloo text-[17px] font-extrabold text-[#B07A0C] shadow-[0_3px_0_rgba(0,0,0,.14)]">
-          <CoinIcon size={20} />+{runCoins}
-        </div>
-      </div>
-
-      <div className="flex min-h-0 flex-1 flex-col items-center gap-5 px-6 pb-6">
-        {/* Player HP */}
-        <div className="flex w-full max-w-xl flex-col gap-1.5">
-          <div className="flex items-center justify-between font-baloo text-[13px] font-bold text-[#C9BEDD]">
-            <span>
-              ❤️ {child.displayName} · {t("Sinh lực")}
-            </span>
-            <span>
-              {playerHp}/{PLAYER_MAX_HP}
-            </span>
-          </div>
-          <HpBar percent={(playerHp / PLAYER_MAX_HP) * 100} color={playerHp > 40 ? "#7CC24A" : "#EF6A5A"} track="rgba(255,255,255,.15)" />
-        </div>
-
-        {/* Monster */}
-        <div className="flex w-full max-w-xl flex-col items-center gap-2.5 rounded-[24px] border-[3px] border-white/15 bg-white/10 p-5">
-          <div className="flex items-center gap-2 font-baloo text-lg font-extrabold text-white">
-            {monster.isBoss && <span className="rounded-full bg-[#EF6A5A] px-3 py-0.5 text-xs font-extrabold text-white">BOSS</span>}
-            {monster.name}
-          </div>
-          <span className={`text-[64px] leading-none ${defeated ? "animate-shake" : "animate-bob"}`}>{monster.emoji}</span>
-          <div className="w-full max-w-xs">
-            <HpBar percent={monsterHpPercent} color="#EF6A5A" track="rgba(255,255,255,.15)" />
-          </div>
-
-          {defeated && (
-            <div className="animate-pop flex flex-col items-center gap-1.5 rounded-2xl bg-[#EEF9E3] px-5 py-3 text-center">
-              <div className="font-baloo text-lg font-extrabold text-[#4F7C2A]">{t("Đã hạ gục")}!</div>
-              {leveledUp && <div className="font-baloo text-sm font-extrabold text-[#B07A0C]">🎉 {t("Lên cấp!")}</div>}
-            </div>
-          )}
-        </div>
-
-        {!defeated && (
-          <div className="flex w-full max-w-xl flex-1 flex-col justify-center gap-4">
-            <div className="rounded-[22px] border-[3px] border-white/20 bg-white/95 px-7 py-6 text-center">
-              <div className="font-baloo text-[13px] font-bold text-[#8A7A62]">{t("Từ này nghĩa là gì?")}</div>
-              <div className="font-baloo text-[28px] font-extrabold text-ink">{question.en}</div>
-            </div>
-            <div className="grid grid-cols-2 gap-3.5">
-              {question.options.map((opt, i) => {
-                const show = chosen !== null;
-                const isPicked = chosen === opt;
-                const isAnswer = opt === question.answer;
-                const bg = show && isPicked ? (isAnswer ? "#EEF9E3" : "#FDE7E4") : show && isAnswer ? "#EEF9E3" : "#fff";
-                const border = show && isPicked ? (isAnswer ? "#7CC24A" : "#EF6A5A") : show && isAnswer ? "#CDE7B4" : "rgba(255,255,255,.3)";
-                // Odd option counts (most monsters have 3) would otherwise leave
-                // a lone tile stranded in the left column — stretch the last
-                // one across both columns instead of a lopsided 2-then-1 grid.
-                const isDangling = question.options.length % 2 === 1 && i === question.options.length - 1;
-                return (
-                  <button
-                    key={opt}
-                    onClick={() => answer(opt)}
-                    disabled={chosen !== null}
-                    className={`rounded-2xl border-[3px] py-4 font-baloo text-lg font-extrabold text-ink shadow-[0_5px_0_rgba(0,0,0,.15)] transition-transform active:translate-y-1 disabled:cursor-default ${isDangling ? "col-span-2" : ""}`}
-                    style={{ background: bg, borderColor: border }}
-                  >
-                    {opt}
-                  </button>
-                );
-              })}
-            </div>
-            {chosen && (
-              <div className="text-center font-baloo text-sm font-extrabold" style={{ color: chosen === question.answer ? "#7CC24A" : "#EF6A5A" }}>
-                {chosen === question.answer ? t("Tấn công trúng!") : `${t("Bạn bị tấn công!")} ${t("Đáp án đúng:")} ${question.answer}`}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {gameOver && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-ink/50">
-          <div className="animate-pop flex w-[92%] max-w-md flex-col items-center gap-4 rounded-[30px] border-4 border-white/20 bg-white p-8 text-center shadow-[0_14px_40px_rgba(0,0,0,.35)]">
-            <span className="text-[56px]">💀</span>
-            <div className="font-baloo text-2xl font-extrabold text-[#B3402F]">{t("Bạn đã thua!")}</div>
-            <div className="font-baloo text-sm font-semibold text-[#6E6047]">
-              {t("Vẫn giữ nguyên")} +{runCoins} coin · +{runXp} XP {t("đã kiếm được")}
-            </div>
-            <div className="flex w-full gap-3">
-              <SoftButton onClick={onExit} className="flex-1">
-                {t("Về Home")}
-              </SoftButton>
-              <ChunkyButton tone="orange" onClick={reset} className="flex-1">
-                {t("Thử lại")}
-              </ChunkyButton>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {victory && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-ink/50">
-          <div className="animate-pop flex w-[92%] max-w-md flex-col items-center gap-4 rounded-[30px] border-4 border-white/20 bg-white p-8 text-center shadow-[0_14px_40px_rgba(0,0,0,.35)]">
-            <span className="text-[56px]">🏆</span>
-            <div className="font-baloo text-2xl font-extrabold text-[#4F7C2A]">{t("Chinh phục hầm ngục!")}</div>
-            <div className="flex flex-wrap justify-center gap-3">
-              <span className="flex items-center gap-2 rounded-full bg-[#FFF3D6] px-4 py-2 font-baloo font-extrabold text-[#B07A0C]">
-                <CoinIcon size={18} />+{runCoins}
-              </span>
-              <span className="rounded-full bg-[#EEF9E3] px-4 py-2 font-baloo font-extrabold text-[#4F7C2A]">+{runXp} XP</span>
-              {status && <span className="rounded-full bg-[#F1EAFB] px-4 py-2 font-baloo font-extrabold text-[#6E56A8]">{t("Cấp")} {status.level.level}</span>}
-            </div>
-            <div className="flex w-full gap-3">
-              <SoftButton onClick={onExit} className="flex-1">
-                {t("Về Home")}
-              </SoftButton>
-              <ChunkyButton tone="green" onClick={reset} className="flex-1">
-                {t("Chơi lại")}
-              </ChunkyButton>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  return <div className="relative flex h-full flex-col overflow-hidden" style={{ background: TOPIC_META[topic.key]?.backdrop ?? "linear-gradient(180deg,#3A315D,#513F72 50%,#241D3E)" }}>
+    <div className="pointer-events-none absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_20%_30%,white_0_2px,transparent_3px),radial-gradient(circle_at_80%_20%,white_0_1px,transparent_2px)] [background-size:90px_90px,70px_70px]" />
+    <header className="relative z-10 flex items-center gap-3 px-4 py-3"><button onClick={onExit} className="grid h-[48px] w-[48px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F]"><BackIcon /></button><div className="min-w-0"><h1 className="truncate font-baloo text-[21px] font-extrabold text-white">{topic.name}</h1><p className="font-baloo text-[11px] font-bold text-white/65">Đối thủ {monsterIdx + 1}/{monsters.length} · Câu {questionIdx + 1}/{monster.questions.length}</p></div><div className="mx-3 hidden flex-1 items-center gap-1.5 sm:flex">{monsters.map((_, i) => <span key={i} className={`h-2 flex-1 rounded-full ${i < monsterIdx ? "bg-[#85D45E]" : i === monsterIdx ? "bg-[#FFD45C]" : "bg-white/20"}`} />)}</div>{status && <div className="rounded-xl bg-white/15 px-3 py-1.5 font-baloo text-[11px] font-extrabold text-white">Lv.{status.level.level}</div>}<div className="flex items-center gap-1.5 rounded-full bg-white px-3 py-1.5 font-baloo text-[14px] font-extrabold text-[#A87517]"><CoinIcon size={17} />+{runCoins}</div></header>
+    <main className="relative z-10 mx-auto grid min-h-0 w-full max-w-[1080px] flex-1 gap-4 px-5 pb-5" style={{ gridTemplateColumns: "minmax(0, 0.9fr) minmax(0, 1.1fr)" }}>
+      <section className="relative flex min-h-[300px] flex-col overflow-hidden rounded-[30px] border-[3px] border-white/25 bg-white/10 p-4 shadow-[0_8px_0_rgba(0,0,0,.18)] backdrop-blur-sm">
+        <div className="flex items-center justify-between"><div><div className="flex items-center gap-2"><span className="rounded-full px-2.5 py-1 font-baloo text-[9px] font-extrabold uppercase text-white" style={{ background: RARITY[pet.rarity].tint }}>{pet.rarity}</span>{monster.isBoss && <span className="flex items-center gap-1 rounded-full bg-[#F05C4F] px-2.5 py-1 font-baloo text-[9px] font-extrabold text-white"><Crown size={12} /> BOSS</span>}</div><h2 className="mt-2 font-baloo text-[22px] font-extrabold text-white">{pet.name}</h2><p className="font-baloo text-[11px] font-semibold text-white/60">{pet.species} · {monster.name}</p></div><div className="rounded-2xl bg-black/15 px-3 py-2 text-right font-baloo text-[10px] font-bold text-white/70"><div>SỨC MẠNH</div><div className="text-[18px] font-extrabold text-[#FFD45C]">{monster.isBoss ? 980 : 320 + monsterIdx * 120}</div></div></div>
+        <div className="relative flex min-h-0 flex-1 items-center justify-center"><div className="absolute h-48 w-48 rounded-full bg-white/15 blur-2xl" /><div className={`relative h-[210px] w-[250px] ${defeated ? "animate-shake opacity-60" : "animate-bob"}`}><PetPortrait petId={pet.id} name={pet.name} level={monster.isBoss ? 30 : 20} animated className="h-full w-full drop-shadow-[0_18px_15px_rgba(0,0,0,.25)]" /></div>{defeated && <div className="animate-pop absolute rounded-[22px] border-4 border-white bg-[#EEFAE4] px-6 py-3 text-center font-baloo text-[18px] font-extrabold text-[#4F7C2A]"><Check className="mx-auto" />Thu phục thành công!{leveledUp && <div className="text-[12px] text-[#9A7217]">🎉 Lên cấp RPG</div>}</div>}</div>
+        <div><div className="mb-1.5 flex justify-between font-baloo text-[11px] font-extrabold text-white"><span className="flex items-center gap-1"><Flame size={14} /> HP đối thủ</span><span>{monster.questions.length - questionIdx}/{monster.questions.length}</span></div><HpBar percent={monsterHpPercent} color="#FF765F" track="rgba(255,255,255,.16)" /></div>
+      </section>
+      <section className="flex min-h-0 flex-col rounded-[30px] border-[3px] border-white bg-[#FFFDF8] p-5 shadow-[0_8px_0_rgba(0,0,0,.16)]">
+        <div className="mb-3"><div className="mb-1 flex items-center justify-between font-baloo text-[11px] font-extrabold text-[#776A5E]"><span>❤️ {child.displayName}</span><span>{playerHp}/{PLAYER_MAX_HP}</span></div><HpBar percent={playerHp} color={playerHp > 40 ? "#77C653" : "#EF6257"} /></div>
+        {!defeated && <><div className="rounded-[24px] border-2 border-[#E9DCC4] bg-[linear-gradient(135deg,#FFF8E5,#F3F8ED)] px-5 py-4 text-center"><div className="flex items-center justify-center gap-2 font-baloo text-[10px] font-extrabold uppercase tracking-wider text-[#8B7D6C]"><Zap size={14} className="text-[#E9A51E]" /> Chọn nghĩa đúng để tấn công</div><div className="mt-1 font-baloo text-[32px] font-extrabold text-[#3F352E]">{question.en}</div></div><div className="mt-4 grid min-h-0 flex-1 grid-cols-2 gap-3">{question.options.map((opt, i) => { const show=chosen!==null,picked=chosen===opt,correct=opt===question.answer; const state=show&&correct?"correct":show&&picked?"wrong":"idle"; return <button key={opt} disabled={show} onClick={()=>answer(opt)} className={`relative flex min-h-[78px] items-center gap-3 rounded-[20px] border-[3px] px-3 text-left font-baloo font-extrabold shadow-[0_4px_0_#D9CDB9] transition-transform active:translate-y-1 ${state==="correct"?"border-[#76BF52] bg-[#EFF9E8]":state==="wrong"?"border-[#E8665A] bg-[#FDEBE8]":"border-[#E5D9C4] bg-white"}`}><span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-white" style={{ background: ["#617EC7","#F08A3E","#51B7A9","#9479D2"][i%4] }}>{String.fromCharCode(65+i)}</span><span className="text-[16px] text-[#443A31]">{opt}</span>{state==="correct"&&<Check className="ml-auto text-[#62A73E]" />}{state==="wrong"&&<X className="ml-auto text-[#D85248]" />}</button>; })}</div>{chosen && <div className={`mt-3 rounded-full py-2 text-center font-baloo text-[13px] font-extrabold ${chosen===question.answer?"bg-[#EAF7E2] text-[#548D36]":"bg-[#FDE9E6] text-[#BD493E]"}`}>{chosen===question.answer?"⚔️ Chính xác! Đòn đánh trúng mục tiêu.":`🛡️ Chưa đúng — đáp án là ${question.answer}`}</div>}</>}
+      </section>
+    </main>
+    {(gameOver || victory) && <div className="absolute inset-0 z-30 grid place-items-center bg-[#251D32]/65 p-5 backdrop-blur-sm"><div className="animate-pop w-full max-w-[440px] rounded-[32px] border-4 border-white bg-[#FFFDF7] p-6 text-center shadow-2xl"><div className={`mx-auto grid h-20 w-20 place-items-center rounded-full ${victory?"bg-[#FFD65C] text-[#A86E10]":"bg-[#FFE5E0] text-[#CB4B40]"}`}>{victory?<Trophy size={43}/>:<Shield size={43}/>}</div><h2 className="mt-3 font-baloo text-[25px] font-extrabold text-[#43372F]">{victory?"Chinh phục vùng đất!":"Đội bạn cần nghỉ ngơi"}</h2><p className="mt-1 font-baloo text-[12px] font-semibold text-[#817466]">{victory?"Bạn đã thu phục toàn bộ đội pet đối thủ.":"Đừng lo, toàn bộ phần thưởng đã kiếm vẫn được giữ lại."}</p><div className="my-4 flex justify-center gap-2"><span className="flex items-center gap-1 rounded-full bg-[#FFF1C9] px-4 py-2 font-baloo font-extrabold text-[#A87517]"><CoinIcon size={18}/>+{runCoins}</span><span className="rounded-full bg-[#EAF7E3] px-4 py-2 font-baloo font-extrabold text-[#568C38]">+{runXp} XP</span>{status&&<span className="rounded-full bg-[#EEE8FA] px-4 py-2 font-baloo font-extrabold text-[#7253A7]">Lv.{status.level.level}</span>}</div><div className="flex gap-3"><SoftButton onClick={onExit} className="flex-1">Chọn ải</SoftButton><ChunkyButton tone={victory?"green":"orange"} onClick={reset} className="flex-1">Chơi lại</ChunkyButton></div></div></div>}
+  </div>;
 }

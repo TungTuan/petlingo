@@ -1199,6 +1199,513 @@ chọn cho English Detective.
   để xác nhận rung nút không tính) → đúng +30 coin/+15 XP/"3/3 lượt trò
   chuyện" ở màn Hoàn thành.
 
+### 💰 Gói vật phẩm trong Shop — "Nạp lần đầu" + "Gói combo vật phẩm", admin tự soạn (2026-08-28)
+User yêu cầu thêm 2 loại gói bán trong Shop + 1 trang admin để soạn. Hỏi trước
+cách tính giá (app KHÔNG có cổng thanh toán thật — Premium/VIP mùa đều là nút
+demo) — chọn phương án khuyến nghị: **combo = coin/gem thật (mua thật, trừ số
+dư thật), nạp lần đầu = demo tiền thật (giống Premium/VIP, bấm nhận ngay,
+không trừ gì, chỉ 1 lần/trẻ)**.
+- [x] **Tách `grantReward()`/`grantRandomPet()` ra `rewards.service.ts` dùng
+  chung** — 2 hàm này vốn nằm private trong `battlePass.service.ts`, không có
+  gì đặc thù Battle Pass cả (chỉ là "cộng 1 phần thưởng vào tài khoản"); tách
+  ra để `packages.service.ts` tái dùng đúng 1 bộ "kind" phần thưởng (coins,
+  gems, commonShards, rareShards, epicShards, petEggCommon/Rare/Epic/
+  Legendary, item) thay vì viết lại. `battlePassRewardKind` trong
+  `admin.schema.ts` cũng đổi tên thành `rewardKind` (export) vì giờ dùng
+  chung cho cả 2 tính năng.
+- [x] **Schema mới**: `ShopPackage` (key/name/description/`kind`: "combo" |
+  "firstPurchase"/color/imagePath/price+currency [chỉ combo]/realPriceLabel
+  [chỉ firstPurchase, vd "49.000đ"]/`contents: Json` [mảng {kind, amount,
+  itemKey}]/order/isActive) + `ChildPackageClaim` (childId+packageId,
+  `@@unique` — **chỉ ghi dòng cho gói "firstPurchase"** để chặn mua lần 2 qua
+  DB constraint giống hệt `BattlePassClaim`; gói "combo" mua lặp lại thoải
+  mái, KHÔNG ghi dòng nào, giống `purchaseItem()` không log lịch sử mua).
+  Migration `add_shop_packages`.
+- [x] Backend: `packages.service.ts` (1 file, theo đúng khuôn
+  `battlePass.service.ts` — hàm child-facing tên thường + hàm admin tiền tố
+  `admin*` chung 1 file, KHÔNG tách `services/admin/`) — `purchasePackage()`
+  rẽ nhánh theo `kind`: "firstPurchase" tạo `ChildPackageClaim` TRƯỚC (trong
+  try/catch, race → 400 sạch, đúng pattern chống double-grant của
+  `claimTier()`), "combo" check số dư rồi trừ coin/gem thật (giống
+  `purchaseItem()`) — cả 2 nhánh sau đó gọi `grantReward()` cho từng dòng
+  trong `contents`. Admin CRUD (`/admin/shop-packages`) + child-facing
+  (`/children/:id/packages`, `/children/:id/packages/purchase`) — KHÔNG có
+  self-serve (`/my/*`) vì đây là nội dung kinh doanh/vận hành, không phải nội
+  dung học tập phụ huynh tự soạn (giống Battle Pass).
+- [x] Frontend: tận dụng lại tab "Coins" trong `Shop.tsx` vốn CHỈ LÀ
+  placeholder ghi sẵn "Nạp thêm coin bằng tiền thật đang được chuẩn bị — sắp
+  ra mắt!" (chưa từng làm thật) — đổi tên thành "Ưu đãi", hiện danh sách gói
+  thật (icon + số lượng từng phần thưởng trong gói, nút mua đổi màu/nhãn theo
+  loại gói, disable + "Đã nhận" khi gói firstPurchase đã claim). App.tsx thêm
+  `packages` state (fetch cùng lúc `foodShop`) + `handlePurchasePackage()`
+  (refresh `progress`+`inventory`, cập nhật đúng gói vừa mua trong list).
+- [x] Admin UI mới `ShopPackagesPage.tsx` — bảng CRUD phẳng theo khuôn
+  `QuestsPage.tsx` (không nested như Battle Pass vì gói không có sub-resource);
+  ô soạn `contents` là danh sách động (+Thêm phần thưởng/Xoá từng dòng), tái
+  dùng đúng UI pattern chọn loại thưởng + chọn vật phẩm nếu kind="item" đã có
+  ở `BattlePassPage.tsx`. Thêm tab "💰 Gói vật phẩm" vào `AdminApp.tsx`.
+- [x] Seed 3 gói mẫu thật qua admin API (không thêm vào `seed.ts` — cùng
+  quyết định như Battle Pass, đây là nội dung admin tự soạn/vận hành, không
+  phải nội dung hệ thống ship sẵn): "Quà Nạp Lần Đầu" (49.000đ demo → 1000
+  coin + 50 gem + 1 trứng pet Rare), "Combo Người Mới" (200 coin → 5 táo + 3
+  bóng + 10 gem), "Combo Đá Ghép Cao Cấp" (30 gem → mảnh ghép 3 bậc + 1 trứng
+  pet Epic).
+- [x] Verify: `tsc --noEmit` (BE)/`tsc -b`/`oxlint`/`build` (FE) sạch; test
+  thật qua API — mua cả 3 gói, đối chiếu số học từng bước (coin/gem trừ/cộng
+  đúng, mảnh ghép cộng đúng, pet mới xuất hiện trong `unlockedPets`, item
+  cộng đúng số lượng); cố tình mua lại gói "Nạp lần đầu" lần 2 → đúng 400
+  `SHOP_PACKAGE_ALREADY_CLAIMED`. Playwright xác nhận UI: tab "Ưu đãi" hiện
+  đúng 3 gói với icon/giá/trạng thái đã nhận; trang admin — bảng liệt kê,
+  form sửa pre-fill đúng dữ liệu, **tạo gói mới qua form thật** (không chỉ
+  qua API) rồi xoá lại để dọn dữ liệu test.
+- **Lưu ý:** tài khoản admin dùng để test đã thật sự "nhận" gói "Nạp lần đầu"
+  (không revert lại — undo 1 lần random-pet-roll phức tạp/dễ sai hơn giá trị
+  nó mang lại, và tài khoản demo này vốn đã "bẩn" từ rất nhiều lượt test
+  trước đó trong phiên này) — mở app lên sẽ thấy gói đó ở trạng thái "Đã
+  nhận", đúng hành vi, không phải lỗi.
+
+### 📚 Bài học theo chủ đề, theo level thấp→cao — 6 world × 3 bài (2026-08-28)
+User yêu cầu thiết kế lại Bài học theo chủ đề + level. Hỏi trước 2 điều: (1)
+phạm vi — chỉ hệ Bài học chính (World/Lesson/Question), không đụng các
+mini-game khác; (2) "level" nghĩa là gì — **chỉ thiết kế nội dung, KHÔNG đổi
+cơ chế/schema** (dùng đúng field `order` có sẵn để xếp thứ tự dễ→khó trong
+cùng 1 world, không thêm khái niệm level/khoá level mới).
+- [x] Trước khi soạn: xác nhận `requiredStars` (World) đã là field CHẾT — từ
+  lúc `WorldMap.tsx` bị xoá (2026-08-25), `WorldLessons.tsx` liệt kê hết mọi
+  world không khoá gì cả — nên không cần lo việc thêm bài học phá vỡ gating
+  nào, vì gating đó vốn không còn tồn tại.
+- [x] Phát hiện + sửa 1 bug tiềm ẩn trong `seed.ts`: đoạn seed các bài học
+  world (Town/Beach/School/Castle/Space) hardcode `order: 0` cho MỌI lesson
+  tạo mới — vô hại khi mỗi world chỉ có đúng 1 bài, nhưng sẽ làm thứ tự
+  Bài 1/2/3 không ổn định (tie-break tuỳ ý) ngay khi world có >1 bài. Thêm
+  field `order` tường minh vào từng entry của `WORLD_LESSONS`, sửa vòng lặp
+  seed dùng đúng `wl.order` thay vì hardcode.
+- [x] Thiết kế + soạn tay **12 bài học mới** (Bài 2 + Bài 3 cho cả 6 world,
+  Forest gộp chung vào `WORLD_LESSONS` luôn — trước đó nằm riêng ở khối
+  `FOREST_QUESTIONS`, Bài 1 của Forest vẫn giữ nguyên không đụng), tổng
+  ~78 câu hỏi mới. Cách tạo độ khó tăng dần TRONG CÙNG 1 world (không đổi
+  format {prompt, hint, answer, options} sẵn có):
+  - **Bài 1 (đã có sẵn, không đụng):** đáp án nhiễu khác hẳn phạm trù (dễ loại
+    trừ dù không biết từ, vd "Flower" vs "Bird/Tree/Stone").
+  - **Bài 2 "(Trung bình)":** đáp án nhiễu CÙNG phạm trù ngữ nghĩa với đáp án
+    đúng (toàn động vật, toàn nghề nghiệp, toàn trái cây...) — đoán mò không
+    ăn thua nữa, phải thật sự biết từ.
+  - **Bài 3 "(Khó)":** thêm câu hỏi kiểu thuộc tính/công dụng ("Which one can
+    fly?", "Where do you buy bread?") xen với nhiễu cùng phạm trù, +1-2 câu
+    so với Bài 1/2 (7 câu thay vì 5-6).
+  - 6 chủ đề: Forest=Muông thú rừng/Thiên nhiên kỳ diệu, Town=Nghề nghiệp/Đi
+    khắp thị trấn, Beach=Đồ ăn mùa hè/Thời tiết, School=Đồ dùng lớp học/Đếm
+    số, Castle=Nhân vật cổ tích/Phiêu lưu lâu đài, Space=Hệ mặt trời/Du hành
+    vũ trụ.
+- [x] Verify: `tsc --noEmit` sạch; seed chạy thật (idempotent, log đúng "Seeded
+  12 new world lessons"); curl API xác nhận cả 6 world đều trả đúng 3 bài
+  theo thứ tự `order` 0→2, đúng tiêu đề "(Trung bình)"/"(Khó)"; Playwright mở
+  world Castle → thấy đúng 3 bài trong picker → chọn "Bài 3 (Khó)" → vào học
+  đúng nội dung đã soạn (7 câu, câu đầu "Which one can fly?" đúng 4 đáp án
+  Dragon/Horse/Knight/Giant).
+- **Phát hiện phụ (không sửa, ngoài phạm vi lần này):** `Lesson.tsx` có dòng
+  `"Topic: Nature"` hardcode CỨNG, không đổi theo world/lesson thật đang học
+  — lộ rõ hơn bây giờ vì trước đây hầu như chỉ test Forest (đúng nghĩa
+  "Nature"). Không sửa vì user chốt phạm vi lần này là "chỉ nội dung, không
+  đổi code" — nếu muốn sửa, cần lấy `world.topic` thật truyền xuống thay vì
+  chuỗi cứng.
+
+### Bài học — nhân 10 lần số câu hỏi (798 câu mới, tổng 906 câu) (2026-08-28)
+User thấy 78 câu vừa thêm "có vẻ ít", yêu cầu nhiều gấp 10 lần. Thay vì gõ tay
+~800 object câu hỏi (~5 dòng/câu, không khả thi), viết 1 generator sinh câu
+hỏi từ danh sách từ tiếng Anh thuần — khả thi vì `Question` **không có cột
+vi/ja/ko nào cả** (chỉ `Lesson`/nội dung cấp chủ đề mới đa ngôn ngữ), `hint`
+chỉ là 1 trong 2 chuỗi UI cố định chứ không phải bản dịch từng từ → sinh từ
+danh sách tiếng Anh không tốn công dịch nào.
+- [x] `genQuestions(words: string[])` trong `seed.ts`: mỗi từ → 1 câu, xen kẽ
+  "Find the X!"/"Which one is X?" (đúng mẫu câu tay đã viết), 3 đáp án nhiễu
+  rút ngẫu nhiên từ CÙNG danh sách (cùng phạm trù → cùng độ khó "Trung bình"
+  đã lập ở bài trước, không phải câu hỏi làm cho có). Tự viết hoa đúng từng
+  từ trong cụm (`titleCaseWord` — khớp tiền lệ "Ice Cream" viết hoa cả 2 từ),
+  tự chọn "a"/"an"/không mạo từ (heuristic: từ tận cùng "s" hoặc nằm trong
+  danh sách bất khả đếm cố định → bỏ mạo từ).
+- [x] **42 danh sách từ mới** (7 chủ đề × 6 world × 19 từ = 798 từ/câu hỏi):
+  Forest (sinh vật biển, động vật nông trại, côn trùng, cây cối, bầu trời,
+  cắm trại, bò sát), Town (toà nhà, cửa hàng, giao thông, gia đình, đời sống
+  thành phố, dụng cụ thể thao, trang phục), Beach (sinh vật biển, trái cây,
+  đồ uống, thời tiết, đồ đi biển, trò chơi biển, cảnh quan), School (đồ dùng
+  lớp học, môn học, khu vực trường, số lớn, hình khối, người trong trường, sự
+  kiện trường), Castle (hoàng tộc, sinh vật phép thuật, khu vực lâu đài, bảo
+  vật, sự kiện, muông thú, nghề xưa), Space (hành tinh, du hành, robot/alien,
+  khoa học Trái Đất, số nâng cao, thời gian vũ trụ, nghề khoa học). Tất cả gắn
+  nhãn "(Trung bình)" — đúng với cơ chế thật (nhiễu cùng phạm trù), không thổi
+  phồng thành "(Khó)" như Bài 3 (vốn có thêm câu hỏi thuộc tính/công dụng).
+- [x] Mỗi world giờ có **10 bài** (3 bài tay đã viết + 7 bài sinh tự động),
+  tổng **906 câu hỏi** toàn app (30 gốc + 78 đợt trước + 798 đợt này).
+- [x] **Phát hiện + sửa ngay 1 bug thật trong lúc test tay**: `updateLessonSchema`
+  = `lessonSchema.partial()`, nhưng `lessonSchema` có `order`/`isActive` dùng
+  `.default()` — Zod áp `.default()` bất kể `.partial()` khi field bị OMIT
+  khỏi body, nên PATCH chỉ gửi `{title}` (không gửi `order`) vô tình RESET
+  `order` về 0! Tự dính bug này khi sửa tay 1 lỗi trùng tên bài "Du hành vũ
+  trụ" (Bài 3 và Bài 5 cùng world Space trùng tên) qua curl PATCH thủ công.
+  Phát hiện ngay (order bị reset 4→0), sửa lại bằng PATCH thứ 2 gửi đúng
+  `order:4`. **Không phải bug do phiên này gây ra và KHÔNG ảnh hưởng người
+  dùng thật** — mọi form admin thật (`QuestsPage.tsx` v.v.) luôn gửi state
+  form ĐẦY ĐỦ (không bao giờ gửi partial thật sự), chỉ lộ ra khi tự gọi API
+  bằng tay như vừa làm. Ghi lại ở đây làm cảnh báo cho ai sau này gọi
+  `PATCH /admin/*` trực tiếp — nhớ gửi đủ field, đừng tin `.partial()` giữ
+  nguyên giá trị cũ.
+- [x] Verify: `tsc --noEmit` sạch; seed chạy thật (log "Seeded 42 new world
+  lessons"); đếm qua API xác nhận đúng 10 bài/world × tổng 906 câu; soi tay
+  vài bài (School "Các khu vực trong trường" — ngữ pháp a/an/apostrophe đều
+  đúng; Space "Con số nâng cao" — chấp nhận được dù hơi trừu tượng, world
+  Space vốn gắn nhãn "Advanced" từ đầu); Playwright xác nhận picker hiện gọn
+  gàng cả 10 nút không vỡ layout, chọn 1 bài sinh tự động vào học đúng 1/19,
+  câu đầu "Find the alien!" đúng 4 lựa chọn cùng phạm trù công nghệ vũ trụ.
+
+### 🕵️ English Detective — thêm 100 vụ án (2026-08-28)
+User yêu cầu 100 vụ án mới. Không thể gõ tay 100 cốt truyện trinh thám thật
+(mỗi vụ cần logic thật — 1 nghi phạm được minh oan, 1 nghi phạm nói dối bị
+vạch trần, 1 nhân chứng củng cố nghi ngờ — CỘNG dịch vi/ja/ko cho từng lời
+khai/manh mối, khác hẳn Question ở mục Bài học không cần dịch gì cả) → dùng
+lại đúng khuôn logic 3-nghi-phạm mà 2 vụ án viết tay đã dùng làm TEMPLATE,
+tham số hoá bằng các "ngân hàng từ" (nghi phạm/vật bị mất/địa điểm/hoạt động)
+dịch sẵn 1 lần, sinh 100 vụ từ đó.
+- [x] `buildDetectiveCase()` trong `seed.ts`: ghép 20 nghi phạm (tên+nghề+emoji,
+  dịch sẵn 3 thứ tiếng) × 15 vật bị mất × 15 địa điểm × 15 nạn nhân × 10 cặp
+  "hoạt động thật + lời xác nhận" × 10 cặp "hoạt động giả + lời vạch trần" —
+  mỗi vụ: vòng 1 minh oan nghi phạm A (nhiễu cùng phạm trù hoạt động), vòng 2
+  vạch trần nghi phạm B nói dối, vòng 3 nhân chứng C xác nhận thấy B gần hiện
+  trường, vòng 4 buộc tội — ĐÚNG hệt logic 2 vụ án gốc, không phải random vô
+  nghĩa.
+- [x] **3 bug tự phát hiện + tự sửa qua nhiều vòng test thật (không phải chỉ
+  đọc code):**
+  1. Đặt tên biến `ITEMS` trùng với `ITEMS` (danh mục Shop) đã có sẵn ở đầu
+     file — lỗi "already declared", crash ngay khi chạy seed. Đổi tên thành
+     `STOLEN_ITEMS`.
+  2. Ngữ pháp: `"A antique vase disappeared..."` (thiếu "an") và
+     `"near the vase around at 9 PM"` (thừa giới từ) — phát hiện khi đọc trực
+     tiếp nội dung sinh ra qua API, không phải soát code. Sửa cả 2.
+  3. **Bug nghiêm trọng nhất — lộ khi so sánh 2 vụ án cách nhau đúng 75 vị
+     trí thấy giống hệt nhau:** bản đầu chọn vật/địa điểm/nạn nhân bằng công
+     thức tuyến tính theo chỉ số vụ án (`(i*3+2) % 15` kiểu vậy) — mọi công
+     thức tuyến tính trên 1 kho cùng cỡ (15) LẶP LẠI đúng chu kỳ 15, và vì
+     nghi phạm dùng kho cỡ 20, `LCM(15,20)=60` nên vụ án thứ N và N+60 sẽ
+     TRÙNG HOÀN TOÀN (cùng nghi phạm, cùng mọi thứ). Chuyển hẳn sang chọn
+     ngẫu nhiên (`Math.random()`) — không cần tái lập được giữa các lần seed
+     (seed vốn idempotent-skip, chỉ cần đa dạng trong 1 lần chạy).
+  4. Sau khi chuyển sang random, tên vụ án (chỉ ghép vật+địa điểm) vẫn trùng
+     14/102 lần do không gian tổ hợp nhỏ (15×15=225) — thêm tên nạn nhân vào
+     tên vụ án (15×15×15=3375), giảm còn 1/102 lần trùng.
+- [x] **Phát hiện thêm (không phải bug do phiên này, chỉ là nhận ra):**
+  `tsconfig.json`'s `include` chỉ có `["src"]` — `npx tsc --noEmit` KHÔNG BAO
+  GIỜ thật sự kiểm tra `prisma/seed.ts`, kể cả ở các mục trước trong phiên
+  này báo "tsc sạch" cho seed.ts. Việc kiểm tra thật sự luôn đến từ chạy
+  `npm run prisma:seed` trực tiếp (bắt lỗi cú pháp/redeclare) + soi nội dung
+  qua API — không phải từ tsc. Không sửa (đổi `include` phạm vi rộng hơn có
+  thể kéo theo tsc phải hiểu cả file config JS khác, ngoài phạm vi lần này),
+  chỉ ghi lại để nhớ đường kiểm tra đúng cho seed.ts sau này.
+- [x] Verify: seed chạy thật ra "102 Detective cases with 400 rounds"; lấy
+  mẫu ngẫu nhiên 15 vụ án sinh tự động, kiểm tra logic (đáp án vòng 3 phải
+  khớp `correctSuspect` vòng buộc tội) qua API — cả 15/15 đúng; đếm tên vụ án
+  trùng — 101/102 duy nhất; Playwright mở danh sách vụ án (8 thẻ hiện gọn
+  gàng, đủ màu/emoji/mô tả), chơi thử 1 vụ án sinh tự động — vòng 1 hiện đúng
+  lời khai + 3 lựa chọn cùng phạm trù, "Bước 1/4".
+
+### 🦜 Vẹt Con Tập Nói — thêm 100 câu về 40 pet có sẵn trong app (2026-08-28)
+User yêu cầu 100 "hội thoại" gắn với danh sách pet ĐANG CÓ trong game (không
+phải nhân vật bịa mới) — tái dùng thẳng `PETS` (mảng 40 pet thật đã seed ở
+Pet Shop: tên, key, loài tiếng Việt, độ hiếm) thay vì tạo nhân vật mới, để
+luyện nói cảm giác gắn liền với pet bé đang thật sự nuôi trong app.
+- [x] 3 mẫu câu ngắn/pet: "This is {tên}." · "{tên} is a/an {loài}." · "I love
+  {tên}!" (mẫu 3 chỉ dành cho pet Epic/Legendary + 4 pet khởi đầu Common —
+  Buddy/Mimi/Poppy/Snowy — cho cảm giác "được cưng" nhiều hơn) → đúng
+  13×2+4×1 (Common) + 11×2 (Rare) + 8×3 (Epic) + 8×3 (Legendary) = 100 câu,
+  chia 4 topic mới theo độ hiếm: Thú Cưng Phổ Biến/Hiếm/Sử Thi/Huyền Thoại.
+- [x] Tự dịch 40 mô tả loài sang EN/JA/KO (`PET_SPECIES_EN_JA_KO`) — giữ đơn
+  giản đúng tinh thần bản tiếng Việt gốc (vd "Chó Golden" → "golden dog", không
+  dịch thuật ngữ giống chó thật "golden retriever").
+- [x] **2 bug tự phát hiện qua đọc trực tiếp nội dung sinh ra (không phải chỉ
+  đọc code):**
+  1. `EchoParrotRoundSeed`'s `phonetic` là field BẮT BUỘC trong interface cục
+     bộ (dù cột DB vốn nullable) — 100 câu đầy đủ câu (không phải 1 từ) không
+     có phiên âm IPA hợp lý để điền → đổi field thành tuỳ chọn (`phonetic?`).
+  2. **"Frostwing is a ice dragon."** (thiếu "an") — mẫu câu 2 hardcode "a"
+     không kiểm tra âm đầu. Tái dùng đúng hàm `articleFor()` đã viết cho phần
+     Bài học/Detective trước đó — nhưng phải special-case thêm "unicorn"
+     (Stella) vì nó viết bằng nguyên âm nhưng ĐỌC bằng phụ âm "y" ("a unicorn"
+     mới đúng, không phải "an unicorn") — `articleFor()` chỉ nhìn chữ cái nên
+     tự nó sẽ sai chỗ này nếu không special-case.
+- [x] Verify: seed chạy thật ra "6 Echo Parrot topics with 100 rounds" (2 topic
+  gốc + 4 topic pet, đúng 30/22/24/24 câu theo độ hiếm); soi qua API xác nhận
+  cả 3 trường hợp mạo từ oái oăm đều đúng (Frostwing→"an ice dragon", Mimi→
+  "an orange cat", Glacio→"an ice bear", Stella vẫn giữ "a unicorn"); Playwright
+  mở "Vẹt Con Tập Nói" thấy đủ 6 thẻ chủ đề đúng số từ vựng, chơi thử topic
+  Huyền Thoại — hiện đúng "This is Frostwing." + bản dịch + nút micro, "Từ số
+  1/24".
+
+**Cập nhật (cùng ngày) — mở rộng lên 360 câu + thêm ảnh pet minh hoạ:** user
+thấy 100 câu "khá ít", yêu cầu thêm 200-300 câu nữa, "bên trong dùng pet để
+làm hình minh hoạ".
+- [x] **Tính năng thật, không chỉ nội dung:** thêm cột `EchoParrotRound.petKey`
+  (String?, khớp lỏng `Pet.key` — cùng kiểu "key tham chiếu không FK cứng"
+  như `Vocab.worldId`) — migration `add_echo_parrot_pet_key`. Cập nhật Zod
+  schema, `catalog.service.ts` trả thêm field này, type `EchoParrotRoundData`
+  (FE) thêm `petKey`. `EchoParrot.tsx` hiện `<PetPortrait petId={petKey} .../>`
+  thật (ảnh pet thật trong `frontend/public/pets/`, không phải ảnh minh hoạ
+  giả) phía trên bong bóng thoại KHI round có gắn `petKey`; round từ vựng
+  chung (Cat/Hello!...) không có `petKey` thì không hiện gì, không vỡ layout.
+- [x] **Thiết kế lại nội dung cho ĐỀU** — bỏ luật cũ "chỉ pet Epic/Legendary +
+  4 pet khởi đầu mới có câu thứ 3", thay bằng ĐÚNG 9 mẫu câu như nhau cho
+  CẢ 40 pet (This is X / X is a species / I love X / Look at X / X is so
+  cute / Good morning X / X likes to play / Come here X / X is my best
+  friend) → 40×9 = 360 câu (từ 100 lên 360, +260 câu, đúng khoảng "200-300"
+  user yêu cầu). Xoá sạch 4 topic pet cũ, seed lại từ đầu bằng thiết kế mới
+  (không giữ lẫn 2 thiết kế cũ/mới).
+- [x] Verify: seed chạy ra "6 Echo Parrot topics with 360 rounds" (117/99/72/72
+  theo Common/Rare/Epic/Legendary — đúng 9×13/9×11/9×8/9×8); soi API xác nhận
+  đủ 9 câu + đúng `petKey` cho Buddy; Playwright chơi thử topic Epic — hiện
+  đúng ảnh Gargo thật (quái nhỏ tím) phía trên bong bóng thoại, "Từ số 1/72";
+  chơi lại topic "Động Vật" gốc (không có petKey) — xác nhận KHÔNG hồi quy,
+  vẫn hiện đúng như trước (chữ "Cat" + IPA + nghĩa, không có ảnh thừa/vỡ).
+
+### 💬 Trò Chuyện Cùng Bạn Thú — thêm 100 chủ đề, dễ → khó (2026-08-28)
+User thấy 4 chủ đề ban đầu "cũng ít data", yêu cầu thêm 100 chủ đề mới, sắp
+xếp từ dễ đến khó.
+- [x] **1 template hội thoại tái dùng** (3 lượt, đúng khuôn 4 chủ đề tay đã
+  viết: "Bạn có thích X?" → "X yêu thích nhất của bạn là gì?" → "Vì sao bạn
+  thích X?"), tham số hoá bằng **10 CHỦ ĐỀ**: 8 tái dùng thẳng `VOCAB_TOPICS`
+  đã dịch sẵn (animals/colors/numbers/food/weather/clothes/transport — bỏ
+  "school"/"body" vì "bạn thích bạn học nào nhất?"/"bộ phận cơ thể yêu
+  thích?" nghe kỳ quặc), 2 danh sách mới (toys, sports, tự dịch ~10 từ mỗi
+  loại), + "family" dùng cách hỏi RIÊNG (không xếp hạng thành viên gia đình —
+  "Ai trong gia đình bạn?" thay vì "Ai là người bạn thích nhất?", tránh so
+  sánh người thân). Mỗi chủ đề = 10 topic (1 topic/từ) × 10 chủ đề = 100.
+- [x] **Độ khó THẬT, không chỉ nhãn** — tái dùng đúng nguyên tắc đã dùng cho
+  Bài học: Dễ = 2 đáp án nhiễu là 2 trong 24 câu "chẳng liên quan gì" ĐÃ CÓ
+  SẴN (tái dùng verbatim từ 4 chủ đề tay viết, không soạn/dịch thêm); Khó = 2
+  đáp án nhiễu là CÙNG mẫu câu nhưng đổi từ khác trong CÙNG chủ đề (vd "My
+  favorite animal is a tiger." vs "...a monkey."/"...a bird." — bé phải nghe
+  đúng TỪ CỤ THỂ, không chỉ nhận ra khuôn câu); Trung bình = trộn 1 mỗi loại.
+  3 Dễ + 4 Trung bình + 3 Khó từ/chủ đề × 10 chủ đề = 100, xếp `order` theo
+  khối Dễ→Trung bình→Khó toàn cục (không theo từng chủ đề riêng) để picker
+  hiện đúng thứ tự dễ đến khó xuyên suốt.
+- [x] **1 bug tự phát hiện qua đọc trực tiếp nội dung sinh ra:** "Why do you
+  like tiger?"/"Tiger is wonderful!" thiếu mạo từ xác định ("the tiger") cho
+  các chủ đề danh từ đếm được (animal/food/clothes/vehicle/toy) — phân biệt
+  với chủ đề không đếm được (color/number/weather/sport/family) vốn đúng sẵn
+  ("Why do you like red?"). Thêm biến `theArticle` xử lý đúng cả 2 nhánh.
+- [x] Verify: seed chạy ra "104 Chat with Buddy topics with 300 rounds" (4 gốc
+  + 100 mới × 3 lượt); soi API xác nhận thứ tự global đúng Dễ(30)→Trung
+  bình(40)→Khó(30); soi 1 topic Khó ("Hổ") xác nhận đáp án nhiễu Round 2 đúng
+  near-miss cùng phạm trù, ngữ pháp "the tiger"/"The tiger is wonderful!"
+  đúng sau khi sửa; soi topic "gia đình" xác nhận không có vấn đề "xếp hạng
+  người thân"; Playwright chơi thật topic "Hổ (Khó)" — Round 1 xáo trộn đúng
+  (đáp án đúng không luôn ở vị trí đầu), chọn đúng nhận +10 coin, Round 2
+  hiện đúng 3 lựa chọn near-miss cùng phạm trù động vật.
+
+### 📚 Bài học — review toàn bộ theo yêu cầu user, sửa lỗi thật (2026-08-30)
+
+User hỏi "Về phần bài học thì sao, giúp tôi review toàn bộ, add thêm nếu cần"
+(tiếp nối sau review release-readiness tổng thể ở `Release.md`). Đọc lại toàn
+bộ `WORLD_LESSONS`/`WORLD_BONUS_TOPICS`/`genQuestions()` trong `seed.ts` +
+`Lesson.tsx`/`WorldLessons.tsx`/luồng chọn bài học trong `App.tsx`, rồi đối
+chiếu với dữ liệu THẬT trong DB (không chỉ đọc code) bằng 1 script audit +
+1 script quét ngữ pháp tự động trên toàn bộ 906 câu hỏi.
+
+- [x] **Xác nhận số lượng đã đủ, không cần thêm bài mới**: 6 world × 10 bài
+  (Bài 1 Dễ, Bài 2 Trung bình, Bài 3 Khó — 3 bài gốc tay viết — + Bài 4-10 là
+  7 chủ đề phụ sinh bằng `genQuestions()`) = 60 bài, 906 câu hỏi, khớp đúng
+  thiết kế đã ghi ở mục "Bài học — nhân 10 lần" phía trên. 3 bài gốc tay viết
+  (Bài 1/2/3) đọc lại thấy ngữ pháp sạch hoàn toàn; **vấn đề thật nằm ở 798
+  câu do generator sinh ra** (Bài 4-10) — genuine bug, không phải thiếu nội
+  dung.
+- [x] **Sửa lỗi hiển thị "Topic: Nature" cứng ở `Lesson.tsx`** — dòng này
+  trước giờ LUÔN hiện "Topic: Nature" bất kể đang học world/bài nào (chỉ tình
+  cờ đúng cho đúng bài đầu tiên của Forest), vì component không hề nhận
+  thông tin world/lesson nào cả. Thêm prop `topicLabel?` (dùng lại đúng
+  `currentLessonLabel` — "{World} · {Lesson title}" — đã có sẵn trong
+  `App.tsx` từ tính năng Thông báo, chỉ chưa được truyền vào `<Lesson>`)
+- [x] **Sửa 3 nhóm lỗi ngữ pháp thật trong `genQuestions()`** (helper dùng
+  chung `needsNoArticle()`/`articleFor()` cũng được `buildDetectiveCase()`/
+  `petEchoRounds()`/`buildChatTopic()` dùng lại — sửa ở đây fix chung cho mọi
+  nơi), phát hiện bằng cách generate lại toàn bộ 798 prompt ra ngoài rồi đọc
+  từng dòng thật (không chỉ nhìn code):
+  1. Heuristic "kết thúc bằng s → danh từ số nhiều → bỏ mạo từ" bắt nhầm 3
+     danh từ số ít: "Which one is octopus?"/"walrus?"/"bus?" (thiếu
+     "an"/"a"/"a") — thêm `FORCE_ARTICLE_WORDS` chặn trước heuristic này
+  2. `articleFor()` là heuristic thuần theo CHỮ CÁI đầu, sai với từ có ÂM phụ
+     âm dù viết bằng nguyên âm: "Which one is an unicorn?"/"an UFO?" (đúng
+     phải là "a") — thêm `CONSONANT_SOUND_WORDS`, dùng chung được với case
+     "unicorn" mà `petEchoRounds()` đã tự vá riêng lẻ trước đó
+  3. Danh từ không đếm được bị heuristic bỏ sót nên vẫn bị gắn "a/an" sai:
+     8 môn học (science/history/biology/chemistry/geometry/geography/
+     literature/algebra), 3 từ khác (chalk/thunder/hail), 21 từ số đếm
+     (eleven..ninety/hundred/thousand/million/billion) đọc "a twelve?"/"a
+     hundred?" nghe rất gượng — thêm hết vào `NO_ARTICLE_WORDS`
+  4. Tên hành tinh viết hoa (danh từ riêng, không bao giờ có mạo từ) bị 2
+     template áp mạo từ/"the" sai: "Find the Mercury!"/"Find the Jupiter!"/
+     "Find the Uranus!"/"Find the Pluto!" (thừa "the") và "Which one is a
+     Saturn?"/"a Neptune?"/"a Moon?" (thừa mạo từ) — thêm `NO_THE_WORDS` cho
+     nhánh "Find the X!", tận dụng lại `NO_ARTICLE_WORDS` cho nhánh "Which
+     one is X?" (Venus/Mars/Earth/Sun trong cùng bài học này vốn đã đúng
+     "tình cờ" từ trước — Venus/Mars vì trùng đúng heuristic "kết thúc s",
+     Earth/Sun vì "the Earth"/"the Sun" vốn là cách dùng chuẩn nên "Find the
+     Earth!"/"Find the Sun!" không cần sửa)
+- [x] **Verify bằng dữ liệu THẬT, không chỉ code**: xoá 42 bài Bài 4-10 (chỉ
+  42 bài do generator sinh, giữ nguyên 18 bài Bài 1/2/3 tay viết) + toàn bộ
+  câu hỏi con qua script `tsx` một lần, seed lại (`npm run prisma:seed` chạy
+  sạch, không lỗi), đọc lại DB xác nhận cả 19 câu nghi vấn ra đúng: "an
+  octopus"/"a walrus"/"a bus"/"a unicorn"/"a UFO"/"science"/"history"/
+  "biology"/"geometry"/"chalk"/"thunder"/"hail"/"Find Mercury!"/"Find
+  Jupiter!"/"Find Uranus!"/"Find Pluto!"/"Saturn"/"Neptune"/"Moon" đều đúng;
+  quét tự động toàn bộ 410 câu dạng "Which one is a/an X?" trong 906 câu —
+  còn đúng 2 "mismatch" theo chữ cái là "a unicorn"/"a UFO", nhưng đó chính
+  là 2 ngoại lệ cố ý theo ÂM đọc (đúng như thiết kế); tổng số bài/câu hỏi
+  không đổi (60 bài / 906 câu) — xác nhận không mất/nhân đôi dữ liệu. `tsc
+  -b`/`tsc --noEmit` (backend)/`oxlint` sạch cả 2 phía.
+- **Ghi nhận, không phải lỗi — đường cong độ khó của Bài 4-10:** cả 7 bài
+  sinh thêm đều gắn nhãn "(Trung bình)" — đúng với cơ chế thật của chúng
+  (nhiễu cùng phạm trù, không trộn câu hỏi thuộc tính như Bài 3 "(Khó)"),
+  nên sau khi học xong Bài 3 "(Khó)" thì 7 bài tiếp theo lùi lại mức Trung
+  bình. Đây là lựa chọn có chủ đích ghi rõ trong comment `seed.ts` từ đợt
+  làm trước (mở rộng BỀ RỘNG từ vựng, không phải nối dài đường cong khó dần)
+  — không sửa, chỉ ghi lại rõ ràng cho user biết nếu sau này muốn thêm hẳn 1
+  lớp "(Khó)" nữa cho các chủ đề phụ.
+- **Việc còn tồn:** chưa build/cài lại app lên điện thoại thật với 2 thay đổi
+  trên (`genQuestions()`'s output + `Lesson.tsx`'s `topicLabel`).
+
+### 🐉 Flappy Dragon — thêm đường cong độ khó (2026-08-30)
+User: "hiệu ứng vỗ cánh giữ nguyên, cây hiển thị cần từ dễ đến khó, giúp user
+dễ chơi hơn". Trước đó mọi cây (ống chướng ngại) đều khó y hệt nhau ngay từ
+cây đầu tiên (khe hở 34%, tốc độ 27, spawn mỗi 1.65s cố định).
+- [x] `FlappyDragon.tsx` — thêm `GAP_HEIGHT_EASY/HARD`, `TREE_SPEED_EASY/
+  HARD`, `SPAWN_INTERVAL_EASY/HARD` + `difficultyProgress()` nội suy tuyến
+  tính theo **số cây đã vượt qua** (đạt tối đa ở cây thứ 8). Mốc "HARD" cố
+  tình đặt bằng ĐÚNG giá trị cũ (34/27/1.65s) để không đổi trải nghiệm người
+  chơi quen — chỉ 8 cây đầu dễ hơn. `gapHeight` chốt vào từng cây NGAY LÚC
+  SPAWN (không đổi sau khi đã hiện trên màn hình) để tránh khe hở tự co lại
+  giữa chừng khi rồng đang bay tới. Verify tay: ở progress=1, công thức tái
+  tạo chính xác dải gapY cũ (27-69%); `tsc -b`/`oxlint` sạch.
+  - Không đụng hiệu ứng vỗ cánh (ảnh `ember-wing-flap-v6.webp` xoay theo
+    velocity) theo đúng yêu cầu "không cần add thêm".
+
+### 🐉 Pet Ember — bỏ ngưỡng level cho hiệu ứng vỗ cánh tự nhiên (2026-08-30)
+User: "Pet Dragon có thể để đứng im => vỗ cánh tự nhiên như đã có". Trước đó
+`PetPortrait.tsx` chỉ dùng file `ember-wing-flap-v6.webp` (đúng file Flappy
+Dragon dùng, vỗ cánh tự lặp trong chính file webp) cho pet Ember khi
+**level ≥ 20** — dưới mức đó là ảnh tĩnh + CSS bồng bềnh chung.
+- [x] Bỏ hẳn điều kiện `level >= 20` — Ember giờ vỗ cánh tự nhiên ở MỌI level
+  (trừ giai đoạn trứng), đứng yên vẫn tự động vỗ cánh vì animation nằm sẵn
+  trong file webp, không cần thêm logic gì. Vì `PetPortrait` dùng chung toàn
+  app, áp dụng luôn cho mọi màn hiện pet Ember (Pet Care/Bộ sưu tập/Nông
+  trại...). Hành vi ở level ≥ 20 giữ nguyên y hệt trước. `tsc -b`/`oxlint`
+  sạch.
+
+### 🔍 Review "Nuôi pet / Làm nhiệm vụ / Học bài" toàn app (2026-09-02)
+User: "Giúp tôi review toàn bộ app, Chức năng nuôi pet, làm nhiệm vụ, học
+bài, và cập nhật lại Tasks.md". Trước khi review, phát hiện rất nhiều tính
+năng đã được xây dựng **ngoài các phiên làm việc trước** (không qua tôi, có
+lẽ user tự code hoặc phiên Claude Code khác) và **chưa từng được ghi vào
+TASKS.md**: 2 world mới (🎓 IELTS Academy, 💼 TOEIC Office, 4 bài/world),
+4 pet mới (dori/haetae/kitsune/maru — theo mô-típ thần thoại Hàn/Nhật), 8
+món đồ ăn mới (bungeoppang/songpyeon/sakura-mochi/taiyaki...), tính năng
+**đổi tên pet** (`ve-doi-ten-pet`, vé 25 gem), màn hình mới **🌾 Nông trại
+Pet** (`PetRanch.tsx` — xem toàn bộ pet đã sở hữu đi lại/bay lượn trên 1 cảnh
+trại), **Flappy Dragon** trở thành mini-game thật có backend riêng
+(`flappyDragon.service.ts`), và quan trọng nhất: **9 mini-game trước đây chỉ
+đếm coin phiên chơi (Memory Match, Word Catch, English Shop/Home, Word Train,
+Detective, Echo Parrot, Chat Buddy, Đọc truyện) giờ đã cộng thật vào
+`Progress.coins`/pet XP** qua 1 service dùng chung mới
+(`activityReward.service.ts`) — đúng gap đã ghi trong `Release.md` ("cân nhắc
+thống nhất tất cả game đều cộng thật") giờ đã được giải quyết. Đã đọc lại kỹ
+toàn bộ diff (41 file, +2408/-798 dòng) + Lesson/Pet Care/Quest liên quan,
+seed lại (44 pet/8 world/45 item/3 quest, sạch), `tsc -b`/`npm run typecheck`
+(backend)/`oxlint` sạch cả 2 phía trước VÀ sau khi sửa.
+
+**Bug tìm thấy + đã sửa (4 lỗi thật, verify bằng cách đọc lại dữ liệu/luồng
+code thật, không chỉ đoán):**
+- [x] **`LessonPicker.tsx` — badge độ khó đoán sai, mâu thuẫn ngay với tiêu
+  đề hiện cạnh nó**: badge cũ đoán độ khó theo VỊ TRÍ trong danh sách
+  (`index < 3` → "Dễ", `< 7` → "Trung bình", còn lại → "Nâng cao") thay vì
+  đọc nhãn "(Trung bình)"/"(Khó)" đã có sẵn ngay trong tiêu đề bài học. Với
+  dữ liệu thật (Bài 1 Dễ/Bài 2 TB/Bài 3 Khó/Bài 4-10 TB), kết quả sai be bét:
+  thẻ "Bài 3: Thiên nhiên kỳ diệu (**Khó**)" bị gắn badge "**Dễ**" (nằm ở vị
+  trí thứ 3), thẻ Bài 8-10 (thật ra là TB) bị gắn "Nâng cao". Sửa bằng cách
+  đọc trực tiếp `/\(Khó\)/`/`/\(Trung bình\)/` từ chính `lesson.title` —
+  không đoán theo vị trí nữa, badge không bao giờ có thể mâu thuẫn với tiêu
+  đề vì cùng lấy từ 1 nguồn. Áp dụng luôn màu badge số thứ tự (trước đó cũng
+  dùng chung công thức đoán sai).
+- [x] **`PetCollection.tsx` không hiện tên pet đã đổi** — tính năng đổi tên
+  pet mới (`renameActivePet()`) đã cập nhật đúng ở Pet Care/Nông trại Pet
+  (dùng `petStatsById[id]?.customName`), nhưng màn "Bộ sưu tập pet" vẫn hiện
+  cứng tên loài (`p.name`, vd "Ember") dù có nhận `petStatsById` làm prop
+  sẵn — chỉ đơn giản chưa dùng tới. Kết quả: đổi tên Ember thành "Mochi" thì
+  Pet Care/Nông trại hiện đúng "Mochi", riêng Bộ sưu tập vẫn hiện "Ember".
+  Sửa: `displayName = (isOwned && petStatsById[p.id]?.customName) || p.name`
+  — chỉ áp dụng cho pet ĐÃ SỞ HỮU (pet chưa mở khoá không có `PetStats`/tên
+  riêng). Đã rà thêm 3 chỗ khác dùng `PETS.find()`/`pet.name` (`WordRpg.tsx`
+  hiện quái vật hầm ngục dùng SPECIES pet làm hình mẫu — không phải pet của
+  chính bé, không cần đổi; `FusionCelebration.tsx` hiện pet VỪA MỚI phối ra —
+  chưa từng được đặt tên riêng, dùng tên loài là đúng) — không có chỗ nào
+  khác bị thiếu.
+- [x] **`handleCareAction()` (App.tsx) không làm mới cache "Nhiệm vụ hôm
+  nay"** — mọi hành động chăm pet (cho ăn/tắm/chơi/ngủ/vuốt ve) đều cộng
+  tiến độ nhiệm vụ "Chăm pet 3 lần" THẬT ở server (`careForPet()` gọi
+  `bumpQuestProgress(..., "petCare", 1)`), nhưng phía frontend chỉ xoá cache
+  `dailyQuests` (buộc tải lại) khi bấm THẲNG vào thẻ nhiệm vụ đó
+  (`handleOpenQuest()`) — nếu vào Pet Care bằng đường khác (nút "Pet Care" ở
+  Home, không qua thẻ nhiệm vụ), quay lại Home sẽ thấy thẻ "Nhiệm vụ hôm nay"
+  hiện tiến độ CŨ dù đã thật sự chăm pet xong. Sửa: thêm `setDailyQuests
+  (null)` ngay trong `handleCareAction()`, đúng mẫu đã dùng cho
+  `handleActivityComplete()`/lesson `onComplete` — luôn làm mới bất kể vào
+  Pet Care bằng đường nào.
+- [x] **`handleActivityComplete()` không bắt lỗi** — 9 mini-game gọi hàm này
+  qua `onComplete={() => handleActivityComplete(...)}` (fire-and-forget,
+  không ai `await`/`catch`); nếu request `rewardActivity()` lỗi mạng, lỗi bị
+  nuốt hoàn toàn thành unhandled rejection — bé thấy đúng màn "Bạn thắng!"
+  nhưng KHÔNG nhận được coin, không có dấu vết gì để biết vì sao. Thêm
+  try/catch + `console.warn`, đúng mẫu đã dùng cho các lời gọi
+  fire-and-forget khác trong `App.tsx`.
+
+**Phát hiện, CHƯA sửa — cần user quyết định (ảnh hưởng thiết kế kinh tế
+trong game, không phải lỗi kỹ thuật đơn thuần):**
+- [ ] **`rewardActivity()`/`rewardFlappyDragon()` không giới hạn số lần/ngày
+  — 9 mini-game + Flappy Dragon giờ đều cộng COIN THẬT mỗi lần hoàn thành,
+  nhưng mọi game này vẫn giữ đúng triết lý "không phạt, chơi lại thoải mái"
+  (nút "Chơi lại"/"Học lại" luôn có, không khoá). Nghĩa là 1 bé có thể đứng ở
+  màn "Bạn thắng!" của 1 topic bất kỳ (vd Word Train, +100 coin/lượt) rồi bấm
+  "Chơi lại" liên tục để cày coin thật KHÔNG GIỚI HẠN — không cần biết
+  API/devtools gì cả, chỉ cần bấm nút có sẵn trên UI. Khác hẳn Lesson (bối
+  cảnh gốc của kiểu "tin client" này) — Lesson vẫn chỉ có 1 bài/lượt học,
+  không phải vấn đề mới; nhưng giờ có tới 9+1 game khác cùng lỗ hổng, quy mô
+  lớn hơn hẳn. Đã có sẵn 2 pattern chống double-claim trong app dùng được
+  ngay (`BattlePassClaim`/`ChildPackageClaim` — 1 dòng DB unique constraint
+  chặn nhận trùng): có thể áp dụng kiểu "mỗi topic/mỗi bé chỉ cộng coin thật
+  1 lần/ngày, chơi lại thêm trong ngày đó chỉ để luyện tập" nếu user muốn
+  chặn. Chưa tự sửa vì đây là quyết định thiết kế kinh tế, không phải bug kỹ
+  thuật rõ ràng đúng/sai.
+
+**Xác nhận sạch, không có lỗi (đọc kỹ nhưng không cần sửa):**
+- Quest system (`quest.service.ts`/`quest.routes.ts`): claim server-tự-check
+  lại (không tin client báo "đã xong"), chống nhận trùng qua cờ `claimed`,
+  chống tràn int32 qua `clampToInt32`, endpoint client-facing
+  `POST /quests/progress` CỐ TÌNH không nhận `trackKind: "petCare"` (chỉ
+  "lessons"/"miniGame", cap amount 1-5) — đúng thiết kế, `petCare` chỉ được
+  cộng từ chính `careForPet()` phía server, không thể giả mạo qua endpoint
+  này.
+- `petStats.service.ts`/`inventory.service.ts`: XP curve, `careForPet()`,
+  `renameActivePet()` (validate độ dài tên 2-16 ký tự cả 2 phía, kiểm tra
+  đúng loại vé qua `effect.stat === "renamePet"`, trừ vé + đổi tên trong 1
+  transaction) — không có lỗi.
+- Toàn bộ 9 mini-game xác nhận `onComplete`/`onWin` chỉ bắn ĐÚNG 1 LẦN ở thời
+  điểm hoàn thành thật (không phải mỗi câu/mỗi vòng) — nhất quán, không có
+  game nào bắn thừa.
+- Migration `add_pet_custom_name` đã áp dụng đầy đủ (`prisma migrate
+  status` → "Database schema is up to date").
+- **Việc còn tồn:** 2 world mới (IELTS/TOEIC) mới có 4 bài/world (so với 10
+  bài của 6 world cũ) — nội dung đang xây dở, không phải lỗi; vật phẩm test
+  "Đói ngay (Test)" (1 coin) vẫn còn sống trong Shop thật (đã ghi trong
+  `Release.md`, vẫn chưa gỡ); toàn bộ thay đổi trong mục này (kể cả của
+  người khác, không phải chỉ của tôi) vẫn CHƯA build/cài lại lên điện thoại
+  thật, và CHƯA commit/push (xem `Release.md`'s Blocker #8 — khối lượng
+  chưa lưu giờ còn lớn hơn nhiều so với lúc viết Release.md).
+
 ---
 
 ## Việc còn tồn / có thể làm tiếp

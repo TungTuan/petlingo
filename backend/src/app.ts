@@ -22,6 +22,8 @@ import { adminHomeTopicsRoutes } from "./routes/admin/homeTopics.routes.js";
 import { adminQuestsRoutes } from "./routes/admin/quests.routes.js";
 import { adminBattlePassRoutes } from "./routes/admin/battlePassSeasons.routes.js";
 import { battlePassRoutes } from "./routes/battlePass.routes.js";
+import { adminShopPackagesRoutes } from "./routes/admin/shopPackages.routes.js";
+import { packagesRoutes } from "./routes/packages.routes.js";
 import { adminRpgMonstersRoutes } from "./routes/admin/rpgMonsters.routes.js";
 import { adminRpgTopicsRoutes } from "./routes/admin/rpgTopics.routes.js";
 import { adminShopRoundsRoutes } from "./routes/admin/shopRounds.routes.js";
@@ -142,6 +144,7 @@ export function buildApp() {
   app.register(savedWordsRoutes, { prefix: "/children" });
   app.register(notificationRoutes, { prefix: "/children" });
   app.register(battlePassRoutes, { prefix: "/children" });
+  app.register(packagesRoutes, { prefix: "/children" });
   app.register(petCareRoutes, { prefix: "/children" });
   app.register(questRoutes, { prefix: "/children" });
   app.register(catalogRoutes, { prefix: "/catalog" });
@@ -185,6 +188,7 @@ export function buildApp() {
   app.register(adminQuestionsRoutes, { prefix: "/admin/questions" });
   app.register(adminQuestsRoutes, { prefix: "/admin/quests" });
   app.register(adminBattlePassRoutes, { prefix: "/admin/battle-pass" });
+  app.register(adminShopPackagesRoutes, { prefix: "/admin/shop-packages" });
   app.register(adminStoriesRoutes, { prefix: "/admin/stories" });
   app.register(adminStoryPagesRoutes, { prefix: "/admin/story-pages" });
   app.register(adminMiniGameTopicsRoutes, { prefix: "/admin/minigame-topics" });

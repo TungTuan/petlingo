@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BackIcon } from "../components/ui";
+import { BackIcon, TopicIcon } from "../components/ui";
 import { api, ApiError } from "../lib/api";
 import { loadDictionary, type DictionaryWord } from "../lib/dictionary";
 import { useT } from "../lib/i18n";
@@ -59,7 +59,7 @@ export default function Topics({ childId, onStartReview, onExit }: TopicsProps) 
         ) : (
           <div className="flex w-[420px] flex-col gap-4 rounded-[24px] border-[3px] border-line2 bg-white p-6 shadow-[0_6px_0_#EADAB8]">
             <div className="flex items-center gap-3.5">
-              <span className="h-[46px] w-[46px] shrink-0 rounded-2xl" style={{ background: "#57C6C6" }} />
+              <TopicIcon label="Từ vựng đã lưu" color="#57C6C6" size={46} />
               <div>
                 <div className="font-baloo text-xl font-extrabold">{t("Từ đã lưu")}</div>
                 <div className="font-baloo text-[13px] font-semibold text-[#8A7A62]">

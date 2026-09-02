@@ -7,6 +7,7 @@ import { getMockWordTrainTopic, isMockWordTrainId, listMockWordTrainTopics } fro
 
 interface WordTrainProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
 function shuffle<T>(items: T[]): T[] {
@@ -58,7 +59,7 @@ function sampleWordTrainSession(topicKey: string, rounds: WordTrainRoundData[]):
  * entirely on-device from the offline dictionary bundle (see
  * lib/wordTrainMock.ts) — those need no network at all, so they're always
  * shown even if the API call below fails/times out (offline-first). */
-export default function WordTrain({ onExit }: WordTrainProps) {
+export default function WordTrain({ onExit, onComplete }: WordTrainProps) {
   const t = useT();
   const { lang } = useLang();
   const mockTopics = useMemo(() => listMockWordTrainTopics(), []);
@@ -66,6 +67,12 @@ export default function WordTrain({ onExit }: WordTrainProps) {
   const list = realTopics ? [...realTopics, ...mockTopics] : mockTopics;
   const [topic, setTopic] = useState<WordTrainTopicDetail | null>(null);
   const [loadErr, setLoadErr] = useState("");
+  const [loadingTopicId, setLoadingTopicId] = useState<string | null>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    listRef.current?.scrollTo({ top: 0 });
+  }, []);
 
   useEffect(() => {
     api
@@ -76,15 +83,20 @@ export default function WordTrain({ onExit }: WordTrainProps) {
 
   async function openTopic(id: string) {
     setLoadErr("");
+    setLoadingTopicId(id);
     try {
       const topic = isMockWordTrainId(id) ? await getMockWordTrainTopic(id.slice("mock:".length), lang) : (await api.getWordTrainTopic(id)).topic;
       if (topic) setTopic(topic);
+      else setLoadErr(t("Chủ đề này chưa có dữ liệu để chơi."));
     } catch (err) {
+      console.warn("Failed to open Word Train topic:", err);
       setLoadErr(err instanceof ApiError ? t(err.message) : t("Không tải được chủ đề, thử lại nhé."));
+    } finally {
+      setLoadingTopicId(null);
     }
   }
 
-  if (topic) return <WordTrainPlay topic={topic} onExit={() => setTopic(null)} />;
+  if (topic) return <WordTrainPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#BCEB9A]">
@@ -100,7 +112,7 @@ export default function WordTrain({ onExit }: WordTrainProps) {
         </div>
       </div>
 
-      <div className="relative flex flex-1 items-center justify-center overflow-y-auto px-8 pb-7 pt-5">
+      <div ref={listRef} className="relative flex flex-1 items-start justify-center overflow-y-auto px-8 pb-7 pt-5">
         {/* `list` always has at least the 9 offline mock topics — see the doc
             comment above — so there's no "loading"/"empty" full-screen state
             to handle here, only a small note below if the real ones failed. */}
@@ -109,6 +121,7 @@ export default function WordTrain({ onExit }: WordTrainProps) {
             <button
               key={tp.id}
               onClick={() => openTopic(tp.id)}
+              disabled={loadingTopicId !== null}
               className="group relative flex min-h-[210px] w-[260px] flex-col items-center gap-3 overflow-hidden rounded-[28px] border-4 border-white bg-[#FFFDF4]/96 p-5 text-center shadow-[0_8px_0_#B78345,0_20px_38px_rgba(42,65,42,.25)] transition-all hover:-translate-y-2"
             >
               <span className="absolute inset-x-0 top-0 h-4 bg-[repeating-linear-gradient(90deg,#EF6A5A_0_26px,#FFF1C7_26px_52px)]" />
@@ -120,11 +133,13 @@ export default function WordTrain({ onExit }: WordTrainProps) {
               <span className="rounded-full bg-[#E9F6E1] px-4 py-1.5 font-baloo text-[12px] font-extrabold text-[#4F7C2A]">
                 🎫 {loadMasteredSet(tp.key).size}/{tp._count.rounds} {t("chặng")}
               </span>
-              <span className="mt-auto font-baloo text-[11px] font-bold uppercase tracking-[.12em] text-[#B07A0C]">Khởi hành →</span>
+              <span className="mt-auto font-baloo text-[11px] font-bold uppercase tracking-[.12em] text-[#B07A0C]">
+                {loadingTopicId === tp.id ? t("Đang chuẩn bị...") : t("Khởi hành →")}
+              </span>
             </button>
           ))}
         </div>
-        {loadErr && <div className="mt-3 font-baloo text-sm font-bold text-[#B3402F]">{loadErr}</div>}
+        {loadErr && <div className="fixed bottom-5 left-1/2 z-30 -translate-x-1/2 rounded-2xl border-2 border-[#F2B8AF] bg-white px-5 py-3 font-baloo text-sm font-bold text-[#B3402F] shadow-lg">{loadErr}</div>}
       </div>
     </div>
   );
@@ -135,7 +150,7 @@ export default function WordTrain({ onExit }: WordTrainProps) {
  * fixed ride, so this draws a fresh, mastery-weighted session from it on
  * mount AND every "Chơi lại" (small hand-authored topics just get all of
  * their rounds, reshuffled, every time instead — see sampleWordTrainSession). */
-function WordTrainPlay({ topic, onExit }: { topic: WordTrainTopicDetail; onExit: () => void }) {
+function WordTrainPlay({ topic, onExit, onComplete }: { topic: WordTrainTopicDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
   const [rounds, setRounds] = useState(() => sampleWordTrainSession(topic.key, topic.rounds));
   const [roundIdx, setRoundIdx] = useState(0);
@@ -162,6 +177,7 @@ function WordTrainPlay({ topic, onExit }: { topic: WordTrainTopicDetail; onExit:
     setTimeout(() => {
       if (roundIdx + 1 >= rounds.length) {
         setFinished(true);
+        onComplete?.();
       } else {
         setRoundIdx((i) => i + 1);
       }

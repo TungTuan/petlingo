@@ -12,6 +12,7 @@ import { useT } from "../lib/i18n";
 
 interface EnglishDetectiveProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
 /** English Detective — nhắm tới người lớn/trẻ lớn hơn (xem TASKS.md): đọc 1
@@ -19,7 +20,7 @@ interface EnglishDetectiveProps {
  * lộ ra manh mối, rồi buộc tội thủ phạm ở bước cuối. Bản đầu dùng trắc
  * nghiệm cho cả 2 bước (không nhập câu trả lời tự do). Cùng khung
  * picker→play với English Shop/Home/Word RPG/Word Train. */
-export default function EnglishDetective({ onExit }: EnglishDetectiveProps) {
+export default function EnglishDetective({ onExit, onComplete }: EnglishDetectiveProps) {
   const t = useT();
   const [list, setList] = useState<DetectiveCaseListItem[] | null>(null);
   const [detectiveCase, setDetectiveCase] = useState<DetectiveCaseDetail | null>(null);
@@ -42,7 +43,7 @@ export default function EnglishDetective({ onExit }: EnglishDetectiveProps) {
     }
   }
 
-  if (detectiveCase) return <EnglishDetectivePlay detectiveCase={detectiveCase} onExit={() => setDetectiveCase(null)} />;
+  if (detectiveCase) return <EnglishDetectivePlay detectiveCase={detectiveCase} onExit={() => setDetectiveCase(null)} onComplete={onComplete} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#2A2E45] to-[#454B6B]">
@@ -89,7 +90,7 @@ export default function EnglishDetective({ onExit }: EnglishDetectiveProps) {
 }
 
 /** The actual investigation, once a case has been picked. */
-function EnglishDetectivePlay({ detectiveCase, onExit }: { detectiveCase: DetectiveCaseDetail; onExit: () => void }) {
+function EnglishDetectivePlay({ detectiveCase, onExit, onComplete }: { detectiveCase: DetectiveCaseDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
   const rounds = detectiveCase.rounds;
   const [started, setStarted] = useState(false);
@@ -124,7 +125,7 @@ function EnglishDetectivePlay({ detectiveCase, onExit }: { detectiveCase: Detect
   function handleAccuseSolved() {
     setCoins((c) => c + 30);
     setCoinPop((p) => p + 1);
-    setTimeout(() => setSolved(true), 800);
+    setTimeout(() => { setSolved(true); onComplete?.(); }, 800);
   }
 
   return (

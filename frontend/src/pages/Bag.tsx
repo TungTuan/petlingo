@@ -8,6 +8,7 @@ interface BagProps {
   gems: number;
   inventory: InventoryEntry[] | null;
   onUseItem: (itemId: string) => Promise<UseItemResult>;
+  onRenamePet: (itemId: string, name: string) => Promise<UseItemResult>;
   onExit: () => void;
 }
 
@@ -25,6 +26,7 @@ const EFFECT_LABEL: Record<ItemEffect["stat"], { label: string; color: string }>
   coins: { label: "Coin", color: "#B07A0C" },
   experience: { label: "XP pet", color: "#9B7EDE" },
   resetLevel: { label: "Reset level", color: "#57C6C6" },
+  renamePet: { label: "Đổi tên pet", color: "#42C7D7" },
 };
 
 /** Bag / Inventory — matches the reference sheet's "Phần 4 · Kho đồ" panel.
@@ -33,12 +35,13 @@ const EFFECT_LABEL: Record<ItemEffect["stat"], { label: string; color: string }>
  * "Cửa hàng ⇄ Túi đồ" toggle, which duplicated Shop.tsx's whole purpose;
  * removed so there's exactly ONE place to spend coin/gem (Shop) and ONE
  * place to see/use what a child already owns (here). */
-export default function Bag({ coins, gems, inventory, onUseItem, onExit }: BagProps) {
+export default function Bag({ coins, gems, inventory, onUseItem, onRenamePet, onExit }: BagProps) {
   const t = useT();
   const [tab, setTab] = useState(0);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const [petName, setPetName] = useState("");
 
   const tabKey = TABS[tab]!.key;
   const items = (inventory ?? []).filter((e) => e.item.category === tabKey);
@@ -53,8 +56,10 @@ export default function Bag({ coins, gems, inventory, onUseItem, onExit }: BagPr
     if (!chosen || busy) return;
     setBusy(true);
     try {
-      const result = await onUseItem(chosen.item.id);
+      const isRenameTicket = chosen.item.effects.some((effect) => effect.stat === "renamePet");
+      const result = isRenameTicket ? await onRenamePet(chosen.item.id, petName) : await onUseItem(chosen.item.id);
       setMsg(t(result.message));
+      if (isRenameTicket) setPetName("");
     } catch (err) {
       setMsg(err instanceof Error ? t(err.message) : t("Không dùng được, thử lại nhé."));
     } finally {
@@ -146,12 +151,19 @@ export default function Bag({ coins, gems, inventory, onUseItem, onExit }: BagPr
                 })
               )}
             </div>
+            {chosen.item.effects.some((effect) => effect.stat === "renamePet") && (
+              <label className="rounded-2xl border-2 border-[#BDE7EA] bg-[#F0FCFC] p-3">
+                <span className="mb-1.5 block font-baloo text-xs font-extrabold text-[#328A91]">Tên mới cho pet đang đồng hành</span>
+                <input value={petName} onChange={(event) => setPetName(event.target.value.slice(0, 16))} placeholder="Ví dụ: Mochi" className="w-full rounded-xl border-2 border-[#A9DDE1] bg-white px-3 py-2 font-baloo font-bold outline-none focus:border-[#42C7D7]" />
+                <span className="mt-1 block text-right font-baloo text-[10px] font-bold text-[#7AA3A6]">{petName.trim().length}/16</span>
+              </label>
+            )}
             <button
               onClick={useChosen}
-              disabled={busy}
+              disabled={busy || (chosen.item.effects.some((effect) => effect.stat === "renamePet") && petName.trim().length < 2)}
               className="mt-auto rounded-2xl bg-brand-green py-3.5 font-baloo text-lg font-extrabold text-white shadow-[0_5px_0_#5C9C31] transition-transform active:translate-y-1 active:shadow-[0_1px_0_#5C9C31] disabled:opacity-60"
             >
-              {busy ? t("Đang xử lý…") : t("Dùng ngay")}
+              {busy ? t("Đang xử lý…") : chosen.item.effects.some((effect) => effect.stat === "renamePet") ? t("Xác nhận đổi tên") : t("Dùng ngay")}
             </button>
             <div className="min-h-[18px] font-baloo text-[13px] font-bold text-[#8A7A62]">{msg}</div>
           </div>

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { api, ApiError, type BattleLesson, type Child, type FightRoom as FightRoomData } from "../lib/api";
 import { useFightSocket, type RosterPlayer } from "../lib/useFightSocket";
-import { BackIcon, ChunkyButton, CoinIcon, SoftButton } from "../components/ui";
+import { BackIcon, ChunkyButton, CoinIcon, SoftButton, TopicIcon } from "../components/ui";
 import { useT } from "../lib/i18n";
 
 interface FightRoomProps {
@@ -140,7 +140,7 @@ export default function FightRoom({ child, onExit, onRefreshProgress }: FightRoo
                     onClick={() => createRoom(l.id)}
                     className="flex flex-col items-start gap-2 rounded-[20px] border-[3px] border-white/15 bg-white/95 p-4 text-left shadow-[0_5px_0_rgba(0,0,0,.25)] transition-transform hover:-translate-y-1 disabled:opacity-60"
                   >
-                    <span className="h-8 w-8 rounded-2xl" style={{ background: l.colorTheme }} />
+                    <TopicIcon label={`${l.worldName} ${l.title}`} color={l.colorTheme} size={36} />
                     <span className="font-baloo text-[15px] font-extrabold">{l.title}</span>
                     <span className="font-baloo text-[11.5px] font-bold text-[#8A7A62]">
                       {l.worldName} · {l.questionCount} {t("câu")}

@@ -4,6 +4,7 @@ export * from "./Card";
 export * from "./Feedback";
 export * from "./Forms";
 export * from "./Game";
+export * from "./TopicIcon";
 export * from "./Hud";
 export * from "./Nav";
 export * from "./tokens";

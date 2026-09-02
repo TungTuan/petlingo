@@ -1,19 +1,20 @@
 import { useEffect, useState } from "react";
 import { api, ApiError, type WordCatchTopicDetail, type WordCatchTopicListItem } from "../lib/api";
-import { BackIcon, CoinIcon, HeartIcon, SpeakerIcon } from "../components/ui";
+import { BackIcon, CoinIcon, HeartIcon, RewardModal, SpeakerIcon, TopicIcon } from "../components/ui";
 import { useT } from "../lib/i18n";
 
 interface WordCatchProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
-const BORDERS = ["#E7D4B2", "#C9E5F7", "#CDE7B4", "#DDCFF5"];
+const BORDERS = ["#E69A2C", "#4F9DC8", "#72AA45", "#8B6BC7"];
 
 /** Word Catch — matches the reference sheet's "Phần 5 · Word Catch" panel.
  * Now backed by real WordCatchTopic/WordCatchRound catalog data (see
  * /catalog/wordcatch-topics): shows a topic picker first, then plays
  * whichever topic was tapped — instead of the single hard-coded 5-round set. */
-export default function WordCatch({ onExit }: WordCatchProps) {
+export default function WordCatch({ onExit, onComplete }: WordCatchProps) {
   const t = useT();
   const [list, setList] = useState<WordCatchTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<WordCatchTopicDetail | null>(null);
@@ -36,7 +37,7 @@ export default function WordCatch({ onExit }: WordCatchProps) {
     }
   }
 
-  if (topic) return <WordCatchPlay topic={topic} onExit={() => setTopic(null)} />;
+  if (topic) return <WordCatchPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#CFEAF6] to-[#EAF6E4]">
@@ -63,7 +64,7 @@ export default function WordCatch({ onExit }: WordCatchProps) {
                 onClick={() => openTopic(tp.id)}
                 className="flex flex-col items-start gap-2.5 rounded-[22px] border-[3px] border-line bg-white p-4.5 text-left shadow-[0_5px_0_#E7D4B2] transition-transform hover:-translate-y-1"
               >
-                <span className="h-10 w-10 rounded-2xl" style={{ background: BORDERS[i % BORDERS.length] }} />
+                <TopicIcon label={tp.name} color={BORDERS[i % BORDERS.length]!} />
                 <span className="font-baloo text-base font-extrabold leading-snug">{tp.name}</span>
                 <span className="mt-auto font-baloo text-[11.5px] font-bold text-[#5A7080]">
                   {tp._count.rounds} {t("lượt chơi")}
@@ -79,7 +80,7 @@ export default function WordCatch({ onExit }: WordCatchProps) {
 }
 
 /** The actual falling-words game, once a topic has been picked. */
-function WordCatchPlay({ topic, onExit }: { topic: WordCatchTopicDetail; onExit: () => void }) {
+function WordCatchPlay({ topic, onExit, onComplete }: { topic: WordCatchTopicDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
   const rounds = topic.rounds;
   const [idx, setIdx] = useState(0);
@@ -91,6 +92,7 @@ function WordCatchPlay({ topic, onExit }: { topic: WordCatchTopicDetail; onExit:
   const [msg, setMsg] = useState(t("Sẵn sàng!"));
   const [tone, setTone] = useState<"idle" | "good" | "bad">("idle");
   const [zapped, setZapped] = useState<{ word: string; ok: boolean } | null>(null);
+  const [finished, setFinished] = useState(false);
   const round = rounds[idx]!;
 
   function pick(word: string) {
@@ -112,7 +114,12 @@ function WordCatchPlay({ topic, onExit }: { topic: WordCatchTopicDetail; onExit:
     // Let the catch/shake animation play out before the row of falling words moves on.
     setTimeout(() => {
       setZapped(null);
-      setIdx((i) => (i + 1) % rounds.length);
+      if (idx + 1 >= rounds.length) {
+        setFinished(true);
+        onComplete?.();
+      } else {
+        setIdx((i) => i + 1);
+      }
     }, 420);
   }
 
@@ -124,6 +131,7 @@ function WordCatchPlay({ topic, onExit }: { topic: WordCatchTopicDetail; onExit:
     setMsg(t("Sẵn sàng!"));
     setTone("idle");
     setZapped(null);
+    setFinished(false);
   }
 
   return (
@@ -205,6 +213,7 @@ function WordCatchPlay({ topic, onExit }: { topic: WordCatchTopicDetail; onExit:
           </div>
         </div>
       </div>
+      {finished && <RewardModal coins={25} xp={15} score={`${score + (zapped?.ok ? 10 : 0)} ${t("điểm")}`} onContinue={reset} />}
     </div>
   );
 }

@@ -625,6 +625,8 @@ export const echoParrotRoundSchema = z.object({
   ko: z.string().trim().min(1).optional(),
   /** Optional IPA hint (vd "/ˈæp.əl/") — chỉ hiện tham khảo, không dùng để chấm điểm. */
   phonetic: z.string().trim().min(1).optional(),
+  /** Tuỳ chọn — khớp Pet.key, hiện ảnh pet đó làm hình minh hoạ (2026-08-28). */
+  petKey: z.string().trim().min(1).optional(),
   order: z.number().int().default(0),
 });
 export const updateEchoParrotRoundSchema = echoParrotRoundSchema.partial();
@@ -701,10 +703,12 @@ export const updateBattlePassSeasonSchema = battlePassSeasonSchema.partial();
 export type BattlePassSeasonInput = z.infer<typeof battlePassSeasonSchema>;
 export type UpdateBattlePassSeasonInput = z.infer<typeof updateBattlePassSeasonSchema>;
 
-/** Matches battlePass.service.ts's grantReward() — the ONLY reward kinds that
- * actually do something when claimed, so the admin form can't configure a
- * tier into granting nothing by typo. */
-const battlePassRewardKind = z.enum([
+/** Matches rewards.service.ts's grantReward() — the ONLY reward kinds that
+ * actually do something when claimed, so an admin form can't configure a
+ * tier/package into granting nothing by typo. Shared by Battle Pass tiers
+ * AND Shop packages (see `shopPackageContentEntry` below) — same reward
+ * vocabulary, one list to keep them from drifting apart. */
+export const rewardKind = z.enum([
   "coins",
   "gems",
   "commonShards",
@@ -726,10 +730,10 @@ export const battlePassTierSchema = z
   .object({
     tier: z.number().int().min(1).max(30),
     xpRequired: z.number().int().min(0),
-    freeRewardKind: battlePassRewardKind,
+    freeRewardKind: rewardKind,
     freeRewardAmount: z.number().int().min(0).default(0),
     freeRewardItemKey: z.string().trim().min(1).nullable().optional(),
-    vipRewardKind: battlePassRewardKind,
+    vipRewardKind: rewardKind,
     vipRewardAmount: z.number().int().min(0).default(0),
     vipRewardItemKey: z.string().trim().min(1).nullable().optional(),
   })
@@ -738,10 +742,10 @@ export const battlePassTierSchema = z
 export const updateBattlePassTierSchema = z.object({
   tier: z.number().int().min(1).max(30).optional(),
   xpRequired: z.number().int().min(0).optional(),
-  freeRewardKind: battlePassRewardKind.optional(),
+  freeRewardKind: rewardKind.optional(),
   freeRewardAmount: z.number().int().min(0).optional(),
   freeRewardItemKey: z.string().trim().min(1).nullable().optional(),
-  vipRewardKind: battlePassRewardKind.optional(),
+  vipRewardKind: rewardKind.optional(),
   vipRewardAmount: z.number().int().min(0).optional(),
   vipRewardItemKey: z.string().trim().min(1).nullable().optional(),
 });
@@ -753,3 +757,75 @@ export const claimBattlePassTierSchema = z.object({
   track: z.enum(["free", "vip"]),
 });
 export type ClaimBattlePassTierInput = z.infer<typeof claimBattlePassTierSchema>;
+
+// ---- Shop packages (2026-08-28) — "Gói combo vật phẩm" + "Nạp lần đầu" ----
+
+const shopPackageKind = z.enum(["combo", "firstPurchase"]);
+
+// Same .nullable()+.optional() fix as battlePassTierSchema's item-key fields
+// (see that schema's comment) — the admin form always sends explicit `null`
+// for itemKey when kind !== "item".
+const shopPackageContentEntry = z.object({
+  kind: rewardKind,
+  amount: z.number().int().min(0).default(0),
+  itemKey: z.string().trim().min(1).nullable().optional(),
+});
+
+export const shopPackageSchema = z
+  .object({
+    key: slugKey,
+    name: z.string().trim().min(1),
+    description: z.string().trim().min(1),
+    kind: shopPackageKind,
+    color: z
+      .string()
+      .trim()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Mã màu dạng #RRGGBB."),
+    imagePath: z.string().trim().default(""),
+    /** Chỉ áp dụng khi kind="combo". */
+    price: z.number().int().min(0).default(0),
+    currency: z.enum(["coin", "gem"]).default("coin"),
+    /** Chỉ áp dụng khi kind="firstPurchase" — nhãn hiển thị thuần, vd "49.000đ". */
+    realPriceLabel: z.string().trim().default(""),
+    contents: z.array(shopPackageContentEntry).min(1, "Gói cần ít nhất 1 phần thưởng."),
+    order: z.number().int().default(0),
+    isActive: z.boolean().default(true),
+  })
+  .refine((v) => v.kind !== "combo" || v.price > 0, { message: "Gói combo cần giá coin/gem lớn hơn 0.", path: ["price"] })
+  .refine((v) => v.kind !== "firstPurchase" || v.realPriceLabel.trim().length > 0, {
+    message: "Gói nạp lần đầu cần nhãn giá tiền thật (vd \"49.000đ\").",
+    path: ["realPriceLabel"],
+  })
+  .refine((v) => v.contents.every((c) => c.kind !== "item" || !!c.itemKey), {
+    message: "Phần thưởng kiểu 'item' cần chọn vật phẩm.",
+    path: ["contents"],
+  });
+// No cross-field .refine() on the update schema (same reasoning as
+// updateBattlePassTierSchema) — services/admin/shopPackages.service.ts's
+// updateShopPackage() re-validates against whichever fields didn't change.
+export const updateShopPackageSchema = z.object({
+  key: slugKey.optional(),
+  name: z.string().trim().min(1).optional(),
+  description: z.string().trim().min(1).optional(),
+  kind: shopPackageKind.optional(),
+  color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional(),
+  imagePath: z.string().trim().optional(),
+  price: z.number().int().min(0).optional(),
+  currency: z.enum(["coin", "gem"]).optional(),
+  realPriceLabel: z.string().trim().optional(),
+  contents: z.array(shopPackageContentEntry).min(1).optional(),
+  order: z.number().int().optional(),
+  isActive: z.boolean().optional(),
+});
+export type ShopPackageInput = z.infer<typeof shopPackageSchema>;
+export type UpdateShopPackageInput = z.infer<typeof updateShopPackageSchema>;
+export type ShopPackageContentEntry = z.infer<typeof shopPackageContentEntry>;
+
+export const purchaseShopPackageSchema = z.object({
+  packageId: z.string().trim().min(1),
+});
+export type PurchaseShopPackageInput = z.infer<typeof purchaseShopPackageSchema>;

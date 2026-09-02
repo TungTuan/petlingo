@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ScreenFrame from "./components/ScreenFrame";
 import {
   api,
@@ -16,6 +16,8 @@ import {
   type ProgressState,
   type Quest,
   type QuestTrackKind,
+  type RewardableActivity,
+  type ShopPackageDto,
   type UseItemResult,
 } from "./lib/api";
 import { DEFAULT_HOME_CUSTOMIZATION, loadHomeCustomization, saveHomeCustomization, type HomeCustomization } from "./lib/homeCustomization";
@@ -32,6 +34,7 @@ import EnglishShop from "./pages/EnglishShop";
 import Home from "./pages/Home";
 import LanguagePicker from "./pages/LanguagePicker";
 import Lesson, { type LessonQuestion } from "./pages/Lesson";
+import LessonPicker from "./pages/LessonPicker";
 import Login from "./pages/Login";
 import MiniGame from "./pages/MiniGame";
 import More from "./pages/More";
@@ -42,6 +45,7 @@ import Onboarding from "./pages/Onboarding";
 import ParentArea from "./pages/ParentArea";
 import PetCare from "./pages/PetCare";
 import PetCollection from "./pages/PetCollection";
+import PetRanch from "./pages/PetRanch";
 import Premium from "./pages/Premium";
 import BattlePass from "./pages/BattlePass";
 import Profile from "./pages/Profile";
@@ -60,6 +64,8 @@ import WorldLessons from "./pages/WorldLessons";
 import EnglishDetective from "./pages/EnglishDetective";
 import EchoParrot from "./pages/EchoParrot";
 import ChatBuddy from "./pages/ChatBuddy";
+import FlappyDragon from "./pages/FlappyDragon";
+import { rememberLearnedWords } from "./lib/learningGate";
 import GameHub from "./pages/GameHub";
 import type { NavTab, Screen } from "./types/nav";
 import PetEvolutionCelebration from "./components/PetEvolutionCelebration";
@@ -92,15 +98,11 @@ function AppInner() {
   const t = useT();
   const [phase, setPhase] = useState<Phase>("boot");
   const [screen, setScreen] = useState<Screen>("home");
+  const screenHistory = useRef<Screen[]>([]);
   const [parent, setParent] = useState<Parent | null>(null);
   const [child, setChild] = useState<Child | null>(null);
   const [progress, setProgress] = useState<ProgressState | null>(null);
 
-  const [quests] = useState([
-    { label: "Chơi mini-game", done: false },
-    { label: "Học 5 từ", done: true },
-    { label: "Cho Buddy ăn", done: false },
-  ]);
   const [lessonQuestions, setLessonQuestions] = useState<LessonQuestion[] | null>(null);
   // "{World} · {Lesson title}" — set alongside lessonQuestions purely so the
   // real lesson-completion notification (see onComplete below) can say WHICH
@@ -118,6 +120,7 @@ function AppInner() {
   const [pickedLessonId, setPickedLessonId] = useState<string | null>(null);
   const [inventory, setInventory] = useState<InventoryEntry[] | null>(null);
   const [foodShop, setFoodShop] = useState<InventoryEntry[] | null>(null);
+  const [packages, setPackages] = useState<ShopPackageDto[] | null>(null);
   const [homeBackgroundShop, setHomeBackgroundShop] = useState<InventoryEntry[]>([]);
   const [homeCustomization, setHomeCustomization] = useState<HomeCustomization>(DEFAULT_HOME_CUSTOMIZATION);
   const [petStats, setPetStats] = useState<PetStatsState | null>(null);
@@ -130,6 +133,29 @@ function AppInner() {
   const [parentAreaUnlocked, setParentAreaUnlocked] = useState(false);
   // phase === "offline"'s "Thử lại" button — see checkStoredSession().
   const [retryingSession, setRetryingSession] = useState(false);
+
+  /**
+   * App-level navigation history. Screens used to hard-code their Back
+   * destination, which made a page opened from Home return to More (and vice
+   * versa). Every forward navigation now records its origin; Back pops that
+   * exact origin. Authentication/profile changes use resetNavigation because
+   * history from a previous session must never leak into the next one.
+   */
+  function navigateTo(next: Screen) {
+    if (next === screen) return;
+    screenHistory.current = [...screenHistory.current, screen].slice(-40);
+    setScreen(next);
+  }
+
+  function goBack(fallback: Screen = "home") {
+    const previous = screenHistory.current.pop();
+    setScreen(previous ?? fallback);
+  }
+
+  function resetNavigation(next: Screen = "home") {
+    screenHistory.current = [];
+    setScreen(next);
+  }
 
   function celebrateEvolution(previousLevel: number | undefined, nextStats: PetStatsState | null) {
     if (!nextStats || previousLevel === undefined || nextStats.level <= previousLevel) return;
@@ -224,12 +250,12 @@ function AppInner() {
     })();
   }, [screen, lessonQuestions, pickedLessonId, lessonWorldKey]);
 
-  // "Nhiệm vụ hôm nay" — fetched fresh each time the screen is entered (see
-  // its onExit resetting dailyQuests to null below) so progress made
+  // "Nhiệm vụ hôm nay" — also powers the compact progress card on Home.
+  // It is fetched fresh when either screen is entered so progress made
   // elsewhere (a lesson, a mini-game, caring for a pet) always shows up
   // to date rather than a stale snapshot from the last visit.
   useEffect(() => {
-    if (screen !== "questStreak" || !child || dailyQuests !== null) return;
+    if ((screen !== "home" && screen !== "questStreak") || !child || dailyQuests !== null) return;
     api
       .listQuests(child.id)
       .then(({ quests }) => setDailyQuests(quests))
@@ -268,8 +294,9 @@ function AppInner() {
     setHomeCustomization(loadHomeCustomization(child.id));
     api.listInventory(child.id).then(({ items }) => setInventory(items)).catch((err) => console.warn("Failed to load inventory:", err));
     api.listFoodShop(child.id).then(({ items }) => setFoodShop(items)).catch((err) => console.warn("Failed to load food shop:", err));
+    api.listPackages(child.id).then(({ packages }) => setPackages(packages)).catch((err) => console.warn("Failed to load shop packages:", err));
     api.listHomeBackgroundShop(child.id).then(({ items }) => setHomeBackgroundShop(items)).catch((err) => console.warn("Failed to load background shop:", err));
-    setScreen("home");
+    resetNavigation("home");
     setPhase(localStorage.getItem(ONBOARDED_KEY) ? "ready" : "onboarding");
   }
 
@@ -369,6 +396,13 @@ function AppInner() {
       celebrateEvolution(previousLevel ?? inferredPreviousLevel, result.petStats);
     }
     setProgress(result.progress);
+    // Every care action bumps the "Chăm pet" quest server-side (see
+    // careForPet()) — invalidate the cached quest list so Home's quest card
+    // shows the real progress next time, instead of only refreshing when Pet
+    // Care was reached BY TAPPING that exact quest card (handleOpenQuest()'s
+    // setDailyQuests(null) doesn't cover every other way to reach Pet Care —
+    // the Home shortcut, More menu, etc.).
+    setDailyQuests(null);
     return result;
   }
 
@@ -390,6 +424,17 @@ function AppInner() {
     return result;
   }
 
+  async function handleRenamePet(itemId: string, name: string): Promise<UseItemResult> {
+    if (!child) throw new Error("Chưa chọn hồ sơ trẻ.");
+    const result = await api.renamePet(child.id, itemId, name);
+    setInventory((inv) => (inv ? inv.map((e) => (e.item.id === itemId ? { ...e, quantity: result.quantity } : e)).filter((e) => e.quantity > 0) : inv));
+    if (result.petStats) {
+      setPetStats(result.petStats);
+      setPetStatsById((stats) => ({ ...stats, [result.petStats!.petKey]: result.petStats! }));
+    }
+    return result;
+  }
+
   async function handlePurchaseItem(itemId: string) {
     if (!child) throw new Error("Chưa chọn hồ sơ trẻ.");
     const result = await api.purchaseItem(child.id, itemId);
@@ -398,6 +443,40 @@ function AppInner() {
     setInventory(items);
     setFoodShop((shop) => shop?.map((entry) => entry.item.id === itemId ? { ...entry, quantity: result.quantity } : entry) ?? null);
     return result;
+  }
+
+  async function handlePurchasePackage(packageId: string) {
+    if (!child) throw new Error("Chưa chọn hồ sơ trẻ.");
+    const result = await api.purchasePackage(child.id, packageId);
+    setProgress(result.progress);
+    setPackages((list) => list?.map((p) => (p.id === packageId ? result.package : p)) ?? null);
+    // A combo package can grant catalog items (contents may include `kind:
+    // "item"`) — reload inventory the same way handlePurchaseItem() does so
+    // Bag/Pet Care reflect it immediately instead of on next screen change.
+    const { items } = await api.listInventory(child.id);
+    setInventory(items);
+    return result;
+  }
+
+  async function handleActivityComplete(activity: RewardableActivity) {
+    if (!child) return;
+    // Fire-and-forget from every game's onComplete (none of them await this),
+    // so a failed request here would otherwise be a silent unhandled
+    // rejection — the child would see the "you won!" screen with no coins
+    // ever landing and no trace of why. Matches the try/warn-and-continue
+    // pattern already used for the other fire-and-forget calls in this file
+    // (lesson quest bump, notification report, etc.).
+    try {
+      const result = await api.rewardActivity(child.id, activity);
+      setProgress(result.progress);
+      if (result.petStats) {
+        setPetStats(result.petStats);
+        setPetStatsById((stats) => ({ ...stats, [result.petStats!.petKey]: result.petStats! }));
+      }
+      setDailyQuests(null);
+    } catch (err) {
+      console.warn(`Failed to reward activity "${activity}":`, err);
+    }
   }
 
   function handleChangeHomeCustomization(value: HomeCustomization) {
@@ -427,9 +506,9 @@ function AppInner() {
 
   function handleOpenQuest(trackKind: QuestTrackKind) {
     setDailyQuests(null); // refetch fresh progress next time "Nhiệm vụ hôm nay" is opened
-    if (trackKind === "lessons") setScreen("lesson");
-    else if (trackKind === "miniGame") setScreen("miniGame");
-    else setScreen("petCare");
+    if (trackKind === "lessons") navigateTo("lesson");
+    else if (trackKind === "miniGame") navigateTo("miniGame");
+    else navigateTo("petCare");
   }
 
   function handleLogout() {
@@ -439,7 +518,7 @@ function AppInner() {
     setProgress(null);
     setInventory(null);
     setPetStats(null);
-    setScreen("home");
+    resetNavigation("home");
     setPhase("login");
   }
 
@@ -462,7 +541,8 @@ function AppInner() {
 
   function handleNavigate(tab: NavTab) {
     const map: Record<NavTab, Screen> = { Home: "home", Game: "gameHub", Pets: "petCare", Bag: "bag", Shop: "shop", More: "more" };
-    setScreen(map[tab]);
+    if (tab === "Home") setDailyQuests(null);
+    navigateTo(map[tab]);
   }
 
   if (phase === "boot") {
@@ -568,7 +648,7 @@ function AppInner() {
 
   const owned = progress.unlockedPets;
   const petIds = owned.length > 0 ? owned : ["buddy"];
-  const petNames = petIds.map((id) => id[0]!.toUpperCase() + id.slice(1));
+  const petNames = petIds.map((id) => petStatsById[id]?.customName || (id[0]!.toUpperCase() + id.slice(1)));
   const activePetId = progress.activePetId && petIds.includes(progress.activePetId) ? progress.activePetId : petIds[0]!;
   const activePetIndex = Math.max(0, petIds.indexOf(activePetId));
   const activePetName = petNames[activePetIndex]!;
@@ -607,12 +687,12 @@ function AppInner() {
             petId={activePetId}
             petName={activePetName}
             petStats={petStats}
-            quests={quests}
+            quests={dailyQuests}
             onNavigate={handleNavigate}
-            onPlayLesson={() => setScreen("lesson")}
-            onOpenDailyQuest={() => setScreen("questStreak")}
-            onOpenBattlePass={() => setScreen("battlePass")}
-            onOpenSettings={() => setScreen("settings")}
+            onPlayLesson={() => navigateTo("worldLessons")}
+            onOpenDailyQuest={() => navigateTo("questStreak")}
+            onOpenBattlePass={() => navigateTo("battlePass")}
+            onOpenSettings={() => navigateTo("settings")}
             customization={homeCustomization}
             backgroundShop={homeBackgroundShop}
             ownedBackgroundKeys={new Set((inventory ?? []).filter((entry) => entry.item.key.startsWith("background-") && entry.quantity > 0).map((entry) => entry.item.key))}
@@ -627,14 +707,17 @@ function AppInner() {
             <Lesson
               questions={lessonQuestions}
               isPremium={parent.isPremium}
+              topicLabel={currentLessonLabel}
               onExit={() => {
                 setLessonQuestions(null);
                 setLessonChoices(null);
                 setPickedLessonId(null);
                 setCurrentLessonLabel("");
-                setScreen("home");
+                setDailyQuests(null);
+                goBack("home");
               }}
               onComplete={(result) => {
+                rememberLearnedWords(result.learnedWords);
                 updateProgress((p) => ({ ...p, coins: p.coins + result.coinsEarned }));
                 if (child) api.bumpQuestProgress(child.id, "lessons", 1).catch((err) => console.warn("Failed to bump lesson quest progress:", err));
                 if (child) api.rewardLessonExperience(child.id, activePetId).then(({ petStats }) => setPetStats(petStats)).catch((err) => console.warn("Failed to reward pet experience:", err));
@@ -648,30 +731,25 @@ function AppInner() {
                   api.reportLessonComplete(child.id, title, body).catch((err) => console.warn("Failed to report lesson-complete notification:", err));
                 }
               }}
-              onGoShop={() => setScreen("shop")}
+              onGoShop={() => navigateTo("shop")}
             />
           );
         }
         if (lessonChoices) {
           return (
-            <div className="flex h-full flex-col items-center justify-center gap-5 bg-cream p-8">
-              <div className="font-baloo text-2xl font-extrabold">{t("Chọn 1 bài học")}</div>
-              <div className="flex flex-wrap justify-center gap-3.5">
-                {lessonChoices.map((l) => (
-                  <button
-                    key={l.id}
-                    onClick={() => {
-                      setPickedLessonId(l.id);
-                      setLessonChoices(null);
-                    }}
-                    className="flex w-56 flex-col items-start gap-1.5 rounded-[20px] border-[3px] border-line2 bg-white p-4.5 text-left shadow-[0_5px_0_#EADAB8] transition-transform hover:-translate-y-1"
-                  >
-                    <span className="font-baloo text-base font-extrabold">{l.title}</span>
-                    {l.isOwn && <span className="rounded-full bg-[#F1EAFB] px-2.5 py-0.5 font-baloo text-[11px] font-bold text-[#6E56A8]">{t("Của bạn")}</span>}
-                  </button>
-                ))}
-              </div>
-            </div>
+            <LessonPicker
+              lessons={lessonChoices}
+              worldKey={lessonWorldKey}
+              onPick={(id) => {
+                setPickedLessonId(id);
+                setLessonChoices(null);
+              }}
+              onExit={() => {
+                setLessonChoices(null);
+                setPickedLessonId(null);
+                goBack("gameHub");
+              }}
+            />
           );
         }
         return <div className="grid h-full place-items-center bg-cream font-baloo text-lg font-bold text-ink/50">{t("Đang tải bài học…")}</div>;
@@ -687,16 +765,18 @@ function AppInner() {
             petStatsById={petStatsById}
             activePetId={activePetId}
             shopItems={foodShop}
-            onExit={() => setScreen("home")}
+            packages={packages}
+            onExit={() => goBack("home")}
             onBuy={buyPet}
             onFuse={fusePets}
             onSelectActive={selectActivePet}
             onPurchaseItem={handlePurchaseItem}
+            onPurchasePackage={handlePurchasePackage}
           />
         );
 
       case "gameHub":
-        return <GameHub onNavigate={handleNavigate} onOpen={setScreen} />;
+        return <GameHub onNavigate={handleNavigate} onOpen={navigateTo} />;
 
       case "worldLessons":
         return (
@@ -706,9 +786,9 @@ function AppInner() {
               setLessonQuestions(null);
               setLessonChoices(null);
               setPickedLessonId(null);
-              setScreen("lesson");
+              navigateTo("lesson");
             }}
-            onExit={() => setScreen("gameHub")}
+            onExit={() => goBack("gameHub")}
           />
         );
 
@@ -717,10 +797,8 @@ function AppInner() {
           <MiniGame
             // All playable activities now live under the Game tab. Back must
             // return to that hub instead of the legacy More destination.
-            onExit={() => setScreen("gameHub")}
-            onWin={() => {
-              if (child) api.bumpQuestProgress(child.id, "miniGame", 1).catch((err) => console.warn("Failed to bump mini-game quest progress:", err));
-            }}
+            onExit={() => goBack("gameHub")}
+            onWin={() => handleActivityComplete("memoryMatch")}
           />
         );
 
@@ -730,7 +808,7 @@ function AppInner() {
             <ParentPinPrompt
               mode="verify"
               title={t("Nhập mã PIN phụ huynh")}
-              onCancel={() => setScreen("more")}
+              onCancel={() => goBack("more")}
               onVerified={() => setParentAreaUnlocked(true)}
               onSet={() => {}}
             />
@@ -742,7 +820,7 @@ function AppInner() {
             level={8}
             onExit={() => {
               setParentAreaUnlocked(false);
-              setScreen("more");
+              goBack("more");
             }}
           />
         );
@@ -764,7 +842,8 @@ function AppInner() {
             onPurchaseItem={handlePurchaseItem}
             onCareAction={handleCareAction}
             onUseItem={handleUseItem}
-            onExit={() => setScreen("more")}
+            onOpenRanch={() => navigateTo("petRanch")}
+            onExit={() => goBack("home")}
           />
         );
 
@@ -774,17 +853,17 @@ function AppInner() {
             childId={child.id}
             onStartReview={(words) => {
               setReviewWords(words);
-              setScreen("srsCard");
+              navigateTo("srsCard");
             }}
-            onExit={() => setScreen("gameHub")}
+            onExit={() => goBack("gameHub")}
           />
         );
 
       case "srsCard":
-        return <SrsCard words={reviewWords} onExit={() => setScreen("topics")} />;
+        return <SrsCard words={reviewWords} onExit={() => goBack("topics")} />;
 
       case "bag":
-        return <Bag coins={progress.coins} gems={progress.gems} inventory={inventory} onUseItem={handleUseItem} onExit={() => setScreen("more")} />;
+        return <Bag coins={progress.coins} gems={progress.gems} inventory={inventory} onUseItem={handleUseItem} onRenamePet={handleRenamePet} onExit={() => goBack("home")} />;
 
       case "profile":
         return (
@@ -798,49 +877,52 @@ function AppInner() {
             activePetId={activePetId}
             activePetName={activePetName}
             petStatsById={petStatsById}
-            onOpenCollection={() => setScreen("petCollection")}
-            onExit={() => setScreen("more")}
+            onOpenCollection={() => navigateTo("petCollection")}
+            onExit={() => goBack("more")}
           />
         );
 
       case "premium":
-        return <Premium childId={child.id} isPremium={parent.isPremium} onUpgraded={setParent} onExit={() => setScreen("more")} />;
+        return <Premium childId={child.id} isPremium={parent.isPremium} onUpgraded={setParent} onExit={() => goBack("more")} />;
 
       case "battlePass":
-        return <BattlePass childId={child.id} coins={progress.coins} gems={progress.gems} onRefreshProgress={refreshProgress} onExit={() => setScreen("home")} />;
+        return <BattlePass childId={child.id} coins={progress.coins} gems={progress.gems} onRefreshProgress={refreshProgress} onExit={() => goBack("home")} />;
 
       case "notifications":
-        return <Notifications childId={child.id} onExit={() => setScreen("more")} />;
+        return <Notifications childId={child.id} onExit={() => goBack("more")} />;
 
       case "wordCatch":
-        return <WordCatch onExit={() => setScreen("gameHub")} />;
+        return <WordCatch onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("wordCatch")} />;
+
+      case "flappyDragon":
+        return <FlappyDragon childId={child.id} onExit={() => goBack("gameHub")} onReward={(score) => api.rewardFlappyDragon(child.id, score).then(({ progress }) => setProgress(progress))} />;
 
       case "englishShop":
-        return <EnglishShop onExit={() => setScreen("gameHub")} />;
+        return <EnglishShop onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("englishShop")} />;
 
       case "englishHome":
-        return <EnglishHome onExit={() => setScreen("gameHub")} />;
+        return <EnglishHome onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("englishHome")} />;
 
       case "wordRpg":
-        return <WordRpg child={child} onExit={() => setScreen("gameHub")} />;
+        return <WordRpg child={child} onExit={() => goBack("gameHub")} />;
 
       case "wordTrain":
-        return <WordTrain onExit={() => setScreen("gameHub")} />;
+        return <WordTrain onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("wordTrain")} />;
 
       case "englishDetective":
-        return <EnglishDetective onExit={() => setScreen("gameHub")} />;
+        return <EnglishDetective onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("englishDetective")} />;
 
       case "echoParrot":
-        return <EchoParrot onExit={() => setScreen("gameHub")} />;
+        return <EchoParrot onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("echoParrot")} />;
 
       case "chatBuddy":
-        return <ChatBuddy onExit={() => setScreen("gameHub")} />;
+        return <ChatBuddy onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("chatBuddy")} />;
 
       case "systemStates":
-        return <SystemStates onExit={() => setScreen("more")} />;
+        return <SystemStates onExit={() => goBack("more")} />;
 
       case "rank":
-        return <Rank child={child} onExit={() => setScreen("more")} onStudyMore={() => setScreen("lesson")} />;
+        return <Rank child={child} onExit={() => goBack("more")} onStudyMore={() => navigateTo("lesson")} />;
 
       case "questStreak":
         return (
@@ -855,22 +937,22 @@ function AppInner() {
             onOpenQuest={handleOpenQuest}
             onExit={() => {
               setDailyQuests(null);
-              setScreen("more");
+              goBack("more");
             }}
           />
         );
 
       case "story":
-        return <Story onExit={() => setScreen("more")} />;
+        return <Story onExit={() => goBack("more")} onComplete={() => handleActivityComplete("story")} />;
 
       case "myContent":
-        return <MyContent childId={child.id} onExit={() => setScreen("more")} onOpenPremium={() => setScreen("premium")} />;
+        return <MyContent childId={child.id} onExit={() => goBack("more")} onOpenPremium={() => navigateTo("premium")} />;
 
       case "dictionary":
-        return <Dictionary childId={child.id} onExit={() => setScreen("more")} />;
+        return <Dictionary childId={child.id} onExit={() => goBack("more")} />;
 
       case "fightRoom":
-        return <FightRoom child={child} onExit={() => setScreen("gameHub")} onRefreshProgress={refreshProgress} />;
+        return <FightRoom child={child} onExit={() => goBack("gameHub")} onRefreshProgress={refreshProgress} />;
 
       case "settings":
         return (
@@ -880,7 +962,7 @@ function AppInner() {
             onToggleRankVisibility={handleToggleRankVisibility}
             onDeleteAccount={handleDeleteAccount}
             onLogout={handleLogout}
-            onExit={() => setScreen("more")}
+            onExit={() => goBack("more")}
           />
         );
 
@@ -894,15 +976,18 @@ function AppInner() {
             petEggs={progress.petEggs}
             activePetId={activePetId}
             petStatsById={petStatsById}
-            onExit={() => setScreen("home")}
+            onExit={() => goBack("home")}
             onBuy={buyPet}
             onSelectActive={selectActivePet}
             onFuse={fusePets}
           />
         );
 
+      case "petRanch":
+        return <PetRanch owned={owned} petCopies={progress.petCopies} petStatsById={petStatsById} activePetId={activePetId} onSelectActive={selectActivePet} onExit={() => goBack("petCare")} />;
+
       case "more":
-        return <More onNavigate={handleNavigate} onOpen={setScreen} />;
+        return <More onNavigate={handleNavigate} onOpen={navigateTo} />;
 
       default:
         return null;

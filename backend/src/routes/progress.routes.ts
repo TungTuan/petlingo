@@ -3,6 +3,14 @@ import { verifyAuth } from "../middleware/verifyAuth.js";
 import { fusePetsSchema, petKeySchema, putProgressSchema, rankVisibilitySchema } from "../schemas/progress.schema.js";
 import { fusePets } from "../services/petFusion.service.js";
 import { checkIn, claimMonthlyLegendaryPets, getProgress, purchasePet, putProgress, selectActivePet, setRankVisibility } from "../services/progress.service.js";
+import { rewardFlappyDragon } from "../services/flappyDragon.service.js";
+import { z } from "zod";
+import { rewardActivity } from "../services/activityReward.service.js";
+
+const activityRewardSchema = z.object({
+  activity: z.enum(["memoryMatch", "wordCatch", "englishShop", "englishHome", "wordTrain", "englishDetective", "echoParrot", "chatBuddy", "story"]),
+});
+const flappyRewardSchema = z.object({ score: z.number().int().min(0).max(200) });
 
 export async function progressRoutes(app: FastifyInstance) {
   app.addHook("preHandler", verifyAuth);
@@ -21,6 +29,16 @@ export async function progressRoutes(app: FastifyInstance) {
   app.post<{ Params: { id: string } }>("/:id/checkin", async (request, reply) => {
     const result = await checkIn(request.params.id, request.parentId);
     return reply.send(result);
+  });
+
+  app.post<{ Params: { id: string }; Body: { activity: string } }>("/:id/activity-reward", async (request, reply) => {
+    const { activity } = activityRewardSchema.parse(request.body);
+    return reply.send(await rewardActivity(request.params.id, request.parentId, activity));
+  });
+
+  app.post<{ Params: { id: string }; Body: { score: number } }>("/:id/flappy-reward", async (request, reply) => {
+    const { score } = flappyRewardSchema.parse(request.body);
+    return reply.send(await rewardFlappyDragon(request.params.id, request.parentId, score));
   });
 
   app.post<{ Params: { id: string } }>("/:id/legendary-claim", async (request, reply) => {

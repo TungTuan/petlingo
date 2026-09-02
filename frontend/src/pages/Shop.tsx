@@ -4,7 +4,7 @@ import PetPortrait from "../components/PetPortrait";
 import FusionCelebration from "../components/FusionCelebration";
 import FusionPetPicker from "../components/FusionPetPicker";
 import { PETS, RARITY } from "../components/ui/tokens";
-import { ApiError, type FusableRarity, type FusePetsResult, type FusionMaterial, type InventoryEntry, type PetStatsState, type PurchasePetResult } from "../lib/api";
+import { ApiError, type BattlePassRewardKind, type FusableRarity, type FusePetsResult, type FusionMaterial, type InventoryEntry, type PetStatsState, type PurchasePetResult, type ShopPackageDto } from "../lib/api";
 import { useT } from "../lib/i18n";
 
 interface ShopProps {
@@ -16,12 +16,27 @@ interface ShopProps {
   petStatsById: Record<string, PetStatsState>;
   activePetId: string;
   shopItems: InventoryEntry[] | null;
+  packages: ShopPackageDto[] | null;
   onExit: () => void;
   onBuy: (id: string, currency: "coin" | "gem", price: number) => Promise<PurchasePetResult>;
   onFuse: (rarity: FusableRarity, materials: FusionMaterial[]) => Promise<FusePetsResult>;
   onSelectActive: (id: string) => Promise<unknown>;
   onPurchaseItem: (itemId: string) => Promise<unknown>;
+  onPurchasePackage: (packageId: string) => Promise<unknown>;
 }
+
+const PACKAGE_CONTENT_ICON: Record<BattlePassRewardKind, string> = {
+  coins: "🪙",
+  gems: "💎",
+  commonShards: "🧩",
+  rareShards: "🧩",
+  epicShards: "🧩",
+  petEggCommon: "🥚",
+  petEggRare: "🥚",
+  petEggEpic: "🥚",
+  petEggLegendary: "🥚",
+  item: "🎁",
+};
 
 /** Pet Shop — matches the reference sheet's "10. Pet Shop" panel. The
  * "Đổi thưởng" button at the end of a lesson lands here so a freshly-earned
@@ -40,11 +55,12 @@ interface ShopProps {
  * pet straight into Pet Care (a "chăm sóc" shortcut) — removed so Shop stays
  * purchase-only; caring for a pet happens from Pet Collection/Pet Care, not
  * here. */
-export default function Shop({ coins, gems, owned, petCopies, petEggs, petStatsById, activePetId, shopItems, onExit, onBuy, onFuse, onSelectActive, onPurchaseItem }: ShopProps) {
+export default function Shop({ coins, gems, owned, petCopies, petEggs, petStatsById, activePetId, shopItems, packages, onExit, onBuy, onFuse, onSelectActive, onPurchaseItem, onPurchasePackage }: ShopProps) {
   const t = useT();
   const [tab, setTab] = useState(0);
   const [toast, setToast] = useState("");
   const [itemBusyId, setItemBusyId] = useState<string | null>(null);
+  const [packageBusyId, setPackageBusyId] = useState<string | null>(null);
   const [fusingRarity, setFusingRarity] = useState<FusableRarity | null>(null);
   const [fusionReward, setFusionReward] = useState<FusePetsResult | null>(null);
   const [pendingFusionRarity, setPendingFusionRarity] = useState<FusableRarity | null>(null);
@@ -56,7 +72,7 @@ export default function Shop({ coins, gems, owned, petCopies, petEggs, petStatsB
     { label: "Fusion", dot: "#9B72D4", note: "" },
     { label: "Food", dot: "#7CC24A", note: "" },
     { label: "Outfits", dot: "#57C6C6", note: t("Phụ kiện cho pet đã có sẵn trong Kho đồ (tab Bag) và trang Pet Care — ghé đó để mặc đồ cho bạn thú nhé.") },
-    { label: "Coins", dot: "#FFC93C", note: t("Nạp thêm coin bằng tiền thật đang được chuẩn bị — sắp ra mắt! Hiện tại coin chỉ kiếm được từ học bài và điểm danh.") },
+    { label: "Ưu đãi", dot: "#FFC93C", note: "" },
   ];
 
   const fusionRecipes: { input: FusableRarity; output: "Rare" | "Epic" | "Legendary" }[] = [
@@ -133,6 +149,23 @@ export default function Shop({ coins, gems, owned, petCopies, petEggs, petStatsB
       popToast(t("Không mua được, thử lại nhé."));
     } finally {
       setItemBusyId(null);
+    }
+  }
+
+  async function buyPackage(pkg: ShopPackageDto) {
+    if (packageBusyId || pkg.claimed) return;
+    if (pkg.kind === "combo" && ((pkg.currency === "gem" && gems < pkg.price) || (pkg.currency === "coin" && coins < pkg.price))) {
+      popToast(pkg.currency === "gem" ? t("Không đủ gem — nhờ bố mẹ mở trong Parent Area.") : t("Chưa đủ coin — học thêm 1 bài nhé!"));
+      return;
+    }
+    setPackageBusyId(pkg.id);
+    try {
+      await onPurchasePackage(pkg.id);
+      popToast(t(`Đã nhận gói ${pkg.name}!`));
+    } catch (error) {
+      popToast(error instanceof ApiError && error.code === "SHOP_PACKAGE_ALREADY_CLAIMED" ? t("Gói này bạn đã nhận rồi.") : t("Không mua được, thử lại nhé."));
+    } finally {
+      setPackageBusyId(null);
     }
   }
 
@@ -292,6 +325,64 @@ export default function Shop({ coins, gems, owned, petCopies, petEggs, petStatsB
                   >
                     {item.currency === "gem" ? <GemIcon size={16} /> : <CoinIcon size={16} />}
                     {item.price}
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        ) : tab === 4 ? (
+          <div className="grid min-h-0 flex-1 auto-rows-min grid-cols-3 content-start gap-4.5 overflow-y-auto">
+            {packages === null ? (
+              <div className="col-span-3 grid place-items-center font-baloo text-base font-bold text-ink/40">{t("Đang tải…")}</div>
+            ) : packages.length === 0 ? (
+              <div className="col-span-3 grid place-items-center font-baloo text-base font-bold text-ink/40">{t("Chưa có gói ưu đãi nào")}</div>
+            ) : (
+              packages.map((pkg) => (
+                <div
+                  key={pkg.id}
+                  className="flex flex-col gap-2.5 rounded-[24px] border-[3px] p-4 shadow-[0_5px_0_#E3CFA8] transition-transform hover:-translate-y-1"
+                  style={{ borderColor: pkg.color, background: pkg.kind === "firstPurchase" ? "#FFF6E5" : "#fff" }}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-baloo text-lg font-extrabold">{pkg.name}</span>
+                    {pkg.kind === "firstPurchase" && (
+                      <span className="shrink-0 rounded-full px-2.5 py-1 font-baloo text-[10px] font-extrabold uppercase text-white" style={{ background: pkg.color }}>
+                        {t("Lần đầu")}
+                      </span>
+                    )}
+                  </div>
+                  <div className="font-baloo text-[12.5px] font-semibold leading-snug text-[#8A7A62]">{pkg.description}</div>
+                  <div className="flex flex-wrap gap-2">
+                    {pkg.contents.map((c, i) => (
+                      <span key={i} className="flex items-center gap-1 rounded-full bg-[#F5EBD8] px-2.5 py-1 font-baloo text-xs font-bold text-[#8A5A3B]">
+                        {PACKAGE_CONTENT_ICON[c.kind]} {c.kind.startsWith("petEgg") ? "?" : `×${c.amount}`}
+                      </span>
+                    ))}
+                  </div>
+                  <button
+                    onClick={() => buyPackage(pkg)}
+                    disabled={packageBusyId === pkg.id || pkg.claimed}
+                    className="mt-auto flex w-full items-center justify-center gap-2 rounded-2xl py-2.5 font-baloo text-[15px] font-extrabold transition-transform active:translate-y-[3px] disabled:opacity-60"
+                    style={
+                      pkg.claimed
+                        ? { background: "#E7D4B2", color: "#8A7A62" }
+                        : pkg.kind === "firstPurchase"
+                          ? { background: "#F5822B", color: "#fff", boxShadow: "0 4px 0 #C9631A" }
+                          : pkg.currency === "gem"
+                            ? { background: "#FBC6D4", color: "#8E3B55", boxShadow: "0 4px 0 #E293A9" }
+                            : { background: "#FFD75E", color: "#7A5410", boxShadow: "0 4px 0 #D9A517" }
+                    }
+                  >
+                    {pkg.claimed ? (
+                      t("Đã nhận")
+                    ) : pkg.kind === "firstPurchase" ? (
+                      pkg.realPriceLabel
+                    ) : (
+                      <>
+                        {pkg.currency === "gem" ? <GemIcon size={16} /> : <CoinIcon size={16} />}
+                        {pkg.price}
+                      </>
+                    )}
                   </button>
                 </div>
               ))

@@ -108,7 +108,7 @@ export interface ClaimLegendaryResult {
   alreadyClaimed: boolean;
 }
 
-export type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel"; delta: number };
+export type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel" | "renamePet"; delta: number };
 export interface InventoryItem {
   id: string;
   key: string;
@@ -135,6 +135,7 @@ export interface UseItemResult {
 
 export interface PetStatsState {
   petKey: string;
+  customName: string | null;
   hunger: number;
   happiness: number;
   health: number;
@@ -143,6 +144,8 @@ export interface PetStatsState {
   experienceToNextLevel: number;
 }
 export type CareAction = "feed" | "bathe" | "play" | "sleep" | "pat";
+export type RewardableActivity = "memoryMatch" | "wordCatch" | "englishShop" | "englishHome" | "wordTrain" | "englishDetective" | "echoParrot" | "chatBuddy" | "story";
+export interface ActivityRewardResult { progress: ProgressState; petStats: PetStatsState | null; rewardCoins: number; rewardXp: number }
 export interface CareResult {
   petStats: PetStatsState;
   progress: ProgressState;
@@ -200,6 +203,33 @@ export interface BattlePassState {
 export interface ClaimBattlePassResult {
   state: BattlePassState;
   claimed: { tier: number; track: "free" | "vip" }[];
+}
+
+/** Shop.tsx "Ưu đãi" tab — see backend's packages.service.ts. Same
+ * `BattlePassRewardKind` vocabulary as Battle Pass (`contents` entries). */
+export type ShopPackageKind = "combo" | "firstPurchase";
+export interface ShopPackageContentEntry {
+  kind: BattlePassRewardKind;
+  amount: number;
+  itemKey: string | null;
+}
+export interface ShopPackageDto {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  kind: ShopPackageKind;
+  color: string;
+  imagePath: string;
+  price: number;
+  currency: "coin" | "gem";
+  realPriceLabel: string;
+  contents: ShopPackageContentEntry[];
+  claimed: boolean;
+}
+export interface PurchasePackageResult {
+  progress: ProgressState;
+  package: ShopPackageDto;
 }
 
 interface RequestOptions {
@@ -565,6 +595,8 @@ export interface EchoParrotRoundData {
   en: string;
   vi: string;
   phonetic: string | null;
+  /** Khớp Pet.key — khi có, hiện ảnh pet đó làm hình minh hoạ (2026-08-28). */
+  petKey: string | null;
 }
 export interface EchoParrotTopicListItem {
   id: string;
@@ -701,6 +733,25 @@ export interface AdminBattlePassTier {
   vipRewardItemKey: string | null;
 }
 export type BattlePassTierInput = Omit<AdminBattlePassTier, "id" | "seasonId">;
+
+export interface AdminShopPackage {
+  id: string;
+  key: string;
+  name: string;
+  description: string;
+  kind: ShopPackageKind;
+  color: string;
+  imagePath: string;
+  price: number;
+  currency: "coin" | "gem";
+  realPriceLabel: string;
+  contents: ShopPackageContentEntry[];
+  order: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+export type ShopPackageInput = Omit<AdminShopPackage, "id" | "createdAt" | "updatedAt">;
 
 export interface AdminWorld {
   id: string;
@@ -936,13 +987,14 @@ export interface MyEchoParrotTopic {
   _count: { rounds: number };
 }
 export type MyEchoParrotTopicCreateInput = { name: string };
-export type EchoParrotRoundInput = { en: string; vi: string; phonetic?: string; order: number };
+export type EchoParrotRoundInput = { en: string; vi: string; phonetic?: string; petKey?: string; order: number };
 export interface MyEchoParrotRound {
   id: string;
   topicId: string;
   en: string;
   vi: string;
   phonetic: string | null;
+  petKey: string | null;
   order: number;
 }
 
@@ -1037,6 +1089,9 @@ export const api = {
 
   checkIn: (childId: string) => request<CheckInResult>(`/children/${childId}/checkin`, { method: "POST" }),
 
+  rewardActivity: (childId: string, activity: RewardableActivity) =>
+    request<ActivityRewardResult>(`/children/${childId}/activity-reward`, { method: "POST", body: { activity } }),
+
   claimLegendary: (childId: string) => request<ClaimLegendaryResult>(`/children/${childId}/legendary-claim`, { method: "POST" }),
 
   fusePets: (childId: string, rarity: FusableRarity, materials: FusionMaterial[]) => request<FusePetsResult>(`/children/${childId}/pets/fuse`, { method: "POST", body: { rarity, materials } }),
@@ -1075,16 +1130,23 @@ export const api = {
   // Demo activation, no real payment gateway yet — same pattern as activatePremium().
   activateVipSeason: (childId: string) => request<BattlePassState>(`/children/${childId}/battlepass/vip`, { method: "POST" }),
 
+  listPackages: (childId: string) => request<{ packages: ShopPackageDto[] }>(`/children/${childId}/packages`),
+  purchasePackage: (childId: string, packageId: string) =>
+    request<PurchasePackageResult>(`/children/${childId}/packages/purchase`, { method: "POST", body: { packageId } }),
+
   // ---- Inventory (Bag) & Pet Care ----
 
   listInventory: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/items`),
   useItem: (childId: string, itemId: string) => request<UseItemResult>(`/children/${childId}/items/${itemId}/use`, { method: "POST" }),
+  renamePet: (childId: string, itemId: string, name: string) => request<UseItemResult>(`/children/${childId}/items/${itemId}/rename-pet`, { method: "POST", body: { name } }),
 
   getPetStats: (childId: string, petKey: string) => request<{ petStats: PetStatsState }>(`/children/${childId}/pets/${petKey}/stats`),
   careForPet: (childId: string, petKey: string, action: CareAction) =>
     request<CareResult>(`/children/${childId}/pets/${petKey}/care`, { method: "POST", body: { action } }),
   rewardLessonExperience: (childId: string, petKey: string) =>
     request<{ petStats: PetStatsState }>(`/children/${childId}/pets/${petKey}/lesson-experience`, { method: "POST" }),
+  rewardFlappyDragon: (childId: string, score: number) =>
+    request<{ progress: ProgressState; rewardCoins: number }>(`/children/${childId}/flappy-reward`, { method: "POST", body: { score } }),
   listFoodShop: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/food-shop`),
   listHomeBackgroundShop: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/home-background-shop`),
   purchaseItem: (childId: string, itemId: string) => request<{ progress: ProgressState; quantity: number }>(`/children/${childId}/items/${itemId}/purchase`, { method: "POST" }),
@@ -1175,6 +1237,14 @@ export const api = {
   adminUpdateBattlePassTier: (tierId: string, input: Partial<BattlePassTierInput>) =>
     request<{ tier: AdminBattlePassTier }>(`/admin/battle-pass/tiers/${tierId}`, { method: "PATCH", body: input }),
   adminDeleteBattlePassTier: (tierId: string) => request<void>(`/admin/battle-pass/tiers/${tierId}`, { method: "DELETE" }),
+
+  // ---- Shop packages admin (ShopPackagesPage.tsx) ----
+
+  adminListShopPackages: () => request<{ packages: AdminShopPackage[] }>("/admin/shop-packages"),
+  adminCreateShopPackage: (input: ShopPackageInput) => request<{ package: AdminShopPackage }>("/admin/shop-packages", { method: "POST", body: input }),
+  adminUpdateShopPackage: (id: string, input: Partial<ShopPackageInput>) =>
+    request<{ package: AdminShopPackage }>(`/admin/shop-packages/${id}`, { method: "PATCH", body: input }),
+  adminDeleteShopPackage: (id: string) => request<void>(`/admin/shop-packages/${id}`, { method: "DELETE" }),
 
   adminListWorlds: () => request<{ worlds: AdminWorld[] }>("/admin/worlds"),
   adminCreateWorld: (input: WorldInput) => request<{ world: AdminWorld }>("/admin/worlds", { method: "POST", body: input }),

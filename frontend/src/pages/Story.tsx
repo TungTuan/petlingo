@@ -1,18 +1,19 @@
 import { useEffect, useState } from "react";
 import { api, ApiError, type StoryDetail, type StoryListItem } from "../lib/api";
-import { BackIcon, SpeakerIcon } from "../components/ui";
+import { BackIcon, SpeakerIcon, TopicIcon } from "../components/ui";
 import { speak } from "../lib/tts";
 import { useT } from "../lib/i18n";
 
 interface StoryProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
 /** Story reader — matches the reference sheet's "Phần 6 · Đọc truyện" panel.
  * Now backed by real Story/StoryPage catalog data (see /catalog/stories):
  * shows a picker of every active story first, then reads whichever one was
  * tapped — instead of the single hard-coded "Buddy Goes to the Farm". */
-export default function Story({ onExit }: StoryProps) {
+export default function Story({ onExit, onComplete }: StoryProps) {
   const t = useT();
   const [list, setList] = useState<StoryListItem[] | null>(null);
   const [story, setStory] = useState<StoryDetail | null>(null);
@@ -35,7 +36,7 @@ export default function Story({ onExit }: StoryProps) {
     }
   }
 
-  if (story) return <StoryReader story={story} onExit={() => setStory(null)} />;
+  if (story) return <StoryReader story={story} onExit={() => setStory(null)} onComplete={onComplete} />;
 
   return (
     <div className="flex h-full flex-col bg-cream-card">
@@ -62,7 +63,7 @@ export default function Story({ onExit }: StoryProps) {
                 onClick={() => openStory(s.id)}
                 className="flex flex-col items-start gap-2.5 rounded-[22px] border-[3px] border-line2 bg-white p-4.5 text-left shadow-[0_5px_0_#EADAB8] transition-transform hover:-translate-y-1"
               >
-                <span className="h-10 w-10 rounded-2xl" style={{ background: s.colorTheme }} />
+                <TopicIcon label={`${s.title} ${s.topic} story`} color={s.colorTheme} />
                 <span className="font-baloo text-base font-extrabold leading-snug">{s.title}</span>
                 <span className="font-baloo text-[12.5px] font-semibold text-[#8A7A62]">{s.topic}</span>
                 <span className="mt-auto font-baloo text-[11.5px] font-bold text-[#A2947C]">
@@ -79,11 +80,12 @@ export default function Story({ onExit }: StoryProps) {
 }
 
 /** The actual page-by-page reader, once a story has been picked. */
-function StoryReader({ story, onExit }: { story: StoryDetail; onExit: () => void }) {
+function StoryReader({ story, onExit, onComplete }: { story: StoryDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
   const [page, setPage] = useState(0);
   const [showVi, setShowVi] = useState(true);
   const [msg, setMsg] = useState("");
+  const [completed, setCompleted] = useState(false);
   const pages = story.pages;
   const p = pages[page]!;
   const isLast = page === pages.length - 1;
@@ -153,7 +155,10 @@ function StoryReader({ story, onExit }: { story: StoryDetail; onExit: () => void
             </button>
             <button
               onClick={() => {
-                if (isLast) setMsg(t("Đọc xong! +40 coin và") + ` ${pages.reduce((n, pg) => n + pg.words.length, 0)} ` + t("từ mới"));
+                if (isLast) {
+                  setMsg(t("Đọc xong! +40 coin và") + ` ${pages.reduce((n, pg) => n + pg.words.length, 0)} ` + t("từ mới"));
+                  if (!completed) { setCompleted(true); onComplete?.(); }
+                }
                 else {
                   setPage((v) => v + 1);
                   setMsg("");

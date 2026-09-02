@@ -4,7 +4,7 @@ import { BackIcon, CoinIcon, HeartIcon } from "../components/ui";
 import { useT } from "../lib/i18n";
 import PetPortrait from "../components/PetPortrait";
 import { getPetMood } from "../lib/petEvolution";
-import { Bath, Bone, Gamepad2, MoonStar, ShowerHead, Sparkles, Utensils } from "lucide-react";
+import { Bath, Bone, Gamepad2, MoonStar, PawPrint, ShowerHead, Sparkles, Trees, Utensils } from "lucide-react";
 
 interface PetCareProps {
   coins: number;
@@ -24,6 +24,7 @@ interface PetCareProps {
   onPurchaseItem: (itemId: string) => Promise<unknown>;
   onCareAction: (action: CareAction) => Promise<CareResult>;
   onUseItem: (itemId: string) => Promise<UseItemResult>;
+  onOpenRanch: () => void;
   onExit: () => void;
 }
 
@@ -36,7 +37,7 @@ const ITEM_ICON: Record<string, string> = {
 
 /** Pet Care — matches the reference sheet's "Phần 3 · Pet Care" panel. Stats/actions are now
  * backed by PetStats + careForPet() on the server instead of resetting on every reload. */
-export default function PetCare({ coins, gems, petIds, petNames, petEggs, selectedPet, onSelectPet, petStats, petStatsById, inventory, shopItems, onPurchaseItem, onCareAction, onUseItem, onExit }: PetCareProps) {
+export default function PetCare({ coins, gems, petIds, petNames, petEggs, selectedPet, onSelectPet, petStats, petStatsById, inventory, shopItems, onPurchaseItem, onCareAction, onUseItem, onOpenRanch, onExit }: PetCareProps) {
   const t = useT();
   const ACTION_STYLE: Record<CareAction, { label: string; bg: string; shadow: string; icon: React.ReactNode }> = {
     feed: { label: t("Cho ăn"), bg: "#FFC93C", shadow: "#D9A517", icon: <Utensils size={30} strokeWidth={2.8} /> },
@@ -139,6 +140,7 @@ export default function PetCare({ coins, gems, petIds, petNames, petEggs, select
           <BackIcon />
         </button>
         <span className="font-baloo text-[26px] font-extrabold">Pet Care</span>
+        <button onClick={onOpenRanch} className="flex items-center gap-2 rounded-full border-2 border-white bg-[#70B94B] px-4 py-2 font-baloo text-[12px] font-extrabold text-white shadow-[0_4px_0_#4F9130] transition-transform active:translate-y-1 active:shadow-none"><Trees size={18} /><PawPrint size={16} /> {t("Nông trại Pet")}</button>
         <div className="flex-1" />
         <div className="flex items-center gap-2 rounded-full bg-white px-4 py-2 font-baloo text-base font-extrabold text-[#C7455B] shadow-[0_3px_0_rgba(0,0,0,.12)]">
           <HeartIcon size={19} />

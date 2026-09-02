@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { api, ApiError, type CatalogWorld } from "../lib/api";
-import { BackIcon } from "../components/ui";
+import { BackIcon, TopicIcon } from "../components/ui";
 import { useT } from "../lib/i18n";
 
 interface WorldLessonsProps {
@@ -53,7 +53,7 @@ export default function WorldLessons({ onSelectWorld, onExit }: WorldLessonsProp
                 onClick={() => onSelectWorld(w.key)}
                 className="flex w-[220px] flex-col items-start gap-2.5 rounded-[22px] border-[3px] border-line2 bg-white p-4.5 text-left shadow-[0_5px_0_#EADAB8] transition-transform hover:-translate-y-1"
               >
-                <span className="h-10 w-10 rounded-2xl" style={{ background: w.colorTheme }} />
+                <TopicIcon label={`${w.name} ${w.topic}`} color={w.colorTheme} />
                 <span className="font-baloo text-base font-extrabold">{w.name}</span>
                 <span className="font-baloo text-[12.5px] font-semibold leading-snug text-[#8A7A62]">{w.topic}</span>
               </button>

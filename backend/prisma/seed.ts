@@ -78,6 +78,10 @@ const PETS: [string, string, string, Rarity][] = [
   ["Umbra", "umbra", "Rồng bóng tối", "Legendary"],
   ["Void", "void", "Rồng hư không", "Legendary"],
   ["Ember", "ember", "Rồng lửa", "Legendary"],
+  ["Maru", "maru", "Chó Shiba Nhật Bản", "Common"],
+  ["Dori", "dori", "Chó Jindo Hàn Quốc", "Rare"],
+  ["Kitsune", "kitsune", "Linh hồ Nhật Bản", "Epic"],
+  ["Haetae", "haetae", "Linh thú hộ mệnh Hàn Quốc", "Legendary"],
 ];
 
 // Mirrors frontend/src/pages/WorldMap.tsx ZONES.
@@ -88,6 +92,8 @@ const WORLDS: { key: string; name: string; topic: string; colorTheme: string; re
   { key: "school", name: "School", topic: "Objects & Numbers", colorTheme: "#9B7EDE", requiredStars: 20 },
   { key: "castle", name: "Castle", topic: "Stories", colorTheme: "#E8A22B", requiredStars: 30 },
   { key: "space", name: "Space", topic: "Advanced", colorTheme: "#6C8FE3", requiredStars: 30 },
+  { key: "ielts", name: "IELTS Academy", topic: "Academic English · B1–C1", colorTheme: "#3D7FC4", requiredStars: 40 },
+  { key: "toeic", name: "TOEIC Office", topic: "Workplace English · A2–B2", colorTheme: "#D66B45", requiredStars: 40 },
 ];
 
 // Mirrors frontend/src/App.tsx LESSON_QUESTIONS.
@@ -99,21 +105,183 @@ const FOREST_QUESTIONS: { prompt: string; hint: string; answer: string; options:
   { prompt: "Find the river!", hint: "Nghe rồi chọn hình đúng", answer: "River", options: ["Hill", "River", "Bird", "Flower"] },
 ];
 
+// ---------------------------------------------------------------------------
+// Bulk lesson generator (2026-08-28) — user asked for ~10x more questions
+// than the 78 hand-written ones added earlier. Hand-typing full Question
+// objects (prompt+hint+answer+options, ~5 lines each) doesn't scale to
+// hundreds; a 1-line-per-word bank does. `Question` has NO vi/ja/ko columns
+// at all (only `Lesson`/topic-level content is multilingual) — a Question's
+// `hint` is just 1 of 2 fixed Vietnamese/English UI strings, not a per-word
+// translation — so generating from plain ENGLISH word lists needs zero
+// translation work, unlike every other content type in this file.
+// `genQuestions()` turns 1 word list into 1 question per word, alternating
+// "Find the X!"/"Which one is X?" (same split as every hand-written lesson),
+// with distractors drawn from the SAME list (same-category → same difficulty
+// tier as the hand-written "Bài 2 (Trung bình)" lessons — genuinely harder
+// than "Bài 1", not filler).
+// ---------------------------------------------------------------------------
+function titleCaseWord(w: string): string {
+  return w
+    .split(" ")
+    .map((p) => (p.length ? p.charAt(0).toUpperCase() + p.slice(1) : p))
+    .join(" ");
+}
+const NO_ARTICLE_WORDS = new Set([
+  "water", "rain", "snow", "sunshine", "gravity", "magic", "music", "art", "homework", "spelling",
+  "reading", "writing", "chess", "yoga", "ice cream", "juice", "milk", "lemonade", "popcorn",
+  // School subjects (uncountable) — found missing while auditing the bulk
+  // lesson generator's real output (2026-08-30): "science"/"history"/
+  // "biology"/"geometry" etc were coming out as "Which one is a biology?".
+  "science", "history", "biology", "chemistry", "geometry", "geography", "literature", "algebra",
+  // Weather/materials that are always uncountable, same reasoning as rain/snow.
+  "thunder", "hail", "chalk",
+  // Number words used bare ("Find the twelve!") instead of "the number twelve" —
+  // sounds better with no article than a random "a"/"an".
+  "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen",
+  "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety",
+  "hundred", "thousand", "million", "billion",
+  // Planet/astronomy proper nouns — like "Venus"/"Mars" (already correct by
+  // accident, see NO_ARTICLE_S_HEURISTIC below), these take no article at all.
+  "saturn", "neptune", "moon",
+]);
+// Singular countable nouns that end in "s" but are NOT plural — the crude
+// "ends in s → no article" heuristic below wrongly swallows these (found
+// while auditing real generated output: "Which one is octopus?"/"Which one
+// is bus?"). Checked before that heuristic.
+const FORCE_ARTICLE_WORDS = new Set(["bus", "octopus", "walrus"]);
+// Proper-noun planet names (capitalized in their word lists) that should
+// never get "the" in the "Find the X!" template — "Find the Mercury!" reads
+// wrong the same way "Find the Earth!"/"Find the Sun!" reads right. Earth and
+// Sun are deliberately excluded — both conventionally keep "the".
+const NO_THE_WORDS = new Set(["mercury", "venus", "mars", "jupiter", "saturn", "uranus", "neptune", "pluto", "moon"]);
+function needsNoArticle(w: string): boolean {
+  const lower = w.toLowerCase();
+  if (FORCE_ARTICLE_WORDS.has(lower)) return false;
+  if (/s$/.test(lower) && !lower.endsWith("ss")) return true; // crude plural heuristic
+  return NO_ARTICLE_WORDS.has(lower);
+}
+// Vowel-LETTER heuristic below is wrong for words with a consonant SOUND
+// ("unicorn" /j-/, "UFO" /j-/) — same exception EchoParrot's petEchoRounds()
+// already special-cases inline for "unicorn"; centralized here so every
+// generator sharing this helper (Lesson/Detective/Chat Buddy) gets it too.
+const CONSONANT_SOUND_WORDS = new Set(["unicorn", "ufo"]);
+function articleFor(w: string): string {
+  if (CONSONANT_SOUND_WORDS.has(w.toLowerCase())) return "a";
+  return /^[aeiou]/i.test(w) ? "an" : "a";
+}
+function shuffled<T>(arr: T[]): T[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+function genQuestions(words: string[]): { prompt: string; hint: string; answer: string; options: string[] }[] {
+  return words.map((w, i) => {
+    const answer = titleCaseWord(w);
+    const wrongPool = words.filter((x) => x !== w);
+    const wrong = shuffled(wrongPool).slice(0, 3).map(titleCaseWord);
+    const options = shuffled([...wrong, answer]);
+    const prompt = "What is this?";
+    const hint = "Nhìn hình và chọn đáp án đúng";
+    return { prompt, hint, answer, options };
+  });
+}
+
+/** 7 extra topics × 19 words × 6 worlds = 798 extra questions, appended onto
+ * WORLD_LESSONS below (see the `.push()` loop after that const). All labeled
+ * "(Trung bình)" — accurate to their actual difficulty mechanism
+ * (same-category distractors, no attribute/purpose questions mixed in like
+ * the hand-written "Bài 3 (Khó)" lessons), not inflated to "(Khó)". */
+const WORLD_BONUS_TOPICS: { worldKey: string; title: string; order: number; words: string[] }[] = [
+  { worldKey: "forest", title: "Bài 4: Sinh vật biển (Trung bình)", order: 3, words: ["whale", "dolphin", "shark", "octopus", "crab", "starfish", "jellyfish", "seahorse", "lobster", "squid", "seal", "penguin", "otter", "walrus", "eel", "clam", "stingray", "swordfish", "pelican"] },
+  { worldKey: "forest", title: "Bài 5: Động vật nông trại (Trung bình)", order: 4, words: ["cow", "pig", "sheep", "goat", "horse", "chicken", "duck", "rooster", "turkey", "rabbit", "donkey", "llama", "hen", "calf", "lamb", "goose", "mule", "ox", "pony"] },
+  { worldKey: "forest", title: "Bài 6: Thế giới côn trùng (Trung bình)", order: 5, words: ["ant", "bee", "butterfly", "ladybug", "spider", "grasshopper", "dragonfly", "mosquito", "fly", "worm", "snail", "caterpillar", "cricket", "beetle", "moth", "firefly", "wasp", "cockroach", "centipede"] },
+  { worldKey: "forest", title: "Bài 7: Cây cối trong rừng (Trung bình)", order: 6, words: ["tree", "flower", "leaf", "grass", "root", "branch", "seed", "bush", "vine", "petal", "stem", "bark", "moss", "fern", "thorn", "weed", "sprout", "blossom", "cactus"] },
+  { worldKey: "forest", title: "Bài 8: Bầu trời và thời tiết (Trung bình)", order: 7, words: ["sun", "moon", "cloud", "rain", "snow", "wind", "storm", "rainbow", "lightning", "thunder", "fog", "star", "sky", "breeze", "mist", "hail", "sunshine", "drizzle", "hurricane"] },
+  { worldKey: "forest", title: "Bài 9: Đi cắm trại (Trung bình)", order: 8, words: ["tent", "campfire", "backpack", "flashlight", "map", "compass", "rope", "boots", "lantern", "canoe", "trail", "cabin", "blanket", "matches", "whistle", "hammock", "kettle", "paddle", "binoculars"] },
+  { worldKey: "forest", title: "Bài 10: Bò sát và lưỡng cư (Trung bình)", order: 9, words: ["snake", "lizard", "turtle", "frog", "toad", "crocodile", "alligator", "gecko", "iguana", "chameleon", "newt", "salamander", "tortoise", "python", "cobra", "viper", "dinosaur", "tadpole", "skink"] },
+
+  { worldKey: "town", title: "Bài 4: Các toà nhà (Trung bình)", order: 3, words: ["house", "apartment", "tower", "factory", "warehouse", "skyscraper", "cottage", "cabin", "mansion", "garage", "shed", "barn", "mall", "stadium", "theater", "palace", "cathedral", "lighthouse", "windmill"] },
+  { worldKey: "town", title: "Bài 5: Cửa hàng quanh ta (Trung bình)", order: 4, words: ["bakery", "bookstore", "toy store", "pharmacy", "supermarket", "butcher shop", "florist", "jewelry store", "shoe store", "pet store", "candy store", "barber shop", "laundromat", "gas station", "car wash", "ice cream shop", "coffee shop", "flower shop", "bike shop"] },
+  { worldKey: "town", title: "Bài 6: Phương tiện giao thông (Trung bình)", order: 5, words: ["car", "bus", "bike", "motorbike", "train", "taxi", "truck", "subway", "scooter", "ambulance", "fire truck", "van", "tram", "ferry", "helicopter", "plane", "boat", "ship", "cable car"] },
+  { worldKey: "town", title: "Bài 7: Gia đình và bạn bè (Trung bình)", order: 6, words: ["mother", "father", "sister", "brother", "grandmother", "grandfather", "aunt", "uncle", "cousin", "baby", "friend", "neighbor", "classmate", "driver", "dentist", "nurse", "pilot", "sailor", "artist"] },
+  { worldKey: "town", title: "Bài 8: Cuộc sống thành phố (Trung bình)", order: 7, words: ["traffic light", "sidewalk", "crosswalk", "street", "sign", "lamp post", "bench", "fountain", "statue", "trash can", "mailbox", "fire hydrant", "bus stop", "parking lot", "elevator", "escalator", "alley", "plaza", "tunnel"] },
+  { worldKey: "town", title: "Bài 9: Dụng cụ thể thao (Trung bình)", order: 8, words: ["soccer ball", "basketball", "tennis racket", "swimming pool", "running shoes", "dance shoes", "paintbrush", "microphone", "storybook", "sketchbook", "bicycle", "skateboard", "chessboard", "cooking pot", "garden hose", "camera", "jump rope", "surfboard", "fishing rod"] },
+  { worldKey: "town", title: "Bài 10: Trang phục hằng ngày (Trung bình)", order: 9, words: ["shirt", "pants", "dress", "skirt", "shoe", "sock", "hat", "jacket", "coat", "glove", "scarf", "belt", "sweater", "shorts", "boot", "sandal", "T-shirt", "pajama", "button"] },
+
+  { worldKey: "beach", title: "Bài 4: Sinh vật dưới biển (Trung bình)", order: 3, words: ["fish", "shark", "dolphin", "crab", "starfish", "jellyfish", "octopus", "shrimp", "clam", "seahorse", "seagull", "pelican", "turtle", "whale", "seaweed", "coral", "anemone", "urchin", "barnacle"] },
+  { worldKey: "beach", title: "Bài 5: Trái cây nhiệt đới (Trung bình)", order: 4, words: ["apple", "banana", "orange", "grape", "strawberry", "mango", "pineapple", "watermelon", "peach", "cherry", "kiwi", "lemon", "lime", "coconut", "papaya", "blueberry", "raspberry", "pear", "plum"] },
+  { worldKey: "beach", title: "Bài 6: Đồ uống và ăn vặt (Trung bình)", order: 5, words: ["juice", "water", "milk", "lemonade", "smoothie", "popsicle", "ice cream", "cookie", "chips", "sandwich", "pretzel", "popcorn", "muffin", "donut", "cracker", "yogurt", "milkshake", "soda", "cupcake"] },
+  { worldKey: "beach", title: "Bài 7: Thời tiết bốn mùa (Trung bình)", order: 6, words: ["sunny", "rainy", "cloudy", "windy", "snowy", "hot", "cold", "warm", "cool", "stormy", "humid", "foggy", "breezy", "spring", "summer", "autumn", "winter", "dry", "wet"] },
+  { worldKey: "beach", title: "Bài 8: Đồ dùng đi biển (Trung bình)", order: 7, words: ["towel", "umbrella", "sunscreen", "sunglasses", "swimsuit", "flip-flops", "bucket", "shovel", "beach ball", "cooler", "hat", "chair", "mat", "snorkel", "goggles", "life jacket", "kite", "camera", "sunhat"] },
+  { worldKey: "beach", title: "Bài 9: Vui chơi ở biển (Trung bình)", order: 8, words: ["kayak", "surfboard", "paddle", "volleyball", "fishing rod", "jump rope", "inner tube", "snorkel mask", "diving fins", "wetsuit", "sailboat", "jet ski", "raft", "picnic basket", "frisbee", "sandcastle", "boogie board", "anchor", "compass"] },
+  { worldKey: "beach", title: "Bài 10: Cảnh quan bờ biển (Trung bình)", order: 9, words: ["wave", "sand", "shell", "rock", "cliff", "cave", "tide", "current", "horizon", "dune", "lagoon", "reef", "pier", "dock", "lighthouse", "harbor", "island", "bay", "shore"] },
+
+  { worldKey: "school", title: "Bài 4: Đồ dùng lớp học nâng cao (Trung bình)", order: 3, words: ["eraser", "scissors", "glue", "crayon", "marker", "chalk", "stapler", "backpack", "notebook", "textbook", "folder", "envelope", "pencil case", "highlighter", "paperclip", "tape", "calculator", "whiteboard", "projector"] },
+  { worldKey: "school", title: "Bài 5: Các môn học (Trung bình)", order: 4, words: ["math", "science", "english", "art", "music", "history", "geography", "reading", "writing", "spelling", "gym", "computer", "drama", "biology", "chemistry", "physics", "literature", "geometry", "algebra"] },
+  { worldKey: "school", title: "Bài 6: Các khu vực trong trường (Trung bình)", order: 5, words: ["classroom", "library", "playground", "cafeteria", "gym", "office", "hallway", "auditorium", "laboratory", "nurse's office", "principal's office", "restroom", "locker room", "staff room", "garden", "parking lot", "entrance", "staircase", "rooftop"] },
+  { worldKey: "school", title: "Bài 7: Số lớn hơn (Trung bình)", order: 6, words: ["eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety", "hundred", "thousand"] },
+  { worldKey: "school", title: "Bài 8: Các hình khối (Trung bình)", order: 7, words: ["circle", "square", "triangle", "rectangle", "star", "heart", "oval", "diamond", "pentagon", "hexagon", "octagon", "cube", "sphere", "cylinder", "cone", "arrow", "cross", "spiral", "zigzag"] },
+  { worldKey: "school", title: "Bài 9: Mọi người trong trường (Trung bình)", order: 8, words: ["teacher", "student", "principal", "classmate", "librarian", "coach", "janitor", "nurse", "counselor", "bus driver", "headmaster", "tutor", "professor", "pupil", "monitor", "assistant", "guard", "cook", "receptionist"] },
+  { worldKey: "school", title: "Bài 10: Sự kiện ở trường (Trung bình)", order: 9, words: ["field trip", "sports day", "art show", "science fair", "graduation", "assembly", "recess", "exam", "homework", "prize", "trophy", "medal", "certificate", "competition", "presentation", "group project", "book fair", "talent show", "spelling bee"] },
+
+  { worldKey: "castle", title: "Bài 4: Hoàng tộc (Trung bình)", order: 3, words: ["king", "queen", "prince", "princess", "duke", "duchess", "baron", "knight", "lord", "lady", "heir", "royal guard", "chancellor", "page", "squire", "jester", "herald", "courtier", "noble"] },
+  { worldKey: "castle", title: "Bài 5: Sinh vật phép thuật (Trung bình)", order: 4, words: ["dragon", "unicorn", "fairy", "witch", "wizard", "giant", "troll", "goblin", "elf", "dwarf", "mermaid", "phoenix", "griffin", "centaur", "ghost", "ogre", "sprite", "gnome", "pixie"] },
+  { worldKey: "castle", title: "Bài 6: Các khu vực lâu đài (Trung bình)", order: 5, words: ["tower", "gate", "wall", "moat", "drawbridge", "dungeon", "throne room", "courtyard", "chapel", "battlement", "turret", "keep", "staircase", "hall", "chamber", "balcony", "garden", "stable", "watchtower"] },
+  { worldKey: "castle", title: "Bài 7: Bảo vật trong truyện (Trung bình)", order: 6, words: ["sword", "shield", "crown", "wand", "potion", "treasure chest", "map", "scroll", "key", "mirror", "lantern", "cape", "armor", "bow and arrow", "spear", "banner", "goblet", "ring", "amulet"] },
+  { worldKey: "castle", title: "Bài 8: Sự kiện trong lâu đài (Trung bình)", order: 7, words: ["feast", "tournament", "coronation", "wedding", "parade", "festival", "ceremony", "celebration", "battle", "siege", "quest", "journey", "victory", "hunt", "ball", "banquet", "procession", "duel", "contest"] },
+  { worldKey: "castle", title: "Bài 9: Muông thú trong truyện cổ (Trung bình)", order: 8, words: ["horse", "falcon", "wolf", "owl", "raven", "bear", "lion", "eagle", "stag", "boar", "hound", "swan", "peacock", "hawk", "fox", "deer", "rabbit", "badger", "hare"] },
+  { worldKey: "castle", title: "Bài 10: Nghề nghiệp thời xưa (Trung bình)", order: 9, words: ["blacksmith", "farmer", "baker", "weaver", "carpenter", "miller", "tailor", "cobbler", "merchant", "minstrel", "healer", "scribe", "guard", "hunter", "fisherman", "potter", "mason", "shepherd", "innkeeper"] },
+
+  { worldKey: "space", title: "Bài 4: Các hành tinh (Trung bình)", order: 3, words: ["Mercury", "Venus", "Earth", "Mars", "Jupiter", "Saturn", "Uranus", "Neptune", "Pluto", "Moon", "Sun", "asteroid", "meteor", "comet", "satellite", "star", "galaxy", "nebula", "black hole"] },
+  { worldKey: "space", title: "Bài 5: Thiết bị du hành (Trung bình)", order: 4, words: ["rocket", "spaceship", "astronaut", "space station", "spacesuit", "helmet", "launch pad", "capsule", "satellite dish", "control room", "mission", "orbit", "gravity", "spacewalk", "countdown", "engine", "fuel", "cockpit", "radar"] },
+  { worldKey: "space", title: "Bài 6: Người ngoài hành tinh và robot (Trung bình)", order: 5, words: ["alien", "robot", "android", "UFO", "Martian", "extraterrestrial", "cyborg", "drone", "hologram", "laser", "probe", "rover", "telescope", "antenna", "transmitter", "scanner", "beam", "monitor", "sensor"] },
+  { worldKey: "space", title: "Bài 7: Khoa học Trái Đất (Trung bình)", order: 6, words: ["volcano", "earthquake", "tornado", "hurricane", "glacier", "desert", "ocean", "mountain", "valley", "canyon", "island", "continent", "equator", "pole", "atmosphere", "climate", "temperature", "pressure", "magnetic field"] },
+  { worldKey: "space", title: "Bài 8: Con số nâng cao (Trung bình)", order: 7, words: ["zero", "hundred", "thousand", "million", "billion", "half", "quarter", "double", "triple", "plus", "minus", "equal", "count", "measure", "distance", "speed", "size", "weight", "height"] },
+  { worldKey: "space", title: "Bài 9: Thời gian trong vũ trụ (Trung bình)", order: 8, words: ["eclipse", "sunrise", "sunset", "midnight", "dawn", "dusk", "horizon", "calendar", "clock", "timer", "hourglass", "century", "decade", "season", "cycle", "phase", "orbit period", "light year", "stopwatch"] },
+  { worldKey: "space", title: "Bài 10: Nghề nghiệp khoa học (Trung bình)", order: 9, words: ["scientist", "engineer", "pilot", "commander", "researcher", "technician", "navigator", "explorer", "inventor", "physicist", "astronomer", "geologist", "biologist", "chemist", "mathematician", "professor", "captain", "crew member", "specialist"] },
+
+  // Exam-prep starters. These deliberately stop at vocabulary-focused B2/C1
+  // rather than pretending the existing image-MCQ engine can assess full
+  // IELTS/TOEIC writing, speaking or C2 reasoning.
+  { worldKey: "ielts", title: "IELTS 1 · Environment (B1)", order: 0, words: ["climate", "temperature", "ocean", "forest", "desert", "glacier", "storm", "hurricane", "volcano", "earthquake", "river", "island", "continent", "atmosphere", "rain", "snow", "wind", "sunshine", "water"] },
+  { worldKey: "ielts", title: "IELTS 2 · Education & Research (B1)", order: 1, words: ["student", "teacher", "professor", "researcher", "library", "laboratory", "textbook", "exam", "presentation", "certificate", "graduation", "science", "history", "literature", "writing", "reading", "computer", "projector", "calculator"] },
+  { worldKey: "ielts", title: "IELTS 3 · Science & Technology (B2)", order: 2, words: ["scientist", "engineer", "inventor", "technician", "robot", "satellite", "telescope", "scanner", "sensor", "transmitter", "computer", "hologram", "drone", "radar", "rocket", "physics", "biology", "chemistry", "researcher"] },
+  { worldKey: "ielts", title: "IELTS 4 · Society & Infrastructure (B2)", order: 3, words: ["hospital", "school", "factory", "warehouse", "airport", "bridge", "tunnel", "station", "market", "bank", "library", "stadium", "theater", "apartment", "skyscraper", "sidewalk", "crosswalk", "traffic light", "bus stop"] },
+
+  { worldKey: "toeic", title: "TOEIC 1 · Office Basics (A2)", order: 0, words: ["computer", "desk", "chair", "notebook", "pen", "pencil", "folder", "calendar", "clock", "calculator", "stapler", "paperclip", "envelope", "printer", "projector", "telephone", "button", "monitor", "office"] },
+  { worldKey: "toeic", title: "TOEIC 2 · People at Work (A2)", order: 1, words: ["manager", "assistant", "receptionist", "driver", "engineer", "technician", "researcher", "doctor", "nurse", "chef", "teacher", "pilot", "sailor", "artist", "carpenter", "tailor", "baker", "farmer", "guard"] },
+  { worldKey: "toeic", title: "TOEIC 3 · Business Travel (B1)", order: 2, words: ["airport", "hotel", "train", "taxi", "bus", "subway", "plane", "ferry", "station", "passport", "suitcase", "map", "ticket", "calendar", "clock", "bridge", "tunnel", "car", "helicopter"] },
+  { worldKey: "toeic", title: "TOEIC 4 · Meetings & Logistics (B2)", order: 3, words: ["presentation", "projector", "microphone", "warehouse", "factory", "truck", "ship", "package", "certificate", "calculator", "calendar", "office", "manager", "assistant", "engineer", "monitor", "scanner", "telephone", "airport"] },
+];
+
 /**
- * 1 lesson per remaining world (Town/Beach/School/Castle/Space) — every
- * world besides Forest had zero Lesson content until now (see TASKS.md).
- * Same "picture quiz" question shape/style as FOREST_QUESTIONS above (kept
- * as its own untouched block rather than folding it into this list, to
- * avoid touching already-working seed data). Vocabulary is reused from the
- * same words already translated for VOCAB_TOPICS/the offline dictionary
- * where a good fit exists (Town→places, Beach→nature+food, School→school
- * objects+numbers); Castle/Space needed a handful of new words (king/queen/
- * knight/dragon, planet) no existing list covers.
+ * Lessons per world (Forest excluded — its Bài 1 stays in the separate
+ * FOREST_QUESTIONS block above untouched; its Bài 2/3 live here alongside
+ * everyone else's). Originally 1 lesson/world ("Bài 1"); expanded
+ * (2026-08-28, per user request "thiết kế bài học theo chủ đề, theo lv từ
+ * thấp đến cao") to 3 lessons/world — real difficulty progression using the
+ * EXISTING `order` field (no schema/mechanism change, per user's own
+ * decision): "Bài 1" (đã có sẵn) mixes cross-category distractors (easy to
+ * eliminate wrong answers even without knowing the word); "Bài 2" narrows
+ * every question's distractors to the SAME semantic category (all animals,
+ * all foods...) — genuinely harder, guessing no longer works; "Bài 3" adds
+ * attribute/purpose-based questions ("Which one can fly?", "Where do you buy
+ * bread?") on top of same-category distractors, +1-2 more questions than
+ * Bài 1/2. Titles for Bài 2/3 end in "(Trung bình)"/"(Khó)" so the level is
+ * legible straight from `WorldLessons.tsx`'s picker (plain title list, no
+ * numeric badge). `order` (0/1/2) is what the picker actually sorts by —
+ * see the seeding loop below, which used to hardcode `order: 0` for every
+ * entry (harmless when each world had exactly 1 lesson, but would leave
+ * Bài 1/2/3 in unstable order once a world has more than one).
  */
-const WORLD_LESSONS: { worldKey: string; title: string; questions: { prompt: string; hint: string; answer: string; options: string[] }[] }[] = [
+const WORLD_LESSONS: { worldKey: string; title: string; order: number; questions: { prompt: string; hint: string; answer: string; options: string[] }[] }[] = [
   {
     worldKey: "town",
     title: "Bài 1: Quanh khu phố",
+    order: 0,
     questions: [
       { prompt: "Find the park!", hint: "Nghe rồi chọn hình đúng", answer: "Park", options: ["Park", "Hospital", "Market", "Bridge"] },
       { prompt: "Which one is a hospital?", hint: "Tap the picture", answer: "Hospital", options: ["School", "Hospital", "Airport", "Bakery"] },
@@ -125,6 +293,7 @@ const WORLD_LESSONS: { worldKey: string; title: string; questions: { prompt: str
   {
     worldKey: "beach",
     title: "Bài 1: Một ngày ở biển",
+    order: 0,
     questions: [
       { prompt: "Find the sea!", hint: "Nghe rồi chọn hình đúng", answer: "Sea", options: ["Sea", "Mountain", "Forest", "Desert"] },
       { prompt: "Which one is a wave?", hint: "Tap the picture", answer: "Wave", options: ["Wave", "Cloud", "Rock", "Sand"] },
@@ -136,6 +305,7 @@ const WORLD_LESSONS: { worldKey: string; title: string; questions: { prompt: str
   {
     worldKey: "school",
     title: "Bài 1: Đồ dùng học tập",
+    order: 0,
     questions: [
       { prompt: "Find the pencil!", hint: "Nghe rồi chọn hình đúng", answer: "Pencil", options: ["Pencil", "Pen", "Eraser", "Ruler"] },
       { prompt: "Which one is a book?", hint: "Tap the picture", answer: "Book", options: ["Book", "Notebook", "Bag", "Chair"] },
@@ -147,6 +317,7 @@ const WORLD_LESSONS: { worldKey: string; title: string; questions: { prompt: str
   {
     worldKey: "castle",
     title: "Bài 1: Lâu đài cổ tích",
+    order: 0,
     questions: [
       { prompt: "Find the king!", hint: "Nghe rồi chọn hình đúng", answer: "King", options: ["King", "Queen", "Knight", "Dragon"] },
       { prompt: "Which one is a queen?", hint: "Tap the picture", answer: "Queen", options: ["Queen", "Princess", "King", "Knight"] },
@@ -158,6 +329,7 @@ const WORLD_LESSONS: { worldKey: string; title: string; questions: { prompt: str
   {
     worldKey: "space",
     title: "Bài 1: Khám phá vũ trụ",
+    order: 0,
     questions: [
       { prompt: "Find the star!", hint: "Nghe rồi chọn hình đúng", answer: "Star", options: ["Star", "Moon", "Sun", "Cloud"] },
       { prompt: "Which one is the moon?", hint: "Tap the picture", answer: "Moon", options: ["Moon", "Star", "Planet", "Rocket"] },
@@ -166,7 +338,183 @@ const WORLD_LESSONS: { worldKey: string; title: string; questions: { prompt: str
       { prompt: "Find the planet!", hint: "Nghe rồi chọn hình đúng", answer: "Planet", options: ["Planet", "Star", "Earth", "Moon"] },
     ],
   },
+
+  // ---- Bài 2 (Trung bình) — same world, harder: distractors from the SAME
+  // semantic category as the answer, so cross-category guessing no longer works.
+  {
+    worldKey: "forest",
+    title: "Bài 2: Muông thú trong rừng (Trung bình)",
+    order: 1,
+    questions: [
+      { prompt: "Find the deer!", hint: "Nghe rồi chọn hình đúng", answer: "Deer", options: ["Deer", "Fox", "Owl", "Squirrel"] },
+      { prompt: "Which one is an owl?", hint: "Tap the picture", answer: "Owl", options: ["Fox", "Owl", "Deer", "Rabbit"] },
+      { prompt: "Find the squirrel!", hint: "Nghe rồi chọn hình đúng", answer: "Squirrel", options: ["Squirrel", "Fox", "Owl", "Deer"] },
+      { prompt: "Which one is a fox?", hint: "Tap the picture", answer: "Fox", options: ["Rabbit", "Fox", "Owl", "Deer"] },
+      { prompt: "Find the butterfly!", hint: "Nghe rồi chọn hình đúng", answer: "Butterfly", options: ["Butterfly", "Bee", "Ant", "Spider"] },
+      { prompt: "Which one is a bee?", hint: "Tap the picture", answer: "Bee", options: ["Ant", "Bee", "Spider", "Butterfly"] },
+    ],
+  },
+  {
+    worldKey: "town",
+    title: "Bài 2: Những người trong thị trấn (Trung bình)",
+    order: 1,
+    questions: [
+      { prompt: "Find the police officer!", hint: "Nghe rồi chọn hình đúng", answer: "Police Officer", options: ["Police Officer", "Doctor", "Firefighter", "Teacher"] },
+      { prompt: "Which one is a doctor?", hint: "Tap the picture", answer: "Doctor", options: ["Nurse", "Doctor", "Dentist", "Teacher"] },
+      { prompt: "Find the firefighter!", hint: "Nghe rồi chọn hình đúng", answer: "Firefighter", options: ["Firefighter", "Police Officer", "Farmer", "Chef"] },
+      { prompt: "Which one is a chef?", hint: "Tap the picture", answer: "Chef", options: ["Chef", "Waiter", "Baker", "Farmer"] },
+      { prompt: "Find the mailman!", hint: "Nghe rồi chọn hình đúng", answer: "Mailman", options: ["Mailman", "Driver", "Pilot", "Sailor"] },
+      { prompt: "Which one is a farmer?", hint: "Tap the picture", answer: "Farmer", options: ["Farmer", "Fisherman", "Chef", "Baker"] },
+    ],
+  },
+  {
+    worldKey: "beach",
+    title: "Bài 2: Đồ ăn ngày hè (Trung bình)",
+    order: 1,
+    questions: [
+      { prompt: "Find the mango!", hint: "Nghe rồi chọn hình đúng", answer: "Mango", options: ["Mango", "Lemon", "Peach", "Grapes"] },
+      { prompt: "Which one is a lemon?", hint: "Tap the picture", answer: "Lemon", options: ["Lemon", "Mango", "Orange", "Peach"] },
+      { prompt: "Find the coconut!", hint: "Nghe rồi chọn hình đúng", answer: "Coconut", options: ["Coconut", "Pineapple", "Mango", "Banana"] },
+      { prompt: "Which one is a pineapple?", hint: "Tap the picture", answer: "Pineapple", options: ["Pineapple", "Coconut", "Watermelon", "Grapes"] },
+      { prompt: "Find the popsicle!", hint: "Nghe rồi chọn hình đúng", answer: "Popsicle", options: ["Popsicle", "Ice Cream", "Cake", "Candy"] },
+      { prompt: "Which one is juice?", hint: "Tap the picture", answer: "Juice", options: ["Juice", "Milk", "Water", "Soup"] },
+    ],
+  },
+  {
+    worldKey: "school",
+    title: "Bài 2: Trong lớp học (Trung bình)",
+    order: 1,
+    questions: [
+      { prompt: "Find the eraser!", hint: "Nghe rồi chọn hình đúng", answer: "Eraser", options: ["Eraser", "Scissors", "Glue", "Crayon"] },
+      { prompt: "Which one is scissors?", hint: "Tap the picture", answer: "Scissors", options: ["Scissors", "Glue", "Eraser", "Stapler"] },
+      { prompt: "Find the crayon!", hint: "Nghe rồi chọn hình đúng", answer: "Crayon", options: ["Crayon", "Marker", "Chalk", "Pen"] },
+      { prompt: "Which one is a backpack?", hint: "Tap the picture", answer: "Backpack", options: ["Backpack", "Desk", "Chair", "Board"] },
+      { prompt: "Find the notebook!", hint: "Nghe rồi chọn hình đúng", answer: "Notebook", options: ["Notebook", "Textbook", "Folder", "Envelope"] },
+      { prompt: "Which one is chalk?", hint: "Tap the picture", answer: "Chalk", options: ["Chalk", "Crayon", "Marker", "Pencil"] },
+    ],
+  },
+  {
+    worldKey: "castle",
+    title: "Bài 2: Nhân vật cổ tích (Trung bình)",
+    order: 1,
+    questions: [
+      { prompt: "Find the princess!", hint: "Nghe rồi chọn hình đúng", answer: "Princess", options: ["Princess", "Prince", "Witch", "Fairy"] },
+      { prompt: "Which one is a wizard?", hint: "Tap the picture", answer: "Wizard", options: ["Wizard", "Witch", "King", "Knight"] },
+      { prompt: "Find the fairy!", hint: "Nghe rồi chọn hình đúng", answer: "Fairy", options: ["Fairy", "Witch", "Princess", "Queen"] },
+      { prompt: "Which one is a giant?", hint: "Tap the picture", answer: "Giant", options: ["Giant", "Dwarf", "Elf", "Knight"] },
+      { prompt: "Find the witch!", hint: "Nghe rồi chọn hình đúng", answer: "Witch", options: ["Witch", "Fairy", "Queen", "Princess"] },
+      { prompt: "Which one is a prince?", hint: "Tap the picture", answer: "Prince", options: ["Prince", "King", "Knight", "Wizard"] },
+    ],
+  },
+  {
+    worldKey: "space",
+    title: "Bài 2: Hệ mặt trời (Trung bình)",
+    order: 1,
+    questions: [
+      { prompt: "Find Earth!", hint: "Nghe rồi chọn hình đúng", answer: "Earth", options: ["Earth", "Mars", "Venus", "Jupiter"] },
+      { prompt: "Which one is Mars?", hint: "Tap the picture", answer: "Mars", options: ["Mars", "Earth", "Saturn", "Mercury"] },
+      { prompt: "Find the Sun!", hint: "Nghe rồi chọn hình đúng", answer: "Sun", options: ["Sun", "Moon", "Star", "Planet"] },
+      { prompt: "Which planet has rings?", hint: "Tap the picture", answer: "Saturn", options: ["Saturn", "Mars", "Earth", "Venus"] },
+      { prompt: "Find the comet!", hint: "Nghe rồi chọn hình đúng", answer: "Comet", options: ["Comet", "Star", "Moon", "Rocket"] },
+      { prompt: "Which one is a galaxy?", hint: "Tap the picture", answer: "Galaxy", options: ["Galaxy", "Planet", "Star", "Comet"] },
+    ],
+  },
+
+  // ---- Bài 3 (Khó) — same world, hardest: mixes attribute/purpose questions
+  // ("Which one can fly?", "Where do you buy bread?") with same-category
+  // distractors, +1-2 more questions than Bài 1/2.
+  {
+    worldKey: "forest",
+    title: "Bài 3: Thiên nhiên kỳ diệu (Khó)",
+    order: 2,
+    questions: [
+      { prompt: "Which one can fly?", hint: "Tap the picture", answer: "Butterfly", options: ["Butterfly", "Turtle", "Snail", "Frog"] },
+      { prompt: "Find the waterfall!", hint: "Nghe rồi chọn hình đúng", answer: "Waterfall", options: ["Waterfall", "Lake", "Pond", "Swamp"] },
+      { prompt: "Which one is green?", hint: "Tap the picture", answer: "Leaf", options: ["Leaf", "Rock", "Sand", "Cloud"] },
+      { prompt: "Find the mushroom!", hint: "Nghe rồi chọn hình đúng", answer: "Mushroom", options: ["Mushroom", "Flower", "Bush", "Vine"] },
+      { prompt: "Which animal lives in water?", hint: "Tap the picture", answer: "Fish", options: ["Fish", "Bird", "Fox", "Deer"] },
+      { prompt: "Find the nest!", hint: "Nghe rồi chọn hình đúng", answer: "Nest", options: ["Nest", "Cave", "Hole", "Web"] },
+      { prompt: "Which one is the tallest?", hint: "Tap the picture", answer: "Tree", options: ["Tree", "Flower", "Grass", "Mushroom"] },
+    ],
+  },
+  {
+    worldKey: "town",
+    title: "Bài 3: Đi khắp thị trấn (Khó)",
+    order: 2,
+    questions: [
+      { prompt: "Where do you buy bread?", hint: "Tap the picture", answer: "Bakery", options: ["Bakery", "Library", "Bank", "Gym"] },
+      { prompt: "Find the library!", hint: "Nghe rồi chọn hình đúng", answer: "Library", options: ["Library", "Bank", "Bakery", "Museum"] },
+      { prompt: "Where do you borrow books?", hint: "Tap the picture", answer: "Library", options: ["Library", "Market", "Hospital", "Station"] },
+      { prompt: "Find the bank!", hint: "Nghe rồi chọn hình đúng", answer: "Bank", options: ["Bank", "Hotel", "Church", "Gym"] },
+      { prompt: "Where do people sleep when traveling?", hint: "Tap the picture", answer: "Hotel", options: ["Hotel", "School", "Farm", "Church"] },
+      { prompt: "Find the train station!", hint: "Nghe rồi chọn hình đúng", answer: "Station", options: ["Station", "Airport", "Port", "Bridge"] },
+      { prompt: "Where do you go to pray?", hint: "Tap the picture", answer: "Church", options: ["Church", "Gym", "Bank", "Market"] },
+    ],
+  },
+  {
+    worldKey: "beach",
+    title: "Bài 3: Thời tiết mùa hè (Khó)",
+    order: 2,
+    questions: [
+      { prompt: "Which one is hot?", hint: "Tap the picture", answer: "Sun", options: ["Sun", "Moon", "Rain", "Snow"] },
+      { prompt: "Find the umbrella!", hint: "Nghe rồi chọn hình đúng", answer: "Umbrella", options: ["Umbrella", "Towel", "Hat", "Bag"] },
+      { prompt: "Which weather is windy?", hint: "Tap the picture", answer: "Wind", options: ["Wind", "Rain", "Sun", "Snow"] },
+      { prompt: "Find the sandcastle!", hint: "Nghe rồi chọn hình đúng", answer: "Sandcastle", options: ["Sandcastle", "Shell", "Rock", "Boat"] },
+      { prompt: "Which one do you wear to swim?", hint: "Tap the picture", answer: "Swimsuit", options: ["Swimsuit", "Coat", "Boots", "Scarf"] },
+      { prompt: "Find the shell!", hint: "Nghe rồi chọn hình đúng", answer: "Shell", options: ["Shell", "Rock", "Coral", "Star"] },
+      { prompt: "Which one floats on water?", hint: "Tap the picture", answer: "Boat", options: ["Boat", "Rock", "Anchor", "Shell"] },
+    ],
+  },
+  {
+    worldKey: "school",
+    title: "Bài 3: Đếm số (Khó)",
+    order: 2,
+    questions: [
+      { prompt: "Which number is seven?", hint: "Tap the picture", answer: "Seven", options: ["Six", "Seven", "Eight", "Nine"] },
+      { prompt: "Find the number ten!", hint: "Nghe rồi chọn hình đúng", answer: "Ten", options: ["Ten", "Nine", "Eleven", "Twelve"] },
+      { prompt: "Which number is twenty?", hint: "Tap the picture", answer: "Twenty", options: ["Twelve", "Twenty", "Two", "Twenty-two"] },
+      { prompt: "Find the number fifty!", hint: "Nghe rồi chọn hình đúng", answer: "Fifty", options: ["Fifty", "Fifteen", "Fourteen", "Forty"] },
+      { prompt: "Which one comes after eight?", hint: "Tap the picture", answer: "Nine", options: ["Nine", "Seven", "Ten", "Eight"] },
+      { prompt: "Find the number one hundred!", hint: "Nghe rồi chọn hình đúng", answer: "Hundred", options: ["Hundred", "Ten", "Thousand", "Fifty"] },
+      { prompt: "Which number is the smallest?", hint: "Tap the picture", answer: "One", options: ["One", "Ten", "Five", "Three"] },
+    ],
+  },
+  {
+    worldKey: "castle",
+    title: "Bài 3: Phiêu lưu trong lâu đài (Khó)",
+    order: 2,
+    questions: [
+      { prompt: "Which one can fly?", hint: "Tap the picture", answer: "Dragon", options: ["Dragon", "Horse", "Knight", "Giant"] },
+      { prompt: "Find the sword!", hint: "Nghe rồi chọn hình đúng", answer: "Sword", options: ["Sword", "Shield", "Crown", "Wand"] },
+      { prompt: "Which one protects the king?", hint: "Tap the picture", answer: "Knight", options: ["Knight", "Farmer", "Baker", "Fairy"] },
+      { prompt: "Find the crown!", hint: "Nghe rồi chọn hình đúng", answer: "Crown", options: ["Crown", "Sword", "Shield", "Wand"] },
+      { prompt: "Which one has magic?", hint: "Tap the picture", answer: "Wizard", options: ["Wizard", "Knight", "Farmer", "Guard"] },
+      { prompt: "Find the tower!", hint: "Nghe rồi chọn hình đúng", answer: "Tower", options: ["Tower", "Bridge", "Gate", "Wall"] },
+      { prompt: "Which one guards the gate?", hint: "Tap the picture", answer: "Guard", options: ["Guard", "Baker", "Farmer", "Fairy"] },
+    ],
+  },
+  {
+    worldKey: "space",
+    title: "Bài 3: Du hành vũ trụ (Khó)",
+    order: 2,
+    questions: [
+      { prompt: "Which one travels in space?", hint: "Tap the picture", answer: "Spaceship", options: ["Spaceship", "Car", "Boat", "Train"] },
+      { prompt: "Find the space station!", hint: "Nghe rồi chọn hình đúng", answer: "Space Station", options: ["Space Station", "Rocket", "Satellite", "Planet"] },
+      { prompt: "Which one orbits Earth?", hint: "Tap the picture", answer: "Satellite", options: ["Satellite", "Comet", "Sun", "Galaxy"] },
+      { prompt: "Find the alien!", hint: "Nghe rồi chọn hình đúng", answer: "Alien", options: ["Alien", "Astronaut", "Robot", "Pilot"] },
+      { prompt: "Which one has no air?", hint: "Tap the picture", answer: "Space", options: ["Space", "Ocean", "Forest", "Desert"] },
+      { prompt: "Find the helmet!", hint: "Nghe rồi chọn hình đúng", answer: "Helmet", options: ["Helmet", "Hat", "Crown", "Cap"] },
+      { prompt: "Which one is a robot?", hint: "Tap the picture", answer: "Robot", options: ["Robot", "Alien", "Astronaut", "Pilot"] },
+    ],
+  },
 ];
+
+// Append the 42 bulk-generated lessons (see WORLD_BONUS_TOPICS/genQuestions
+// above) onto the hand-written ones — .push() mutates in place, `const` only
+// blocks reassignment, so this is safe.
+for (const t of WORLD_BONUS_TOPICS) {
+  WORLD_LESSONS.push({ worldKey: t.worldKey, title: t.title, order: t.order, questions: genQuestions(t.words) });
+}
 
 // 10 chủ đề × 20 từ cho màn "Chủ đề" (Topics.tsx / SRS). Vocab.worldId is not
 // a real FK (see schema.prisma) — reused here as a free-form topic key.
@@ -234,7 +582,7 @@ const VOCAB_TOPICS: Record<string, [string, string, string, string][]> = {
   ],
 };
 
-type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel"; delta: number };
+type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel" | "renamePet"; delta: number };
 type ItemCategory = "food" | "toy" | "accessory" | "special";
 
 // Mirrors frontend/src/pages/Bag.tsx's old BAG_DATA mock, now the real
@@ -263,6 +611,14 @@ const ITEMS: { key: string; name: string; category: ItemCategory; color: string;
   { key: "mat-ong", name: "Mật ong", category: "food", color: "#E8A33D", radius: "14px", description: "Ngọt lành bổ dưỡng — hồi 8 vui vẻ và 12 sức khoẻ.", effects: [{ stat: "happiness", delta: 8 }, { stat: "health", delta: 12 }], defaultQty: 0, price: 45, currency: "coin" },
   { key: "sup-bi-do", name: "Súp bí đỏ", category: "food", color: "#E8823C", radius: "999px 999px 12px 12px", description: "Bát súp ấm nóng — hồi 25 đồ ăn và 10 sức khoẻ.", effects: [{ stat: "hunger", delta: 25 }, { stat: "health", delta: 10 }], defaultQty: 0, price: 60, currency: "coin" },
   { key: "ca-hoi-tuoi", name: "Cá hồi tươi", category: "food", color: "#F2907A", radius: "16px", description: "Món cao cấp — hồi 30 đồ ăn, 15 sức khoẻ và 10 XP.", effects: [{ stat: "hunger", delta: 30 }, { stat: "health", delta: 15 }, { stat: "experience", delta: 10 }], defaultQty: 0, price: 6, currency: "gem" },
+  { key: "kem-may-dau", name: "Kem mây dâu", category: "food", color: "#F69AB5", radius: "18px", description: "Ly kem mát lành — hồi 20 đồ ăn và 12 vui vẻ.", effects: [{ stat: "hunger", delta: 20 }, { stat: "happiness", delta: 12 }], defaultQty: 0, price: 35, currency: "coin", imagePath: "/items/food/strawberry-cloud-parfait.png" },
+  { key: "sup-bi-trang", name: "Súp bí trăng", category: "food", color: "#E99635", radius: "999px", description: "Bữa tối ấm áp — hồi 30 đồ ăn và 15 sức khoẻ.", effects: [{ stat: "hunger", delta: 30 }, { stat: "health", delta: 15 }], defaultQty: 0, price: 75, currency: "coin", imagePath: "/items/food/moon-pumpkin-soup.png" },
+  { key: "cupcake-pha-le", name: "Cupcake pha lê", category: "food", color: "#9C78E7", radius: "18px", description: "Bánh phép thuật — nhận 180 XP và 15 vui vẻ.", effects: [{ stat: "happiness", delta: 15 }, { stat: "experience", delta: 180 }], defaultQty: 0, price: 20, currency: "gem", imagePath: "/items/food/crystal-berry-cupcake.png" },
+  { key: "ca-sao-vang", name: "Cá sao vàng", category: "food", color: "#F2A43C", radius: "999px", description: "Món hoàng gia — hồi 45 đồ ăn, 20 sức khoẻ và nhận 80 XP.", effects: [{ stat: "hunger", delta: 45 }, { stat: "health", delta: 20 }, { stat: "experience", delta: 80 }], defaultQty: 0, price: 14, currency: "gem", imagePath: "/items/food/golden-starfish-steak.png" },
+  { key: "sakura-mochi", name: "Sakura Mochi", category: "food", color: "#F4A9BD", radius: "999px", description: "Bánh gạo hoa anh đào Nhật Bản — hồi 18 đồ ăn và 10 vui vẻ.", effects: [{ stat: "hunger", delta: 18 }, { stat: "happiness", delta: 10 }], defaultQty: 0, price: 40, currency: "coin", imagePath: "/items/food/sakura-mochi.png" },
+  { key: "taiyaki", name: "Taiyaki", category: "food", color: "#DFA451", radius: "18px", description: "Bánh cá nhân đậu đỏ Nhật Bản — hồi 25 đồ ăn và 8 sức khoẻ.", effects: [{ stat: "hunger", delta: 25 }, { stat: "health", delta: 8 }], defaultQty: 0, price: 55, currency: "coin", imagePath: "/items/food/taiyaki.png" },
+  { key: "songpyeon", name: "Songpyeon", category: "food", color: "#87C88B", radius: "999px", description: "Bánh gạo lễ Chuseok Hàn Quốc — hồi 20 đồ ăn và 12 vui vẻ.", effects: [{ stat: "hunger", delta: 20 }, { stat: "happiness", delta: 12 }], defaultQty: 0, price: 45, currency: "coin", imagePath: "/items/food/songpyeon.png" },
+  { key: "bungeoppang", name: "Bungeoppang", category: "food", color: "#E5A55F", radius: "18px", description: "Bánh cá đường phố Hàn Quốc — hồi 28 đồ ăn và 10 sức khoẻ.", effects: [{ stat: "hunger", delta: 28 }, { stat: "health", delta: 10 }], defaultQty: 0, price: 65, currency: "coin", imagePath: "/items/food/bungeoppang.png" },
   // Vật phẩm test/dev — làm pet đói ngay lập tức để kiểm thử trạng thái
   // "đói" (speech bubble, cảnh báo...) mà không phải chờ hunger tự giảm.
   // Giá 1 coin theo yêu cầu; KHÔNG dùng ở bản thật, chỉ để test.
@@ -279,6 +635,7 @@ const ITEMS: { key: string; name: string; category: ItemCategory; color: string;
   { key: "ve-hoi-tim", name: "Vé hồi tim", category: "special", color: "#EF6A5A", radius: "999px", description: "Hồi đầy tim khi làm bài.", effects: [], defaultQty: 3 },
   { key: "tui-coin", name: "Túi coin", category: "special", color: "#F2A81C", radius: "12px", description: "Mở ra nhận 200 coin.", effects: [{ stat: "coins", delta: 200 }], defaultQty: 1 },
   { key: "dong-ho-tai-sinh", name: "Đồng hồ tái sinh", category: "special", color: "#57C6C6", radius: "999px", description: "Đưa pet đang đồng hành về Level 1 và 0 XP. Chỉ reset cấp, không làm mất chỉ số chăm sóc.", effects: [{ stat: "resetLevel", delta: 1 }], defaultQty: 0, price: 999, currency: "gem", imagePath: "/items/special/rebirth-clock.png" },
+  { key: "ve-doi-ten-pet", name: "Vé đổi tên pet", category: "special", color: "#42C7D7", radius: "16px", description: "Đổi tên cho pet đang đồng hành. Mỗi vé sử dụng được một lần.", effects: [{ stat: "renamePet", delta: 1 }], defaultQty: 0, price: 25, currency: "gem", imagePath: "/items/special/pet-rename-ticket.png" },
   { key: "background-hoang-hon", name: "Lâu đài hoàng hôn", category: "accessory", color: "#F29A5A", radius: "18px", description: "Vương quốc vàng trên đồi dưới ánh hoàng hôn.", effects: [], defaultQty: 0, price: 350, currency: "coin", imagePath: "/backgrounds/home-castle-sunset-v1.webp" },
   { key: "background-hoa-anh-dao", name: "Thung lũng hoa", category: "accessory", color: "#F3A9C7", radius: "18px", description: "Cổng trăng, suối mơ và hoa anh đào rực rỡ.", effects: [], defaultQty: 0, price: 650, currency: "coin", imagePath: "/backgrounds/home-cherry-valley-v1.webp" },
   { key: "background-lang-tuyet", name: "Làng tuyết", category: "accessory", color: "#B8E5F5", radius: "18px", description: "Ngôi làng mùa đông bên lâu đài pha lê.", effects: [], defaultQty: 0, price: 35, currency: "gem", imagePath: "/backgrounds/home-snow-village-v1.webp" },
@@ -3009,6 +3366,262 @@ const DETECTIVE_CASES: DetectiveCaseSeed[] = [
 ];
 
 // ---------------------------------------------------------------------------
+// Detective case GENERATOR (2026-08-28) — user asked for 100 more cases.
+// Hand-plotting 100 unique whodunits (each needs a coherent lie/contradiction
+// a kid can actually piece together, PLUS vi/ja/ko translation for every
+// testimony+clue+scenario, unlike Question which has zero translation
+// fields) doesn't scale by hand. Reused the exact 3-suspect logic shape the
+// 2 hand-written cases already use — round 1 = an innocent suspect whose
+// alibi gets CONFIRMED, round 2 = the guilty suspect whose alibi gets
+// CONTRADICTED, round 3 = a witness who saw the guilty suspect near the
+// scene — as a reusable TEMPLATE, parametrized by suspect/item/location/
+// activity word banks (small, each translated ONCE) instead of writing 100
+// bespoke plots. `key`/order come from array position in the seeding loop
+// below (same as the 2 hand-written cases), so no explicit key/order needed.
+// ---------------------------------------------------------------------------
+interface Suspect { name: string; emoji: string; jobEn: string; jobVi: string; jobJa: string; jobKo: string }
+const SUSPECT_POOL: Suspect[] = [
+  { name: "Mr. Reed", emoji: "🎩", jobEn: "butler", jobVi: "quản gia", jobJa: "執事", jobKo: "집사" },
+  { name: "Ms. Bloom", emoji: "💃", jobEn: "guest", jobVi: "khách mời", jobJa: "招待客", jobKo: "초대 손님" },
+  { name: "Chef Tony", emoji: "👨‍🍳", jobEn: "chef", jobVi: "đầu bếp", jobJa: "料理人", jobKo: "요리사" },
+  { name: "Mrs. Chen", emoji: "🧹", jobEn: "housekeeper", jobVi: "quản lý nhà cửa", jobJa: "家政婦", jobKo: "가정부" },
+  { name: "Mr. Diaz", emoji: "🌱", jobEn: "gardener", jobVi: "người làm vườn", jobJa: "庭師", jobKo: "정원사" },
+  { name: "Ms. Patel", emoji: "💼", jobEn: "secretary", jobVi: "thư ký", jobJa: "秘書", jobKo: "비서" },
+  { name: "Dr. Kim", emoji: "🩺", jobEn: "family doctor", jobVi: "bác sĩ gia đình", jobJa: "かかりつけ医", jobKo: "주치의" },
+  { name: "Mr. Wolfe", emoji: "🛡️", jobEn: "security guard", jobVi: "bảo vệ", jobJa: "警備員", jobKo: "경비원" },
+  { name: "Ms. Ivy", emoji: "💐", jobEn: "florist", jobVi: "người bán hoa", jobJa: "花屋", jobKo: "꽃집 주인" },
+  { name: "Mr. Grant", emoji: "🚗", jobEn: "driver", jobVi: "tài xế", jobJa: "運転手", jobKo: "운전기사" },
+  { name: "Mrs. White", emoji: "🍳", jobEn: "cook", jobVi: "đầu bếp phụ", jobJa: "コック", jobKo: "요리사 보조" },
+  { name: "Mr. Lopez", emoji: "🔧", jobEn: "handyman", jobVi: "thợ sửa chữa", jobJa: "修理工", jobKo: "수리공" },
+  { name: "Ms. Turner", emoji: "📚", jobEn: "tutor", jobVi: "gia sư", jobJa: "家庭教師", jobKo: "과외 선생님" },
+  { name: "Mr. Kane", emoji: "📊", jobEn: "accountant", jobVi: "kế toán", jobJa: "会計士", jobKo: "회계사" },
+  { name: "Mrs. Ford", emoji: "🏠", jobEn: "neighbor", jobVi: "hàng xóm", jobJa: "隣人", jobKo: "이웃" },
+  { name: "Mr. Silva", emoji: "📷", jobEn: "photographer", jobVi: "nhiếp ảnh gia", jobJa: "写真家", jobKo: "사진작가" },
+  { name: "Ms. Reyes", emoji: "🎻", jobEn: "musician", jobVi: "nhạc công", jobJa: "音楽家", jobKo: "음악가" },
+  { name: "Mr. Hale", emoji: "🎓", jobEn: "family lawyer", jobVi: "luật sư gia đình", jobJa: "顧問弁護士", jobKo: "가족 변호사" },
+  { name: "Mrs. Lin", emoji: "🧺", jobEn: "maid", jobVi: "người giúp việc", jobJa: "メイド", jobKo: "가정 도우미" },
+  { name: "Mr. Novak", emoji: "🚘", jobEn: "chauffeur", jobVi: "tài xế riêng", jobJa: "お抱え運転手", jobKo: "전속 운전기사" },
+];
+
+interface Phrase { en: string; vi: string; ja: string; ko: string }
+// A's alibi is TRUE — round 1 clue confirms it, matching case 1's Mr. Reed.
+const CONFIRMED_ACTIVITIES: { activity: Phrase; confirm: Phrase }[] = [
+  { activity: { en: "cleaning the kitchen", vi: "đang dọn bếp", ja: "台所を掃除していました", ko: "부엌을 청소하고 있었어요" }, confirm: { en: "the chef confirms seeing them in the kitchen at that time — their alibi checks out.", vi: "Đầu bếp xác nhận có thấy họ trong bếp lúc đó — lời khai có vẻ đúng.", ja: "料理人がその時間に台所で彼らを見たと確認しました——証言は正しいようです。", ko: "요리사가 그 시간에 부엌에서 그들을 봤다고 확인해줬어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "watering the plants in the garden", vi: "đang tưới cây ngoài vườn", ja: "庭で植物に水をやっていました", ko: "정원에서 식물에 물을 주고 있었어요" }, confirm: { en: "the gardener saw them watering the plants the whole time — their alibi checks out.", vi: "Người làm vườn thấy họ tưới cây suốt lúc đó — lời khai có vẻ đúng.", ja: "庭師がその間ずっと水やりをしているのを見ました——証言は正しいようです。", ko: "정원사가 그동안 계속 물을 주는 걸 봤어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "doing paperwork in the office", vi: "đang làm giấy tờ trong văn phòng", ja: "オフィスで書類仕事をしていました", ko: "사무실에서 서류 작업을 하고 있었어요" }, confirm: { en: "the security log shows they badged into the office at that exact time — their alibi checks out.", vi: "Nhật ký an ninh cho thấy họ quẹt thẻ vào văn phòng đúng lúc đó — lời khai có vẻ đúng.", ja: "警備記録では、ちょうどその時間にオフィスに入館していました——証言は正しいようです。", ko: "보안 기록에 따르면 정확히 그 시간에 사무실에 출입했어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "walking the dog outside", vi: "đang dắt chó đi dạo", ja: "外で犬を散歩させていました", ko: "밖에서 개를 산책시키고 있었어요" }, confirm: { en: "a neighbor saw them walking the dog on the street — their alibi checks out.", vi: "Một người hàng xóm thấy họ dắt chó đi dạo trên phố — lời khai có vẻ đúng.", ja: "近所の人が通りで犬を散歩させているのを見ました——証言は正しいようです。", ko: "이웃이 거리에서 개를 산책시키는 걸 봤어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "cooking dinner", vi: "đang nấu bữa tối", ja: "夕食を作っていました", ko: "저녁을 요리하고 있었어요" }, confirm: { en: "everyone in the house noticed the smell of dinner cooking at that time — their alibi checks out.", vi: "Mọi người trong nhà đều ngửi thấy mùi bữa tối lúc đó — lời khai có vẻ đúng.", ja: "家中の人がその時間に夕食の匂いに気づきました——証言は正しいようです。", ko: "집안 사람 모두 그 시간에 저녁 냄새를 맡았어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "practicing the piano", vi: "đang tập đàn piano", ja: "ピアノを練習していました", ko: "피아노를 연습하고 있었어요" }, confirm: { en: "another guest heard the piano playing from upstairs the whole time — their alibi checks out.", vi: "Một vị khách khác nghe tiếng đàn piano từ trên lầu suốt lúc đó — lời khai có vẻ đúng.", ja: "他の客がずっと2階でピアノの音を聞いていました——証言は正しいようです。", ko: "다른 손님이 그동안 계속 위층에서 피아노 소리를 들었어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "reading in their room", vi: "đang đọc sách trong phòng", ja: "自分の部屋で本を読んでいました", ko: "자기 방에서 책을 읽고 있었어요" }, confirm: { en: "the butler brought them tea and saw them reading — their alibi checks out.", vi: "Quản gia mang trà lên và thấy họ đang đọc sách — lời khai có vẻ đúng.", ja: "執事がお茶を持っていったとき、本を読んでいるのを見ました——証言は正しいようです。", ko: "집사가 차를 가져갔을 때 책을 읽고 있는 걸 봤어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "washing the car in the driveway", vi: "đang rửa xe ở lối vào nhà", ja: "私道で車を洗っていました", ko: "진입로에서 세차를 하고 있었어요" }, confirm: { en: "a neighbor saw them washing the car the whole time — their alibi checks out.", vi: "Một người hàng xóm thấy họ rửa xe suốt lúc đó — lời khai có vẻ đúng.", ja: "近所の人がその間ずっと車を洗っているのを見ました——証言は正しいようです。", ko: "이웃이 그동안 계속 세차하는 걸 봤어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "organizing files in the study", vi: "đang sắp xếp hồ sơ trong phòng làm việc", ja: "書斎で書類を整理していました", ko: "서재에서 서류를 정리하고 있었어요" }, confirm: { en: "their assistant was there helping the whole time — their alibi checks out.", vi: "Trợ lý của họ ở đó giúp suốt lúc đó — lời khai có vẻ đúng.", ja: "アシスタントがその間ずっと手伝っていました——証言は正しいようです。", ko: "비서가 그동안 계속 도와주고 있었어요 — 진술이 사실인 것 같아요." } },
+  { activity: { en: "watching TV in the living room", vi: "đang xem TV trong phòng khách", ja: "リビングでテレビを見ていました", ko: "거실에서 TV를 보고 있었어요" }, confirm: { en: "the TV was still on and warm when someone checked — their alibi checks out.", vi: "TV vẫn đang bật và còn ấm khi có người kiểm tra — lời khai có vẻ đúng.", ja: "誰かが確認したとき、テレビはまだついていて温かかった——証言は正しいようです。", ko: "누군가 확인했을 때 TV가 아직 켜져 있고 따뜻했어요 — 진술이 사실인 것 같아요." } },
+];
+// B's alibi is FALSE — round 2 clue contradicts it, matching case 1's Ms. Bloom.
+const LIE_ACTIVITIES: { activity: Phrase; contradiction: Phrase }[] = [
+  { activity: { en: "stargazing in the garden", vi: "đang ngắm sao ngoài vườn", ja: "庭で星を見ていました", ko: "정원에서 별을 보고 있었어요" }, contradiction: { en: "the sky was completely cloudy that night — no stars were visible. The alibi doesn't add up!", vi: "Nhưng trời đêm đó nhiều mây, không thể ngắm sao được — lời khai có vẻ không đúng!", ja: "でもその夜は雲が多く、星は見えませんでした——証言はおかしいようです!", ko: "하지만 그날 밤은 구름이 많아서 별을 볼 수 없었어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "watching a movie in the cinema room", vi: "đang xem phim trong phòng chiếu phim", ja: "シアタールームで映画を見ていました", ko: "영화 감상실에서 영화를 보고 있었어요" }, contradiction: { en: "the cinema room's projector has been broken all week. The alibi doesn't add up!", vi: "Nhưng máy chiếu phòng chiếu bị hỏng cả tuần nay — lời khai có vẻ không đúng!", ja: "でもシアタールームのプロジェクターは1週間ずっと壊れていました——証言はおかしいようです!", ko: "하지만 영화 감상실 프로젝터는 일주일 내내 고장나 있었어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "playing the piano in the music room", vi: "đang chơi đàn piano trong phòng nhạc", ja: "音楽室でピアノを弾いていました", ko: "음악실에서 피아노를 치고 있었어요" }, contradiction: { en: "the piano is covered in a thick layer of dust — it hasn't been touched in weeks. The alibi doesn't add up!", vi: "Nhưng cây đàn piano phủ đầy bụi — không ai chạm vào suốt nhiều tuần — lời khai có vẻ không đúng!", ja: "でもそのピアノは厚いほこりに覆われていて何週間も触られていません——証言はおかしいようです!", ko: "하지만 그 피아노는 먼지가 두껍게 쌓여 있고 몇 주 동안 손댄 적이 없어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "walking in the garden", vi: "đang đi dạo ngoài vườn", ja: "庭を散歩していました", ko: "정원을 산책하고 있었어요" }, contradiction: { en: "it was raining heavily that night — the garden path was flooded. The alibi doesn't add up!", vi: "Nhưng đêm đó mưa rất to — lối đi trong vườn bị ngập nước — lời khai có vẻ không đúng!", ja: "でもその夜は大雨で、庭の小道は水浸しでした——証言はおかしいようです!", ko: "하지만 그날 밤은 비가 심하게 와서 정원 길이 물에 잠겼어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "reading in the library", vi: "đang đọc sách trong thư viện", ja: "図書室で本を読んでいました", ko: "도서실에서 책을 읽고 있었어요" }, contradiction: { en: "two other guests confirm the library was completely empty all evening. The alibi doesn't add up!", vi: "Nhưng hai vị khách khác xác nhận thư viện không có ai suốt buổi tối — lời khai có vẻ không đúng!", ja: "でも他の2人の客が、その夜ずっと図書室は誰もいなかったと確認しました——証言はおかしいようです!", ko: "하지만 다른 손님 두 명이 그날 저녁 내내 도서실에 아무도 없었다고 확인했어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "resting in their bedroom", vi: "đang nghỉ ngơi trong phòng ngủ", ja: "自分の寝室で休んでいました", ko: "자기 침실에서 쉬고 있었어요" }, contradiction: { en: "the bedroom light was off all night, but a witness saw them walking the halls. The alibi doesn't add up!", vi: "Nhưng đèn phòng ngủ tắt suốt đêm, còn có người thấy họ đi lại trong hành lang — lời khai có vẻ không đúng!", ja: "でも寝室の明かりは一晩中消えていて、目撃者は廊下を歩いている姿を見ました——証言はおかしいようです!", ko: "하지만 침실 불은 밤새 꺼져 있었고, 목격자가 복도를 걸어다니는 걸 봤어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "in the kitchen making tea", vi: "đang pha trà trong bếp", ja: "台所でお茶を入れていました", ko: "부엌에서 차를 끓이고 있었어요" }, contradiction: { en: "the kitchen door was locked from the outside that whole hour. The alibi doesn't add up!", vi: "Nhưng cửa bếp bị khoá từ bên ngoài suốt cả giờ đó — lời khai có vẻ không đúng!", ja: "でも台所のドアはその1時間ずっと外から鍵がかかっていました——証言はおかしいようです!", ko: "하지만 부엌 문은 그 시간 내내 밖에서 잠겨 있었어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "on the phone in the study", vi: "đang gọi điện trong phòng làm việc", ja: "書斎で電話をしていました", ko: "서재에서 전화를 하고 있었어요" }, contradiction: { en: "the phone records show no calls were made during that time. The alibi doesn't add up!", vi: "Nhưng lịch sử cuộc gọi cho thấy không có cuộc gọi nào lúc đó — lời khai có vẻ không đúng!", ja: "でも通話記録では、その時間に電話はかかっていませんでした——証言はおかしいようです!", ko: "하지만 통화 기록을 보면 그 시간에는 전화한 기록이 없어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "cleaning the pool area", vi: "đang dọn khu vực hồ bơi", ja: "プールエリアを掃除していました", ko: "수영장 구역을 청소하고 있었어요" }, contradiction: { en: "the pool area was closed for maintenance all day. The alibi doesn't add up!", vi: "Nhưng khu vực hồ bơi đóng cửa để bảo trì cả ngày — lời khai có vẻ không đúng!", ja: "でもプールエリアはその日ずっとメンテナンスで閉鎖されていました——証言はおかしいようです!", ko: "하지만 수영장 구역은 그날 하루 종일 보수 공사로 닫혀 있었어요 — 진술이 이상한 것 같아요!" } },
+  { activity: { en: "practicing golf on the lawn", vi: "đang tập golf trên bãi cỏ", ja: "芝生でゴルフの練習をしていました", ko: "잔디밭에서 골프 연습을 하고 있었어요" }, contradiction: { en: "it was already too dark outside to see a golf ball at that hour. The alibi doesn't add up!", vi: "Nhưng lúc đó trời đã tối, không thể nhìn thấy bóng golf — lời khai có vẻ không đúng!", ja: "でもその時間はもう暗すぎてゴルフボールが見えませんでした——証言はおかしいようです!", ko: "하지만 그 시간에는 너무 어두워서 골프공이 안 보였어요 — 진술이 이상한 것 같아요!" } },
+];
+
+const STOLEN_ITEMS: Phrase[] = [
+  { en: "diamond necklace", vi: "vòng cổ kim cương", ja: "ダイヤモンドのネックレス", ko: "다이아몬드 목걸이" },
+  { en: "silver trophy", vi: "chiếc cúp bạc", ja: "銀のトロフィー", ko: "은 트로피" },
+  { en: "antique vase", vi: "chiếc bình cổ", ja: "アンティークの花瓶", ko: "골동품 꽃병" },
+  { en: "gold watch", vi: "chiếc đồng hồ vàng", ja: "金の腕時計", ko: "금시계" },
+  { en: "rare painting", vi: "bức tranh quý hiếm", ja: "希少な絵画", ko: "희귀한 그림" },
+  { en: "family heirloom ring", vi: "chiếc nhẫn gia truyền", ja: "先祖代々の指輪", ko: "가보 반지" },
+  { en: "vintage violin", vi: "cây vĩ cầm cổ", ja: "ヴィンテージのバイオリン", ko: "빈티지 바이올린" },
+  { en: "ancient manuscript", vi: "bản thảo cổ", ja: "古文書", ko: "고대 문서" },
+  { en: "jeweled crown", vi: "vương miện đính đá quý", ja: "宝石の王冠", ko: "보석 왕관" },
+  { en: "silver chalice", vi: "chiếc chén bạc", ja: "銀の聖杯", ko: "은 성배" },
+  { en: "pearl bracelet", vi: "chiếc vòng tay ngọc trai", ja: "真珠のブレスレット", ko: "진주 팔찌" },
+  { en: "marble sculpture", vi: "bức tượng đá cẩm thạch", ja: "大理石の彫刻", ko: "대리석 조각상" },
+  { en: "rare stamp collection", vi: "bộ sưu tập tem quý hiếm", ja: "希少な切手コレクション", ko: "희귀 우표 수집품" },
+  { en: "antique clock", vi: "chiếc đồng hồ cổ", ja: "アンティークの時計", ko: "골동품 시계" },
+  { en: "ruby brooch", vi: "chiếc trâm cài hồng ngọc", ja: "ルビーのブローチ", ko: "루비 브로치" },
+];
+const LOCATIONS: Phrase[] = [
+  { en: "mansion", vi: "biệt thự", ja: "邸宅", ko: "저택" },
+  { en: "art gallery", vi: "phòng trưng bày nghệ thuật", ja: "美術館", ko: "미술관" },
+  { en: "museum", vi: "viện bảo tàng", ja: "博物館", ko: "박물관" },
+  { en: "country club", vi: "câu lạc bộ đồng quê", ja: "カントリークラブ", ko: "컨트리클럽" },
+  { en: "office building", vi: "toà nhà văn phòng", ja: "オフィスビル", ko: "사무실 건물" },
+  { en: "opera house", vi: "nhà hát opera", ja: "オペラハウス", ko: "오페라 하우스" },
+  { en: "grand hotel", vi: "khách sạn lớn", ja: "グランドホテル", ko: "그랜드 호텔" },
+  { en: "library", vi: "thư viện", ja: "図書館", ko: "도서관" },
+  { en: "university", vi: "trường đại học", ja: "大学", ko: "대학교" },
+  { en: "theater", vi: "nhà hát", ja: "劇場", ko: "극장" },
+  { en: "yacht", vi: "du thuyền", ja: "ヨット", ko: "요트" },
+  { en: "old castle", vi: "toà lâu đài cổ", ja: "古い城", ko: "오래된 성" },
+  { en: "botanical garden", vi: "vườn bách thảo", ja: "植物園", ko: "식물원" },
+  { en: "antique shop", vi: "cửa hàng đồ cổ", ja: "骨董品店", ko: "골동품 가게" },
+  { en: "concert hall", vi: "phòng hoà nhạc", ja: "コンサートホール", ko: "콘서트홀" },
+];
+const VICTIMS = ["Mrs. Parker", "Mr. Lawson", "Ms. Hartley", "Mr. Bennett", "Mrs. Coleman", "Dr. Sinclair", "Mr. Whitfield", "Mrs. Ashworth", "Lord Harrington", "Lady Pemberton", "Mr. Grayson", "Mrs. Fairfax", "Professor Wells", "Captain Reid", "Baroness Voss"];
+const CRIME_TIMES: Phrase[] = [
+  { en: "last night", vi: "đêm qua", ja: "昨夜", ko: "어젯밤" },
+  { en: "yesterday evening", vi: "chiều tối hôm qua", ja: "昨日の夕方", ko: "어제 저녁" },
+  { en: "this morning", vi: "sáng nay", ja: "今朝", ko: "오늘 아침" },
+  { en: "during the party", vi: "trong lúc bữa tiệc diễn ra", ja: "パーティーの最中", ko: "파티가 진행되는 동안" },
+  { en: "over the weekend", vi: "vào cuối tuần", ja: "週末の間に", ko: "주말 동안" },
+];
+const CLOCK_TIMES = ["at 7 PM", "at 8 PM", "at 9 PM", "at 10 PM", "at 11 PM"];
+const DETECTIVE_COLORS = ["#5C7BC9", "#7CC24A", "#F5822B", "#9B7EDE", "#57C6C6", "#EF6A5A", "#F79BB0", "#FFC93C"];
+
+/** 3 distinct pool indices, RANDOM (not index-derived). A first version used
+ * `(i * stride + k) % poolSize`-style linear-congruence picks keyed off the
+ * case index `i` — looked fine spot-checked individually, but every formula
+ * tied to a fixed-size pool (all word banks below are 15-20 entries) repeats
+ * with a period dividing that pool size, so case `i` and `i + poolSize`
+ * always landed on the IDENTICAL item/location/victim, and since the
+ * suspect pool (20) and item/location/victim pools (15) don't share the
+ * same period, case `i` and `i + lcm(15, 20) = i + 60` came out as a fully
+ * duplicated case (same everyone, same everything). Caught this by
+ * diffing 2 sampled cases 75 apart that turned out identical. Math.random()
+ * has no such structural periodicity — reproducibility across reseeds was
+ * never a requirement (seed is idempotent-skip-if-exists; this only needs
+ * to look varied within ONE generation run). */
+function pickThreeDistinct(poolSize: number): [number, number, number] {
+  const idx: number[] = [];
+  while (idx.length < 3) {
+    const candidate = Math.floor(Math.random() * poolSize);
+    if (!idx.includes(candidate)) idx.push(candidate);
+  }
+  return [idx[0]!, idx[1]!, idx[2]!];
+}
+function pickRandom<T>(pool: T[]): T {
+  return pool[Math.floor(Math.random() * pool.length)]!;
+}
+
+function buildDetectiveCase(i: number): DetectiveCaseSeed {
+  const [sA, sB, sC] = pickThreeDistinct(SUSPECT_POOL.length);
+  const A = SUSPECT_POOL[sA]!;
+  const B = SUSPECT_POOL[sB]!;
+  const C = SUSPECT_POOL[sC]!;
+  const item = pickRandom(STOLEN_ITEMS);
+  const location = pickRandom(LOCATIONS);
+  const victim = pickRandom(VICTIMS);
+  const crimeTime = pickRandom(CRIME_TIMES);
+  const clockA = pickRandom(CLOCK_TIMES);
+  const clockB = pickRandom(CLOCK_TIMES);
+  const { activity: actA, confirm } = pickRandom(CONFIRMED_ACTIVITIES);
+  const { activity: actB, contradiction } = pickRandom(LIE_ACTIVITIES);
+  const color = DETECTIVE_COLORS[i % DETECTIVE_COLORS.length]!;
+  // A random "wrong activity" for multiple-choice distractors, distinct from actA/actB.
+  let wrongAct1 = pickRandom(CONFIRMED_ACTIVITIES).activity;
+  while (wrongAct1.en === actA.en) wrongAct1 = pickRandom(CONFIRMED_ACTIVITIES).activity;
+  let wrongAct2 = pickRandom(LIE_ACTIVITIES).activity;
+  while (wrongAct2.en === actB.en) wrongAct2 = pickRandom(LIE_ACTIVITIES).activity;
+
+  const scenarioArticle = articleFor(item.en);
+  const scenario = `${scenarioArticle.charAt(0).toUpperCase()}${scenarioArticle.slice(1)} ${item.en} disappeared from ${victim}'s ${location.en} ${crimeTime.en}. Find the thief among the three suspects.`;
+  const scenarioVi = `Một ${item.vi} biến mất khỏi ${location.vi} của ${victim} ${crimeTime.vi}. Hãy tìm ra tên trộm trong số ba nghi phạm.`;
+  const scenarioJa = `${crimeTime.ja}、${victim}の${location.ja}から${item.ja}が消えました。3人の容疑者の中から犯人を見つけてください。`;
+  const scenarioKo = `${crimeTime.ko} ${victim}의 ${location.ko}에서 ${item.ko}가 사라졌습니다. 세 명의 용의자 중에서 범인을 찾아보세요.`;
+
+  const roundA: DetectiveInterrogateSeed = {
+    kind: "interrogate",
+    vi: `Hỏi cung ${A.name} — ${A.jobVi}`,
+    ja: `${A.name}（${A.jobJa}）を尋問する`,
+    ko: `${A.name}(${A.jobKo}) 심문하기`,
+    npcName: A.name,
+    npcEmoji: A.emoji,
+    testimony: `I was ${actA.en} ${clockA}. I didn't see anything strange.`,
+    testimonyVi: `Tôi ${actA.vi} lúc ${clockA.replace("at ", "")}. Tôi không thấy gì bất thường.`,
+    testimonyJa: `私は${clockA.replace("at ", "")}に${actA.ja}。何もおかしなことは見ませんでした。`,
+    testimonyKo: `저는 ${clockA.replace("at ", "")}에 ${actA.ko}. 이상한 건 못 봤어요.`,
+    question: `What was ${A.name} doing ${clockA}?`,
+    options: shuffled([titleCaseWord(actA.en), titleCaseWord(wrongAct1.en), titleCaseWord(wrongAct2.en)]),
+    answerIndex: 0, // fixed up below after shuffle
+    clueVi: confirm.vi,
+    clueJa: confirm.ja,
+    clueKo: confirm.ko,
+  };
+  roundA.answerIndex = roundA.options.indexOf(titleCaseWord(actA.en));
+
+  const roundB: DetectiveInterrogateSeed = {
+    kind: "interrogate",
+    vi: `Hỏi cung ${B.name} — ${B.jobVi}`,
+    ja: `${B.name}（${B.jobJa}）を尋問する`,
+    ko: `${B.name}(${B.jobKo}) 심문하기`,
+    npcName: B.name,
+    npcEmoji: B.emoji,
+    testimony: `I was ${actB.en} ${clockB}. I didn't do anything wrong.`,
+    testimonyVi: `Tôi ${actB.vi} lúc ${clockB.replace("at ", "")}. Tôi không làm gì sai cả.`,
+    testimonyJa: `私は${clockB.replace("at ", "")}に${actB.ja}。何も悪いことはしていません。`,
+    testimonyKo: `저는 ${clockB.replace("at ", "")}에 ${actB.ko}. 저는 아무 잘못도 안 했어요.`,
+    question: `Where did ${B.name} say they were?`,
+    options: shuffled([titleCaseWord(actB.en), titleCaseWord(wrongAct1.en), titleCaseWord(actA.en)]),
+    answerIndex: 0,
+    clueVi: contradiction.vi,
+    clueJa: contradiction.ja,
+    clueKo: contradiction.ko,
+  };
+  roundB.answerIndex = roundB.options.indexOf(titleCaseWord(actB.en));
+
+  const roundC: DetectiveInterrogateSeed = {
+    kind: "interrogate",
+    vi: `Hỏi cung ${C.name} — ${C.jobVi}`,
+    ja: `${C.name}（${C.jobJa}）を尋問する`,
+    ko: `${C.name}(${C.jobKo}) 심문하기`,
+    npcName: C.name,
+    npcEmoji: C.emoji,
+    testimony: `I saw ${B.name} near the ${item.en} ${clockB}.`,
+    testimonyVi: `Tôi thấy ${B.name} gần ${item.vi} vào khoảng ${clockB.replace("at ", "")}.`,
+    testimonyJa: `${clockB.replace("at ", "")}頃、${B.name}が${item.ja}の近くにいるのを見ました。`,
+    testimonyKo: `${clockB.replace("at ", "")}쯤 ${B.name}이(가) ${item.ko} 근처에 있는 걸 봤어요.`,
+    question: `Who did ${C.name} see near the ${item.en}?`,
+    options: shuffled([B.name, A.name, "Nobody"]),
+    answerIndex: 0,
+    clueVi: `${C.name} xác nhận nhìn thấy ${B.name} gần hiện trường — càng thêm nghi ngờ.`,
+    clueJa: `${C.name}が${B.name}を現場近くで見たと確認しました——疑いがさらに強まります。`,
+    clueKo: `${C.name}이(가) ${B.name}을(를) 현장 근처에서 봤다고 확인했어요 — 의심이 더 커집니다.`,
+  };
+  roundC.answerIndex = roundC.options.indexOf(B.name);
+
+  const roundAccuse: DetectiveAccuseSeed = {
+    kind: "accuse",
+    vi: `Ai là kẻ đã lấy trộm ${item.vi}?`,
+    ja: `${item.ja}を盗んだのは誰でしょう?`,
+    ko: `${item.ko}을(를) 훔친 사람은 누구일까요?`,
+    suspects: [A.name, B.name, C.name],
+    correctSuspect: B.name,
+  };
+
+  return {
+    key: `generated-case-${i + 1}`,
+    // Vietnamese phrases here are multi-SYLLABLE (space-separated syllables
+    // form 1 word, e.g. "kim cương" = "diamond") — capitalizing just the
+    // first syllable of the whole phrase reads correctly as a title, unlike
+    // trying to isolate "the last word" (meaningless for Vietnamese).
+    // Folds in `victim` too (not just item+location) — with all 3 pools
+    // drawn independently at random, relying on just item+location left ~14%
+    // of 100 generated cases with an identical-looking title (spotted via
+    // direct API check); adding victim's name shrinks the collision space
+    // from 15×15=225 combos to 15×15×15=3375, cutting expected duplicates to
+    // roughly 1-2 instead of ~14.
+    name: `Vụ Mất ${item.vi.charAt(0).toUpperCase()}${item.vi.slice(1)} Của ${victim} Ở ${location.vi.charAt(0).toUpperCase()}${location.vi.slice(1)}`,
+    scenario,
+    scenarioVi,
+    scenarioJa,
+    scenarioKo,
+    color,
+    rounds: [roundA, roundB, roundC, roundAccuse],
+  };
+}
+
+const GENERATED_DETECTIVE_CASES: DetectiveCaseSeed[] = Array.from({ length: 100 }, (_, i) => buildDetectiveCase(i));
+DETECTIVE_CASES.push(...GENERATED_DETECTIVE_CASES);
+
+// ---------------------------------------------------------------------------
 // Echo Parrot topics — "Vẹt Con Tập Nói": mỗi round là 1 từ/câu tiếng Anh
 // ngắn để bé nghe mẫu (server TTS) rồi tự nói lại; app so khớp văn bản nhận
 // dạng được từ giọng nói với `en` để chấm (không chấm phát âm/âm vị chi
@@ -3019,7 +3632,12 @@ interface EchoParrotRoundSeed {
   vi: string;
   ja: string;
   ko: string;
-  phonetic: string;
+  // Optional (was required) — the pet-name rounds added below are full
+  // sentences ("This is Buddy."), not single words, so a clean 1-word IPA
+  // transcription doesn't really apply the way it does for "Cat"/"Hello!".
+  phonetic?: string;
+  /** Optional — matches Pet.key, shows that pet's real portrait as an illustration (2026-08-28). */
+  petKey?: string;
 }
 interface EchoParrotTopicSeed {
   key: string;
@@ -3054,6 +3672,108 @@ const ECHO_PARROT_TOPICS: EchoParrotTopicSeed[] = [
     ],
   },
 ];
+
+// ---------------------------------------------------------------------------
+// Echo Parrot — rounds about the app's OWN 40 pets (2026-08-28, user request:
+// "dựa vào list pet hiện có, thêm 100 hội thoại liên quan đến những con pet
+// đang có", then follow-up "thêm 200 300 từ nữa... bên trong dùng pet để làm
+// hình minh hoạ" — first pass shipped 100 rounds across 3 uneven templates;
+// this pass redesigns it as 9 EQUAL templates × all 40 pets = 360 rounds,
+// and every round now carries `petKey` (see EchoParrotRound.petKey doc
+// comment in schema.prisma) so EchoParrot.tsx shows that pet's real portrait
+// as illustration instead of pure text). Reuses `PETS` (the real catalog
+// seeded above — same 40 names/species/rarities a child actually unlocks)
+// instead of inventing new characters, so practicing here feels connected to
+// the pets the child already has. `species` in PETS is Vietnamese-only
+// (display label, e.g. "Chó Golden") — needed a matching EN/JA/KO
+// translation per pet for the 2nd template, kept simple/literal on purpose
+// (same "golden dog" not "golden retriever" simplicity as the Vietnamese
+// original).
+// ---------------------------------------------------------------------------
+const PET_SPECIES_EN_JA_KO: Record<string, { en: string; ja: string; ko: string }> = {
+  buddy: { en: "golden dog", ja: "金色の犬", ko: "금색 강아지" },
+  mimi: { en: "orange cat", ja: "オレンジ色の猫", ko: "주황색 고양이" },
+  poppy: { en: "white rabbit", ja: "白いうさぎ", ko: "하얀 토끼" },
+  snowy: { en: "white goose", ja: "白いガチョウ", ko: "하얀 거위" },
+  ducky: { en: "yellow duck", ja: "黄色いアヒル", ko: "노란 오리" },
+  coco: { en: "brown cat", ja: "茶色い猫", ko: "갈색 고양이" },
+  milky: { en: "white cat", ja: "白い猫", ko: "하얀 고양이" },
+  smokey: { en: "gray cat", ja: "灰色の猫", ko: "회색 고양이" },
+  pepper: { en: "calico cat", ja: "三毛猫", ko: "삼색 고양이" },
+  misty: { en: "smoke gray cat", ja: "スモークグレーの猫", ko: "연회색 고양이" },
+  biscuit: { en: "cream puppy", ja: "クリーム色の子犬", ko: "크림색 강아지" },
+  cocoa: { en: "brown dog", ja: "茶色い犬", ko: "갈색 강아지" },
+  waffle: { en: "spotted dog", ja: "斑点の犬", ko: "점박이 강아지" },
+  bamboo: { en: "panda", ja: "パンダ", ko: "판다" },
+  kiwi: { en: "blue bird", ja: "青い鳥", ko: "파란 새" },
+  rosie: { en: "pink bird", ja: "ピンクの鳥", ko: "분홍 새" },
+  frosty: { en: "penguin", ja: "ペンギン", ko: "펭귄" },
+  leo: { en: "lion", ja: "ライオン", ko: "사자" },
+  stripe: { en: "baby tiger", ja: "子トラ", ko: "아기 호랑이" },
+  ellie: { en: "baby elephant", ja: "子ゾウ", ko: "아기 코끼리" },
+  lila: { en: "purple cat", ja: "紫の猫", ko: "보라색 고양이" },
+  sia: { en: "Siamese cat", ja: "シャム猫", ko: "샴 고양이" },
+  nimbus: { en: "husky dog", ja: "ハスキー犬", ko: "허스키 강아지" },
+  sunny: { en: "golden lion", ja: "金色のライオン", ko: "금색 사자" },
+  gargo: { en: "little purple monster", ja: "小さな紫の怪獣", ko: "작은 보라색 괴물" },
+  sprout: { en: "baby sprout dragon", ja: "新芽の子ドラゴン", ko: "새싹 아기 드래곤" },
+  angel: { en: "winged cat", ja: "羽のある猫", ko: "날개 달린 고양이" },
+  glacio: { en: "ice bear", ja: "氷のクマ", ko: "얼음 곰" },
+  mystic: { en: "wizard cat", ja: "魔法使いの猫", ko: "마법사 고양이" },
+  berry: { en: "blue bear", ja: "青いクマ", ko: "파란 곰" },
+  nocty: { en: "bat dragon", ja: "コウモリドラゴン", ko: "박쥐 드래곤" },
+  papillon: { en: "butterfly fairy", ja: "蝶の妖精", ko: "나비 요정" },
+  frostwing: { en: "ice dragon", ja: "氷のドラゴン", ko: "얼음 드래곤" },
+  prism: { en: "rainbow dragon", ja: "虹のドラゴン", ko: "무지개 드래곤" },
+  stella: { en: "unicorn", ja: "ユニコーン", ko: "유니콘" },
+  blaze: { en: "phoenix", ja: "フェニックス", ko: "불사조" },
+  aqua: { en: "water spirit", ja: "水の精霊", ko: "물의 정령" },
+  umbra: { en: "shadow dragon", ja: "影のドラゴン", ko: "그림자 드래곤" },
+  void: { en: "void dragon", ja: "虚無のドラゴン", ko: "공허의 드래곤" },
+  ember: { en: "fire dragon", ja: "炎のドラゴン", ko: "불의 드래곤" },
+  maru: { en: "Shiba Inu puppy", ja: "柴犬の子犬", ko: "시바견 강아지" },
+  dori: { en: "Jindo puppy", ja: "珍島犬の子犬", ko: "진돗개 강아지" },
+  kitsune: { en: "fox spirit", ja: "狐の精霊", ko: "여우 정령" },
+  haetae: { en: "guardian lion", ja: "守護獣ヘテ", ko: "수호신 해태" },
+};
+/** 9 equal templates × 40 pets = 360 rounds. Every round carries `petKey` so
+ * the game shows that pet's real portrait as illustration. */
+function petEchoRounds(name: string, key: string, speciesVi: string): EchoParrotRoundSeed[] {
+  const sp = PET_SPECIES_EN_JA_KO[key];
+  if (!sp) throw new Error(`Missing PET_SPECIES_EN_JA_KO entry for pet key "${key}"`);
+  // Only the first syllable's case changes (mid-sentence, not a title anymore) — rest of the label (e.g. "Golden" in "Chó Golden") stays as-is.
+  const speciesViMidSentence = speciesVi.charAt(0).toLowerCase() + speciesVi.slice(1);
+  // articleFor() is a pure vowel-LETTER heuristic — wrong for "unicorn"
+  // (spelled with a leading vowel but pronounced with a consonant "y" sound,
+  // so "a unicorn" is correct, not "an unicorn"). Only 1 of the 40 species
+  // hits this, so special-cased directly rather than teaching the shared
+  // helper English phonetics.
+  const article = sp.en === "unicorn" ? "a" : articleFor(sp.en);
+  const templates: Omit<EchoParrotRoundSeed, "petKey">[] = [
+    { en: `This is ${name}.`, vi: `Đây là ${name}.`, ja: `これは${name}だよ。`, ko: `얘는 ${name}이야.` },
+    { en: `${name} is ${article} ${sp.en}.`, vi: `${name} là một ${speciesViMidSentence}.`, ja: `${name}は${sp.ja}だよ。`, ko: `${name}는 ${sp.ko}야.` },
+    { en: `I love ${name}!`, vi: `Mình yêu ${name}!`, ja: `${name}が大好き!`, ko: `나는 ${name}을 사랑해!` },
+    { en: `Look at ${name}!`, vi: `Nhìn ${name} kìa!`, ja: `${name}を見て!`, ko: `${name}을 봐!` },
+    { en: `${name} is so cute!`, vi: `${name} dễ thương quá!`, ja: `${name}はとてもかわいい!`, ko: `${name}은 정말 귀여워!` },
+    { en: `Good morning, ${name}!`, vi: `Chào buổi sáng, ${name}!`, ja: `おはよう、${name}!`, ko: `좋은 아침, ${name}!` },
+    { en: `${name} likes to play.`, vi: `${name} thích chơi đùa.`, ja: `${name}は遊ぶのが好きだよ。`, ko: `${name}은 노는 걸 좋아해.` },
+    { en: `Come here, ${name}!`, vi: `Lại đây nào, ${name}!`, ja: `こっちおいで、${name}!`, ko: `이리 와, ${name}!` },
+    { en: `${name} is my best friend.`, vi: `${name} là bạn thân nhất của mình.`, ja: `${name}はぼくの親友だよ。`, ko: `${name}은 내 가장 친한 친구야.` },
+  ];
+  return templates.map((tpl) => ({ ...tpl, petKey: key }));
+}
+
+function petTopicRounds(rarity: Rarity): EchoParrotRoundSeed[] {
+  return PETS.filter(([, , , r]) => r === rarity).flatMap(([name, key, speciesVi]) => petEchoRounds(name, key, speciesVi));
+}
+
+const PET_ECHO_TOPICS: EchoParrotTopicSeed[] = [
+  { key: "pets-common", name: "Thú Cưng Phổ Biến", color: "#7CC24A", rounds: petTopicRounds("Common") },
+  { key: "pets-rare", name: "Thú Cưng Hiếm", color: "#5C7BC9", rounds: petTopicRounds("Rare") },
+  { key: "pets-epic", name: "Thú Cưng Sử Thi", color: "#9B7EDE", rounds: petTopicRounds("Epic") },
+  { key: "pets-legendary", name: "Thú Cưng Huyền Thoại", color: "#F5822B", rounds: petTopicRounds("Legendary") },
+];
+ECHO_PARROT_TOPICS.push(...PET_ECHO_TOPICS);
 
 // ---------------------------------------------------------------------------
 // Chat with Buddy topics — "Trò Chuyện Cùng Bạn Thú": mỗi topic là 1 tình
@@ -3295,6 +4015,255 @@ const CHAT_BUDDY_TOPICS: ChatBuddyTopicSeed[] = [
   },
 ];
 
+// ---------------------------------------------------------------------------
+// Chat with Buddy — 100 GENERATED topics, "từ dễ đến khó" (2026-08-28, user:
+// "cũng ít data, add thêm 100 chủ đề từ dễ đến khó"). Same generator strategy
+// as Lesson/Detective/Echo Parrot: 1 reusable conversation TEMPLATE (2 rounds
+// "do you like X" + "what's your favorite X", matching the shape of the 4
+// hand-written topics above) parametrized by 10 CATEGORIES (8 reused
+// straight from `VOCAB_TOPICS` — already vi/ja/ko translated, "school" and
+// "body" skipped because "favorite classmate"/"favorite body part" read
+// oddly for a kids' app; 2 new small banks — toys, sports — plus "family"
+// with its own non-ranking phrasing since "favorite family member" isn't a
+// fair question to ask a kid). Each category contributes 10 topics (1 per
+// word, 10 words picked per category) split 3 Dễ + 4 Trung bình + 3 Khó =
+// 10 × 10 = 100. Difficulty is real, not just a label — reuses the exact
+// same rule as the Lesson generator: Dễ = wrong options are the 24 generic
+// unrelated sentences already used in the 4 hand-written topics above; Khó =
+// wrong options are the SAME "My favorite X is ___" sentence with a
+// DIFFERENT word from the SAME category (genuine near-miss, must listen for
+// the specific word, not just recognize the sentence shape); Trung bình
+// mixes 1 of each.
+// ---------------------------------------------------------------------------
+interface WordVi {
+  en: string;
+  vi: string;
+  ja: string;
+  ko: string;
+}
+
+/** The 24 wrong-answer sentences already written (with translations) for the
+ * 4 hand-written topics above — reused verbatim as the "obviously unrelated"
+ * decoy pool instead of re-authoring/re-translating a new one. */
+const CHAT_GENERIC_DECOYS: WordVi[] = [
+  { en: "I have a red bicycle.", vi: "Mình có một chiếc xe đạp màu đỏ.", ja: "赤い自転車を持っているよ。", ko: "나는 빨간 자전거가 있어." },
+  { en: "The book is on the table.", vi: "Quyển sách ở trên bàn.", ja: "本は机の上にあるよ。", ko: "책은 탁자 위에 있어." },
+  { en: "I like to eat pizza.", vi: "Mình thích ăn pizza.", ja: "ピザを食べるのが好きだよ。", ko: "나는 피자를 좋아해." },
+  { en: "My shoes are blue.", vi: "Giày của mình màu xanh.", ja: "私の靴は青いよ。", ko: "내 신발은 파란색이야." },
+  { en: "It is raining outside.", vi: "Bên ngoài trời đang mưa.", ja: "外は雨が降っているよ。", ko: "밖에 비가 오고 있어." },
+  { en: "I have three brothers.", vi: "Mình có ba anh em trai.", ja: "私には兄弟が3人いるよ。", ko: "나는 남자 형제가 셋 있어." },
+  { en: "The car is very fast.", vi: "Chiếc xe hơi chạy rất nhanh.", ja: "車はとても速いよ。", ko: "그 차는 정말 빨라." },
+  { en: "I can swim in the pool.", vi: "Mình có thể bơi trong hồ bơi.", ja: "私はプールで泳げるよ。", ko: "나는 수영장에서 수영할 수 있어." },
+  { en: "My sister is tall.", vi: "Chị mình rất cao.", ja: "私の姉は背が高いよ。", ko: "내 언니는 키가 커." },
+  { en: "The clock is on the wall.", vi: "Đồng hồ ở trên tường.", ja: "時計は壁にかかっているよ。", ko: "시계는 벽에 걸려 있어." },
+  { en: "I have a new toy.", vi: "Mình có một món đồ chơi mới.", ja: "新しいおもちゃがあるよ。", ko: "나는 새 장난감이 있어." },
+  { en: "The sun is very bright.", vi: "Mặt trời rất sáng.", ja: "太陽はとても明るいよ。", ko: "해가 정말 밝아." },
+  { en: "I have two cats.", vi: "Mình có hai con mèo.", ja: "私は猫を2匹飼っているよ。", ko: "나는 고양이가 두 마리 있어." },
+  { en: "The weather is cold.", vi: "Thời tiết hôm nay lạnh.", ja: "天気は寒いよ。", ko: "날씨가 추워." },
+  { en: "I live in a big house.", vi: "Mình sống trong một ngôi nhà lớn.", ja: "私は大きな家に住んでいるよ。", ko: "나는 큰 집에 살아." },
+  { en: "My favorite color is blue.", vi: "Màu mình thích nhất là màu xanh dương.", ja: "私の好きな色は青だよ。", ko: "내가 제일 좋아하는 색은 파란색이야." },
+  { en: "I can ride a bike.", vi: "Mình biết đi xe đạp.", ja: "私は自転車に乗れるよ。", ko: "나는 자전거를 탈 수 있어." },
+  { en: "The movie was fun.", vi: "Bộ phim đó rất vui.", ja: "その映画は楽しかったよ。", ko: "그 영화는 재미있었어." },
+  { en: "I want a new book.", vi: "Mình muốn có một quyển sách mới.", ja: "新しい本が欲しいな。", ko: "나는 새 책을 갖고 싶어." },
+  { en: "The dog is very big.", vi: "Con chó đó rất to.", ja: "その犬はとても大きいよ。", ko: "그 개는 정말 커." },
+  { en: "My room is very clean.", vi: "Phòng của mình rất sạch sẽ.", ja: "私の部屋はとてもきれいだよ。", ko: "내 방은 아주 깨끗해." },
+  { en: "The bird can fly high.", vi: "Con chim đó bay rất cao.", ja: "その鳥は高く飛べるよ。", ko: "그 새는 높이 날 수 있어." },
+  { en: "I have five fingers.", vi: "Mình có năm ngón tay.", ja: "私には指が5本あるよ。", ko: "나는 손가락이 다섯 개 있어." },
+  { en: "The ice cream is cold.", vi: "Kem thì lạnh.", ja: "アイスクリームは冷たいよ。", ko: "아이스크림은 차가워." },
+];
+
+const CHAT_TOY_WORDS: [string, string, string, string][] = [
+  ["ball", "quả bóng", "ボール", "공"],
+  ["doll", "búp bê", "人形", "인형"],
+  ["teddy bear", "gấu bông", "テディベア", "곰인형"],
+  ["blocks", "khối xếp hình", "積み木", "블록"],
+  ["puzzle", "trò chơi ghép hình", "パズル", "퍼즐"],
+  ["kite", "con diều", "凧", "연"],
+  ["robot toy", "robot đồ chơi", "ロボットのおもちゃ", "로봇 장난감"],
+  ["toy car", "xe hơi đồ chơi", "おもちゃの車", "장난감 자동차"],
+  ["yo-yo", "con quay yo-yo", "ヨーヨー", "요요"],
+  ["balloon", "quả bóng bay", "風船", "풍선"],
+];
+const CHAT_SPORT_WORDS: [string, string, string, string][] = [
+  ["soccer", "bóng đá", "サッカー", "축구"],
+  ["basketball", "bóng rổ", "バスケットボール", "농구"],
+  ["swimming", "bơi lội", "水泳", "수영"],
+  ["tennis", "quần vợt", "テニス", "테니스"],
+  ["running", "chạy bộ", "ランニング", "달리기"],
+  ["cycling", "đạp xe", "サイクリング", "자전거 타기"],
+  ["badminton", "cầu lông", "バドミントン", "배드민턴"],
+  ["volleyball", "bóng chuyền", "バレーボール", "배구"],
+  ["table tennis", "bóng bàn", "卓球", "탁구"],
+  ["gymnastics", "thể dục dụng cụ", "体操", "체조"],
+];
+
+interface ChatCategory {
+  key: string;
+  words: [string, string, string, string][];
+  nameEn: string;
+  namePluralEn: string;
+  nameVi: string;
+  nameJa: string;
+  nameKo: string;
+  useArticle: boolean;
+  isFamily?: boolean;
+}
+const CHAT_CATEGORIES: ChatCategory[] = [
+  { key: "animals", words: VOCAB_TOPICS.animals!.slice(0, 10), nameEn: "animal", namePluralEn: "animals", nameVi: "động vật", nameJa: "動物", nameKo: "동물", useArticle: true },
+  { key: "colors", words: VOCAB_TOPICS.colors!.slice(0, 10), nameEn: "color", namePluralEn: "colors", nameVi: "màu sắc", nameJa: "色", nameKo: "색깔", useArticle: false },
+  { key: "numbers", words: VOCAB_TOPICS.numbers!.slice(0, 10), nameEn: "number", namePluralEn: "numbers", nameVi: "con số", nameJa: "数字", nameKo: "숫자", useArticle: false },
+  { key: "food", words: VOCAB_TOPICS.food!.slice(0, 10), nameEn: "food", namePluralEn: "food", nameVi: "món ăn", nameJa: "食べ物", nameKo: "음식", useArticle: true },
+  { key: "weather", words: VOCAB_TOPICS.weather!.slice(0, 10), nameEn: "weather", namePluralEn: "weather", nameVi: "thời tiết", nameJa: "天気", nameKo: "날씨", useArticle: false },
+  { key: "clothes", words: VOCAB_TOPICS.clothes!.slice(0, 10), nameEn: "thing to wear", namePluralEn: "clothes", nameVi: "trang phục", nameJa: "服", nameKo: "옷", useArticle: true },
+  { key: "transport", words: VOCAB_TOPICS.transport!.slice(0, 10), nameEn: "vehicle", namePluralEn: "vehicles", nameVi: "phương tiện", nameJa: "乗り物", nameKo: "탈것", useArticle: true },
+  { key: "toys", words: CHAT_TOY_WORDS, nameEn: "toy", namePluralEn: "toys", nameVi: "đồ chơi", nameJa: "おもちゃ", nameKo: "장난감", useArticle: true },
+  { key: "sports", words: CHAT_SPORT_WORDS, nameEn: "sport", namePluralEn: "sports", nameVi: "môn thể thao", nameJa: "スポーツ", nameKo: "운동", useArticle: false },
+  { key: "family", words: VOCAB_TOPICS.family!.slice(0, 10), nameEn: "family member", namePluralEn: "family members", nameVi: "thành viên gia đình", nameJa: "家族", nameKo: "가족", useArticle: false, isFamily: true },
+];
+
+type ChatTier = "easy" | "medium" | "hard";
+const CHAT_TIER_LABEL: Record<ChatTier, string> = { easy: "Dễ", medium: "Trung bình", hard: "Khó" };
+const CHAT_TIER_COLOR: Record<ChatTier, string> = { easy: "#7CC24A", medium: "#F5822B", hard: "#EF6A5A" };
+
+function chatSlug(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-+|-+$)/g, "");
+}
+
+function chatDecoys(n: number): WordVi[] {
+  const out: WordVi[] = [];
+  while (out.length < n) {
+    const d = CHAT_GENERIC_DECOYS[Math.floor(Math.random() * CHAT_GENERIC_DECOYS.length)]!;
+    if (!out.includes(d)) out.push(d);
+  }
+  return out;
+}
+
+/** Builds & shuffles a round's 3 options from 1 correct + N wrong WordVi-like entries, fixing up answerIndex to match. */
+function chatRoundFrom(
+  petLine: WordVi,
+  correct: WordVi,
+  wrong: WordVi[],
+  reply: WordVi,
+): ChatBuddyRoundSeed {
+  const optionSlots = shuffled([correct, ...wrong]);
+  return {
+    petLine: petLine.en,
+    petLineVi: petLine.vi,
+    petLineJa: petLine.ja,
+    petLineKo: petLine.ko,
+    options: optionSlots.map((o) => o.en),
+    optionsVi: optionSlots.map((o) => o.vi),
+    optionsJa: optionSlots.map((o) => o.ja),
+    optionsKo: optionSlots.map((o) => o.ko),
+    answerIndex: optionSlots.indexOf(correct),
+    replyLine: reply.en,
+    replyLineVi: reply.vi,
+    replyLineJa: reply.ja,
+    replyLineKo: reply.ko,
+  };
+}
+
+function buildChatTopic(cat: ChatCategory, word: [string, string, string, string], tier: ChatTier): ChatBuddyTopicSeed {
+  const [wordEn, wordVi, wordJa, wordKo] = word;
+  const article = cat.useArticle ? `${articleFor(wordEn)} ` : "";
+  // Definite reference ("the tiger"), for when the round refers BACK to the
+  // word just mentioned rather than introducing it — different from
+  // `article` above (indefinite "a/an", for first mention).
+  const theArticle = cat.useArticle ? "the " : "";
+
+  // ---- Round 1: generic opener — same wording per category, only the wrong-option SOURCE varies by tier. ----
+  const round1 = cat.isFamily
+    ? chatRoundFrom(
+        { en: "Do you have a family?", vi: "Bạn có gia đình không?", ja: "家族はいる?", ko: "가족 있어?" },
+        { en: "Yes, I have a family!", vi: "Có, mình có gia đình!", ja: "うん、家族がいるよ!", ko: "응, 나는 가족이 있어!" },
+        chatDecoys(2),
+        { en: "Family is wonderful!", vi: "Gia đình thật tuyệt vời!", ja: "家族って素敵だね!", ko: "가족은 정말 소중해!" },
+      )
+    : chatRoundFrom(
+        { en: `Do you like ${cat.namePluralEn}?`, vi: `Bạn có thích ${cat.nameVi} không?`, ja: `${cat.nameJa}は好き?`, ko: `${cat.nameKo} 좋아해?` },
+        { en: `Yes, I like ${cat.namePluralEn}!`, vi: `Có, mình thích ${cat.nameVi}!`, ja: `うん、${cat.nameJa}が好きだよ!`, ko: `응, ${cat.nameKo} 좋아해!` },
+        chatDecoys(2),
+        { en: `Great! I like ${cat.namePluralEn} too!`, vi: `Tuyệt! Mình cũng thích ${cat.nameVi}!`, ja: `やった!ぼくも${cat.nameJa}が好きだよ!`, ko: `좋아! 나도 ${cat.nameKo} 좋아해!` },
+      );
+
+  // ---- Round 2: the specific-word question — where difficulty actually lives. ----
+  let round2: ChatBuddyRoundSeed;
+  if (cat.isFamily) {
+    round2 = chatRoundFrom(
+      { en: "Who is in your family?", vi: "Ai ở trong gia đình bạn?", ja: "家族には誰がいる?", ko: "가족에는 누가 있어?" },
+      { en: `My ${wordEn} is in my family.`, vi: `${wordVi.charAt(0).toUpperCase()}${wordVi.slice(1)} là người trong gia đình mình.`, ja: `私の${wordJa}は家族だよ。`, ko: `내 ${wordKo}는 우리 가족이야.` },
+      chatDecoys(2),
+      { en: "That's wonderful! Family is special!", vi: "Tuyệt quá! Gia đình thật đặc biệt!", ja: "素晴らしいね!家族は特別だよ!", ko: "멋지다! 가족은 특별해!" },
+    );
+  } else {
+    // Same-category "near-miss" — the SAME sentence shape with a DIFFERENT
+    // word from this category, only for tiers above Dễ. Genuinely harder:
+    // a kid has to catch the specific word said, not just the sentence shape.
+    const others = cat.words.filter((w) => w[0] !== wordEn);
+    function nearMissWrongs(n: number): WordVi[] {
+      const picked: [string, string, string, string][] = [];
+      const pool = [...others];
+      while (picked.length < n && pool.length > 0) {
+        const i = Math.floor(Math.random() * pool.length);
+        picked.push(pool.splice(i, 1)[0]!);
+      }
+      return picked.map(([oEn, oVi, oJa, oKo]) => ({
+        en: `My favorite ${cat.nameEn} is ${cat.useArticle ? `${articleFor(oEn)} ` : ""}${oEn}.`,
+        vi: `${cat.nameVi.charAt(0).toUpperCase()}${cat.nameVi.slice(1)} mình thích nhất là ${oVi}.`,
+        ja: `好きな${cat.nameJa}は${oJa}だよ。`,
+        ko: `제일 좋아하는 ${cat.nameKo}는 ${oKo}야.`,
+      }));
+    }
+    const wrong2: WordVi[] = tier === "easy" ? chatDecoys(2) : tier === "medium" ? [...nearMissWrongs(1), ...chatDecoys(1)] : nearMissWrongs(2);
+    // "The tiger is wonderful!" for countable categories, "Red is wonderful!" for the rest — theArticle already carries its own trailing space or "".
+    const wordRefCapitalized = theArticle ? `${theArticle}${wordEn}` : `${wordEn.charAt(0).toUpperCase()}${wordEn.slice(1)}`;
+    round2 = chatRoundFrom(
+      { en: `What is your favorite ${cat.nameEn}?`, vi: `${cat.nameVi.charAt(0).toUpperCase()}${cat.nameVi.slice(1)} bạn thích nhất là gì?`, ja: `好きな${cat.nameJa}は何?`, ko: `제일 좋아하는 ${cat.nameKo}는 뭐야?` },
+      { en: `My favorite ${cat.nameEn} is ${article}${wordEn}.`, vi: `${cat.nameVi.charAt(0).toUpperCase()}${cat.nameVi.slice(1)} mình thích nhất là ${wordVi}.`, ja: `好きな${cat.nameJa}は${wordJa}だよ。`, ko: `제일 좋아하는 ${cat.nameKo}는 ${wordKo}야.` },
+      wrong2,
+      { en: `${wordRefCapitalized.charAt(0).toUpperCase()}${wordRefCapitalized.slice(1)} is wonderful! Great choice!`, vi: `${wordVi.charAt(0).toUpperCase()}${wordVi.slice(1)} tuyệt quá! Lựa chọn hay đấy!`, ja: `${wordJa}っていいね!いい選択だね!`, ko: `${wordKo} 멋지다! 훌륭한 선택이야!` },
+    );
+  }
+
+  // ---- Round 3: closer — same wording per category, tier only affects wrong-option source. ----
+  const round3 = cat.isFamily
+    ? chatRoundFrom(
+        { en: `What do you do with your ${wordEn}?`, vi: `Bạn làm gì cùng ${wordVi}?`, ja: `${wordJa}と何をするの?`, ko: `${wordKo}랑 뭐 해?` },
+        { en: "We play games together!", vi: "Cùng nhau chơi trò chơi!", ja: "一緒にゲームをするよ!", ko: "같이 게임을 해!" },
+        chatDecoys(2),
+        { en: "That sounds like so much fun!", vi: "Nghe vui quá đấy!", ja: "それは楽しそうだね!", ko: "정말 재미있겠다!" },
+      )
+    : chatRoundFrom(
+        { en: `Why do you like ${theArticle}${wordEn}?`, vi: `Vì sao bạn thích ${wordVi}?`, ja: `どうして${wordJa}が好きなの?`, ko: `왜 ${wordKo}를 좋아해?` },
+        { en: "Because it makes me happy!", vi: "Vì nó làm mình vui!", ja: "楽しい気分になるからだよ!", ko: "그게 나를 행복하게 해줘서!" },
+        chatDecoys(2),
+        { en: "That's so sweet! Thanks for sharing!", vi: "Dễ thương quá! Cảm ơn bạn đã chia sẻ!", ja: "優しいね!教えてくれてありがとう!", ko: "너무 착하다! 말해줘서 고마워!" },
+      );
+
+  const wordViTitle = wordVi.charAt(0).toUpperCase() + wordVi.slice(1);
+  const catNameViTitle = cat.nameVi.charAt(0).toUpperCase() + cat.nameVi.slice(1);
+  return {
+    key: `chat-gen-${cat.key}-${chatSlug(wordEn)}`,
+    name: cat.isFamily ? `Gia đình: ${wordViTitle} (${CHAT_TIER_LABEL[tier]})` : `${catNameViTitle} yêu thích: ${wordViTitle} (${CHAT_TIER_LABEL[tier]})`,
+    color: CHAT_TIER_COLOR[tier],
+    rounds: [round1, round2, round3],
+  };
+}
+
+// 3 Dễ + 4 Trung bình + 3 Khó words per category × 10 categories = 100
+// topics; grouped Dễ-all → Trung bình-all → Khó-all so `order` (assigned
+// below by array position, same convention as WORLD_LESSONS/DETECTIVE_CASES)
+// gives a genuine "từ dễ đến khó" sequence in the topic picker.
+const CHAT_TIER_BANDS: { tier: ChatTier; wordRange: [number, number] }[] = [
+  { tier: "easy", wordRange: [0, 3] },
+  { tier: "medium", wordRange: [3, 7] },
+  { tier: "hard", wordRange: [7, 10] },
+];
+const GENERATED_CHAT_TOPICS: ChatBuddyTopicSeed[] = CHAT_TIER_BANDS.flatMap(({ tier, wordRange }) =>
+  CHAT_CATEGORIES.flatMap((cat) => cat.words.slice(wordRange[0], wordRange[1]).map((word) => buildChatTopic(cat, word, tier))),
+);
+CHAT_BUDDY_TOPICS.push(...GENERATED_CHAT_TOPICS);
+
 async function main() {
   const passwordHash = await argon2.hash(ADMIN_PASSWORD);
   const admin = await prisma.parent.upsert({
@@ -3337,7 +4306,7 @@ async function main() {
   for (const wl of WORLD_LESSONS) {
     const world = await prisma.world.findUniqueOrThrow({ where: { key: wl.worldKey } });
     const existingWorldLesson = await prisma.lesson.findFirst({ where: { worldId: world.id, title: wl.title } });
-    const worldLesson = existingWorldLesson ?? (await prisma.lesson.create({ data: { worldId: world.id, title: wl.title, order: 0 } }));
+    const worldLesson = existingWorldLesson ?? (await prisma.lesson.create({ data: { worldId: world.id, title: wl.title, order: wl.order } }));
     const worldQuestionCount = await prisma.question.count({ where: { lessonId: worldLesson.id } });
     if (worldQuestionCount === 0) {
       await prisma.question.createMany({ data: wl.questions.map((q, order) => ({ ...q, lessonId: worldLesson.id, order })) });
@@ -3606,7 +4575,7 @@ async function main() {
     const existingRounds = await prisma.echoParrotRound.count({ where: { topicId: topic.id } });
     if (existingRounds === 0) {
       await prisma.echoParrotRound.createMany({
-        data: t.rounds.map((r, roundOrder) => ({ topicId: topic.id, en: r.en, vi: r.vi, ja: r.ja, ko: r.ko, phonetic: r.phonetic, order: roundOrder })),
+        data: t.rounds.map((r, roundOrder) => ({ topicId: topic.id, en: r.en, vi: r.vi, ja: r.ja, ko: r.ko, phonetic: r.phonetic, petKey: r.petKey, order: roundOrder })),
       });
       echoParrotRoundsAdded += t.rounds.length;
     }

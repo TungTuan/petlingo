@@ -393,7 +393,7 @@ export async function getEchoParrotTopicWithRounds(id: string, viewerId: string,
     key: topic.key,
     name: topic.name,
     color: topic.color,
-    rounds: rounds.map((r) => ({ en: r.en, vi: pickLang(r, viewerLang), phonetic: r.phonetic })),
+    rounds: rounds.map((r) => ({ en: r.en, vi: pickLang(r, viewerLang), phonetic: r.phonetic, petKey: r.petKey })),
   };
 }
 

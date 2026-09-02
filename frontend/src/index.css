@@ -284,6 +284,24 @@
   86%, 100% { translate: -24px 0; }
 }
 
+@keyframes ranch-pet-walk {
+  0%, 100% { transform: translateX(calc(var(--ranch-distance) * -1)) scaleX(1); }
+  46% { transform: translateX(var(--ranch-distance)) scaleX(1); }
+  50% { transform: translateX(var(--ranch-distance)) scaleX(-1); }
+  96% { transform: translateX(calc(var(--ranch-distance) * -1)) scaleX(-1); }
+}
+@keyframes ranch-pet-fly {
+  0%, 100% { transform: translate(calc(var(--ranch-distance) * -.55), 4px) scaleX(1); }
+  44% { transform: translate(calc(var(--ranch-distance) * .55), -11px) scaleX(1); }
+  50% { transform: translate(calc(var(--ranch-distance) * .55), -9px) scaleX(-1); }
+  94% { transform: translate(calc(var(--ranch-distance) * -.55), -2px) scaleX(-1); }
+}
+@keyframes ranch-shadow-breathe { 0%,100% { scale: 1; opacity: .72; } 50% { scale: .74; opacity: .38; } }
+.ranch-pet { animation-delay: var(--ranch-delay); animation-duration: var(--ranch-duration); animation-iteration-count: infinite; animation-timing-function: ease-in-out; will-change: transform; }
+.ranch-pet-walking { animation-name: ranch-pet-walk; transform-origin: 50% 86%; }
+.ranch-pet-flying { animation-name: ranch-pet-fly; }
+.ranch-pet-flying .ranch-pet-shadow { animation: ranch-shadow-breathe 2.6s ease-in-out infinite; }
+
 @keyframes pet-max-aura {
   0%, 100% { filter: drop-shadow(0 0 8px var(--pet-aura)) drop-shadow(0 0 18px color-mix(in srgb, var(--pet-aura) 65%, transparent)); }
   50% { filter: brightness(1.12) drop-shadow(0 0 16px var(--pet-aura)) drop-shadow(0 0 34px var(--pet-aura)); }
@@ -521,7 +539,7 @@
 @keyframes train-chug { 0%,100% { translate: 0 0; } 50% { translate: 0 -3px; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-pet-idle, .pet-max-aura, .pet-roam, .pet-fly-drift, [class*="pet-cute-"], .pet-ground-shadow, .pet-max-preview::before, .room-furniture, .game-zone-ready, .shop-item-picked, .word-train-engine { animation: none; translate: 0; }
+  .animate-pet-idle, .pet-max-aura, .pet-roam, .pet-fly-drift, [class*="pet-cute-"], .pet-ground-shadow, .pet-max-preview::before, .room-furniture, .game-zone-ready, .shop-item-picked, .word-train-engine, .ranch-pet, .ranch-pet-shadow { animation: none; translate: 0; }
 
   /* Bathing is a short, user-triggered status effect. Keep its motion visible
      even when ambient/continuous game animations are reduced; otherwise the

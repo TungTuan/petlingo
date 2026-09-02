@@ -8,11 +8,12 @@ import LessonsPage from "./pages/LessonsPage";
 import MiniGamePage from "./pages/MiniGamePage";
 import PetsPage from "./pages/PetsPage";
 import QuestsPage from "./pages/QuestsPage";
+import ShopPackagesPage from "./pages/ShopPackagesPage";
 import StoriesPage from "./pages/StoriesPage";
 import UsersPage from "./pages/UsersPage";
 import WordCatchPage from "./pages/WordCatchPage";
 
-type Tab = "users" | "lessons" | "pets" | "items" | "quests" | "battlepass" | "stories" | "minigame" | "wordcatch";
+type Tab = "users" | "lessons" | "pets" | "items" | "quests" | "battlepass" | "packages" | "stories" | "minigame" | "wordcatch";
 const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "users", label: "Người dùng", icon: "👤" },
   { id: "lessons", label: "Bài học", icon: "📚" },
@@ -23,6 +24,7 @@ const TABS: { id: Tab; label: string; icon: string }[] = [
   { id: "items", label: "Vật phẩm", icon: "🎒" },
   { id: "quests", label: "Nhiệm vụ", icon: "🎯" },
   { id: "battlepass", label: "Battle Pass", icon: "🏆" },
+  { id: "packages", label: "Gói vật phẩm", icon: "💰" },
 ];
 
 type AuthState = "checking" | "loggedOut" | "loggedIn";
@@ -119,6 +121,7 @@ export default function AdminApp() {
         {tab === "items" && <ItemsPage />}
         {tab === "quests" && <QuestsPage />}
         {tab === "battlepass" && <BattlePassPage />}
+        {tab === "packages" && <ShopPackagesPage />}
       </main>
     </div>
   );

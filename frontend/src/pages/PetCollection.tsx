@@ -178,6 +178,13 @@ export default function PetCollection({ coins, gems, owned, petCopies, petEggs, 
         {shown.map((p) => {
           const isOwned = owned.includes(p.id);
           const isActive = p.id === activePetId;
+          // Pet Care / Pet Ranch already show the child's own nickname
+          // (`PetStats.customName`, set via the rename ticket) instead of
+          // the species name — this screen was still hardcoded to `p.name`
+          // everywhere, so a renamed pet looked renamed on 2 screens and NOT
+          // renamed here. Only matters for owned pets — an unowned pet has
+          // no PetStats row (and no custom name to show) yet.
+          const displayName = (isOwned && petStatsById[p.id]?.customName) || p.name;
           return (
             <div
               key={p.id}
@@ -185,7 +192,7 @@ export default function PetCollection({ coins, gems, owned, petCopies, petEggs, 
               style={{ borderColor: isActive ? "#F5822B" : isOwned ? "#CDE7B4" : "#EBD9B8" }}
             >
               <div className="flex items-center gap-1.5">
-                <span className="font-baloo text-[15px] font-extrabold">{p.name}</span>
+                <span className="font-baloo text-[15px] font-extrabold">{displayName}</span>
                 <span className="rounded-full px-2 py-0.5 font-baloo text-[9px] font-bold text-white" style={{ background: p.tint }}>
                   {p.rarity}
                 </span>
@@ -194,7 +201,7 @@ export default function PetCollection({ coins, gems, owned, petCopies, petEggs, 
                 <div className="absolute inset-x-[18%] bottom-[8%] h-[11%] rounded-[50%] bg-black/10 blur-sm" />
                 <PetPortrait
                   petId={p.id}
-                  name={p.name}
+                  name={displayName}
                   animated={isOwned}
                   level={isOwned ? (petStatsById[p.id]?.level ?? 1) : undefined}
                   className={`relative h-[88%] w-[88%] drop-shadow-[0_7px_6px_rgba(80,57,28,.16)] ${isOwned ? "" : "opacity-75 saturate-50"}`}

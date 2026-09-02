@@ -97,6 +97,7 @@ model Child {
   savedWords         SavedWord[]
   notifications      Notification[]
   battlePassProgress ChildBattlePassProgress[]
+  packageClaims      ChildPackageClaim[]
 
   @@index([parentId])
   @@map("children")
@@ -404,6 +405,7 @@ model ChildItem {
 model PetStats {
   childId    String
   petKey     String
+  customName String?
   hunger     Int      @default(70)
   happiness  Int      @default(70)
   health     Int      @default(70)
@@ -869,7 +871,12 @@ model EchoParrotTopic {
 /// `phonetic` là gợi ý IPA tuỳ chọn (vd "/ˈæp.əl/") hiện kèm cho bé/phụ
 /// huynh tham khảo, không dùng để chấm điểm — chấm điểm chỉ so khớp `en`
 /// với văn bản nhận dạng được từ giọng nói (xem EchoParrot.tsx). ja/ko tuỳ
-/// chọn, rỗng thì pickLang() rơi về vi (xem catalog.service.ts).
+/// chọn, rỗng thì pickLang() rơi về vi (xem catalog.service.ts). `petKey`
+/// tuỳ chọn (2026-08-28, theo yêu cầu "dùng pet để làm hình minh hoạ") —
+/// khớp với `Pet.key` (không phải FK cứng, giống `Vocab.worldId`/nhiều field
+/// "key tham chiếu lỏng" khác trong app), rỗng thì không hiện ảnh minh hoạ
+/// nào — chỉ những round nói VỀ 1 pet cụ thể (vd "This is Buddy.") mới cần
+/// gắn, các round từ vựng chung ("Cat", "Hello!"...) để trống.
 model EchoParrotRound {
   id       String  @id @default(cuid())
   topicId  String
@@ -878,6 +885,7 @@ model EchoParrotRound {
   ja       String?
   ko       String?
   phonetic String?
+  petKey   String?
   order    Int     @default(0)
 
   topic EchoParrotTopic @relation(fields: [topicId], references: [id], onDelete: Cascade)
@@ -1080,4 +1088,71 @@ model BattlePassClaim {
 
   @@unique([progressId, tier, track])
   @@map("battle_pass_claims")
+}
+
+enum ShopPackageKind {
+  /// Bộ nhiều vật phẩm/coin/gem bán gộp giá rẻ hơn mua lẻ — mua bằng coin/gem
+  /// THẬT (trừ số dư thật), mua lại bao nhiêu lần cũng được, giống hệt luồng
+  /// mua 1 Item ở Shop nhưng grant nhiều thứ cùng lúc thay vì 1 thứ.
+  combo
+  /// "Nạp lần đầu" — giá hiển thị là tiền thật (`realPriceLabel`, vd
+  /// "49.000đ") nhưng bấm là nhận ngay, không trừ coin/gem, không qua cổng
+  /// thanh toán nào (app hiện KHÔNG tích hợp App Store/Google Play — cùng
+  /// kiểu "demo activation" đã dùng cho Premium/VIP mùa, xem
+  /// `activatePremium()`/`activateVipSeason()`). Chỉ nhận được ĐÚNG 1 LẦN
+  /// cho mỗi trẻ — chặn bằng DB constraint qua `ChildPackageClaim`, không
+  /// phải check ở app layer (cùng nguyên tắc chống double-claim đã dùng cho
+  /// `BattlePassClaim`).
+  firstPurchase
+}
+
+/// "Gói vật phẩm" trong Shop — 2 loại dùng chung 1 model, phân biệt bằng
+/// `kind` (xem `ShopPackageKind`). `contents` là mảng phần thưởng gộp trong
+/// gói: `{kind, amount, itemKey}[]` — TÁI DÙNG đúng bộ "kind" mà
+/// `grantReward()` (rewards.service.ts) đã hỗ trợ cho Battle Pass (coins,
+/// gems, commonShards, rareShards, epicShards, petEggCommon/Rare/Epic/
+/// Legendary, item) chứ không phát minh vocabulary mới. Quản lý ở trang
+/// Admin, KHÔNG có self-serve (giống Battle Pass — đây là nội dung mang tính
+/// vận hành/kinh doanh, không phải nội dung học tập phụ huynh tự soạn).
+model ShopPackage {
+  id             String          @id @default(cuid())
+  key            String          @unique
+  name           String
+  description    String
+  kind           ShopPackageKind
+  color          String
+  imagePath      String          @default("")
+  /// Chỉ áp dụng khi kind="combo" — giá coin/gem thật.
+  price          Int             @default(0)
+  currency       Currency        @default(coin)
+  /// Chỉ áp dụng khi kind="firstPurchase" — nhãn giá tiền thật hiển thị
+  /// thuần tuý (vd "49.000đ"), KHÔNG dùng để trừ gì cả.
+  realPriceLabel String          @default("")
+  contents       Json            @default("[]")
+  order          Int             @default(0)
+  isActive       Boolean         @default(true)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  claims ChildPackageClaim[]
+
+  @@map("shop_packages")
+}
+
+/// Chỉ ghi 1 dòng khi mua gói kind="firstPurchase" (chặn mua lần 2 qua
+/// `@@unique`, giống hệt `BattlePassClaim`) — gói kind="combo" mua lặp lại
+/// thoải mái, KHÔNG ghi dòng nào ở đây (giống `purchaseItem()` không lưu
+/// lịch sử mua, mỗi lần mua là 1 giao dịch độc lập, không cần chặn).
+model ChildPackageClaim {
+  id        String   @id @default(cuid())
+  childId   String
+  packageId String
+  claimedAt DateTime @default(now())
+
+  child   Child       @relation(fields: [childId], references: [id], onDelete: Cascade)
+  package ShopPackage @relation(fields: [packageId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, packageId])
+  @@index([childId])
+  @@map("child_package_claims")
 }

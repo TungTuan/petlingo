@@ -5,6 +5,7 @@ import { bumpQuestProgress } from "./quest.service.js";
 
 export interface PetStatsState {
   petKey: string;
+  customName: string | null;
   hunger: number;
   happiness: number;
   health: number;
@@ -64,10 +65,11 @@ function levelForExperience(experience: number): number {
   return level;
 }
 
-function toState(row: { petKey: string; hunger: number; happiness: number; health: number; experience: number; level: number }): PetStatsState {
+function toState(row: { petKey: string; customName: string | null; hunger: number; happiness: number; health: number; experience: number; level: number }): PetStatsState {
   const nextThreshold = row.level >= MAX_PET_LEVEL ? null : LEVEL_THRESHOLDS[row.level]!;
   return {
     petKey: row.petKey,
+    customName: row.customName,
     hunger: row.hunger,
     happiness: row.happiness,
     health: row.health,

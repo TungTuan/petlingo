@@ -2,6 +2,13 @@ import { useEffect, useMemo, useState } from "react";
 import { getPetEvolutionStage, type PetMood } from "../lib/petEvolution";
 import { FLYING_PET_IDS, PETS, PET_CUTE_MOTION } from "./ui/tokens";
 
+const ANIMATED_MAX_PET_IDS = new Set([
+  "angel", "aqua", "bamboo", "berry", "biscuit", "blaze", "buddy", "coco", "cocoa", "ducky",
+  "ellie", "frostwing", "frosty", "gargo", "glacio", "kiwi", "leo", "lila", "milky", "mimi",
+  "misty", "mystic", "nimbus", "nocty", "papillon", "pepper", "poppy", "prism", "rosie", "sia",
+  "smokey", "snowy", "sprout", "stella", "stripe", "sunny", "umbra", "void", "waffle",
+]);
+
 interface PetPortraitProps {
   petId: string;
   name: string;
@@ -17,7 +24,7 @@ export default function PetPortrait({ petId, name, className = "", animated = fa
   const rarity = PETS.find((pet) => pet.id === petId)?.rarity ?? "Common";
   const isMaxLevel = level !== undefined && level >= 30;
   const isFlying = FLYING_PET_IDS.has(petId);
-  const hasSelfMotionMedia = mediaAnimated && isMaxLevel && petId !== "ember";
+  const hasSelfMotionMedia = mediaAnimated && isMaxLevel && ANIMATED_MAX_PET_IDS.has(petId);
   const shouldFly = animated && motion && isMaxLevel && isFlying && !hasSelfMotionMedia;
   const cuteMotion = animated && motion && isMaxLevel && !isFlying && petId !== "buddy" && !hasSelfMotionMedia ? PET_CUTE_MOTION[petId] ?? "tilt" : null;
   const stage = level === undefined ? null : getPetEvolutionStage(level);
@@ -27,10 +34,13 @@ export default function PetPortrait({ petId, name, className = "", animated = fa
     if (mediaAnimated && petId === "buddy" && level !== undefined && level >= 30) {
       return "/pets/animation/buddy-cute-max-v1.webp";
     }
-    if (mediaAnimated && petId === "ember" && level !== undefined && level >= 20) {
+    // Ember's wing flap is baked into the webp itself (loops on its own,
+    // same asset Flappy Dragon uses) — no level gate needed, it can just
+    // stand there and flap naturally at any level/stage past the egg.
+    if (mediaAnimated && petId === "ember") {
       return "/pets/animation/ember-wing-flap-v6.webp";
     }
-    if (mediaAnimated && level !== undefined && level >= 30) {
+    if (mediaAnimated && level !== undefined && level >= 30 && ANIMATED_MAX_PET_IDS.has(petId)) {
       return `/pets/animation/${petId}-max-v1.webp`;
     }
     // Chỉ 24/40 pet có sẵn ảnh buồn riêng (frontend/public/pets/sad/) — pet

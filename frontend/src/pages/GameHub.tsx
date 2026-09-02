@@ -24,6 +24,7 @@ const TILES: LearningTile[] = [
   { screen: "topics", label: "Kho chủ đề", desc: "Học từ vựng theo chủ đề và ôn đúng thời điểm", category: "TỪ VỰNG", icon: "📚", color: "#299E9E", soft: "#DCF7F4" },
   { screen: "miniGame", label: "Memory Match", desc: "Lật thẻ, ghi nhớ và ghép từ với hình ảnh", category: "GHI NHỚ", icon: "🧠", color: "#70AF3D", soft: "#EBF8DB" },
   { screen: "wordCatch", label: "Word Catch", desc: "Bắt đúng từ trước khi chúng rơi khỏi bầu trời", category: "PHẢN XẠ", icon: "🎯", color: "#478CCB", soft: "#E1F1FF" },
+  { screen: "flappyDragon", label: "Flappy Dragon", desc: "Vỗ cánh bay qua rừng, vượt mỗi cây nhận 1 coin", category: "PHẢN XẠ", icon: "🐉", color: "#E96838", soft: "#FFE8D7" },
   { screen: "englishShop", label: "English Shop", desc: "Đọc danh sách và tìm đúng món đồ trên kệ", category: "ĐỜI SỐNG", icon: "🛒", color: "#E69A16", soft: "#FFF1CF" },
   { screen: "englishHome", label: "English Home", desc: "Khám phá ngôi nhà và đặt đồ vật đúng vị trí", category: "KHÁM PHÁ", icon: "🏡", color: "#8A67CF", soft: "#F0E8FF" },
   { screen: "wordRpg", label: "Word RPG", desc: "Trả lời đúng để tung kỹ năng và đánh bại quái vật", category: "PHIÊU LƯU", icon: "🏰", color: "#6957C8", soft: "#ECE9FF" },

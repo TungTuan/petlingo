@@ -56,6 +56,34 @@ export interface UseItemResult {
   message: string;
 }
 
+export async function renameActivePet(childId: string, parentId: string, itemId: string, rawName: string): Promise<UseItemResult> {
+  await getOwnedChildOrThrow(childId, parentId);
+  const name = rawName.trim().replace(/\s+/g, " ");
+  if (name.length < 2 || name.length > 16) throw new AppError(400, "Tên pet cần từ 2 đến 16 ký tự.", "INVALID_PET_NAME");
+
+  const row = await prisma.childItem.findUnique({ where: { childId_itemId: { childId, itemId } }, include: { item: true } });
+  if (!row || row.quantity <= 0) throw new AppError(400, "Bạn không còn vé đổi tên.", "OUT_OF_STOCK");
+  if (!toEffects(row.item.effects).some((effect) => effect.stat === "renamePet" && effect.delta > 0)) {
+    throw new AppError(400, "Vật phẩm này không thể đổi tên pet.", "INVALID_RENAME_ITEM");
+  }
+
+  const progressBeforeUse = await getProgress(childId, parentId);
+  const activePetId = progressBeforeUse.activePetId ?? progressBeforeUse.unlockedPets[0];
+  if (!activePetId) throw new AppError(400, "Bạn chưa có pet để đổi tên.", "PET_NOT_FOUND");
+
+  await prisma.$transaction([
+    prisma.childItem.update({ where: { childId_itemId: { childId, itemId } }, data: { quantity: { decrement: 1 } } }),
+    prisma.petStats.upsert({ where: { childId_petKey: { childId, petKey: activePetId } }, update: { customName: name }, create: { childId, petKey: activePetId, customName: name } }),
+  ]);
+
+  return {
+    quantity: row.quantity - 1,
+    progress: await getProgress(childId, parentId),
+    petStats: await getPetStats(childId, parentId, activePetId),
+    message: `Pet đã có tên mới: ${name}!`,
+  };
+}
+
 /**
  * Consumes 1 unit of an item and applies its effects: hunger/happiness/
  * health deltas land on the child's currently active pet's PetStats; a
@@ -125,7 +153,7 @@ export async function useItem(childId: string, parentId: string, itemId: string)
 export async function listFoodShop(childId: string, parentId: string): Promise<InventoryEntry[]> {
   await getOwnedChildOrThrow(childId, parentId);
   const items = await prisma.item.findMany({
-    where: { isActive: true, OR: [{ category: "food" }, { key: "dong-ho-tai-sinh" }] },
+    where: { isActive: true, OR: [{ category: "food" }, { key: { in: ["dong-ho-tai-sinh", "ve-doi-ten-pet"] } }] },
     orderBy: [{ order: "asc" }],
   });
   const owned = await prisma.childItem.findMany({ where: { childId } });

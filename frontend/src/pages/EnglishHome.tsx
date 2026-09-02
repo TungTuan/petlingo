@@ -6,6 +6,7 @@ import { useT } from "../lib/i18n";
 
 interface EnglishHomeProps {
   onExit: () => void;
+  onComplete?: () => void;
 }
 
 const HOME_TOPIC_ICON: Record<string, string> = {
@@ -30,7 +31,7 @@ const HOME_SCENE_FOCUS: Record<string, string> = {
  * spots). Backed by real HomeTopic/HomeRound catalog data (see
  * /catalog/home-topics): shows a room picker first, then plays whichever
  * room was tapped. */
-export default function EnglishHome({ onExit }: EnglishHomeProps) {
+export default function EnglishHome({ onExit, onComplete }: EnglishHomeProps) {
   const t = useT();
   const [list, setList] = useState<HomeTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<HomeTopicDetail | null>(null);
@@ -53,7 +54,7 @@ export default function EnglishHome({ onExit }: EnglishHomeProps) {
     }
   }
 
-  if (topic) return <EnglishHomePlay topic={topic} onExit={() => setTopic(null)} />;
+  if (topic) return <EnglishHomePlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#CFEAF6_0%,#EEF8FF_45%,#FFF4DE_100%)]">
@@ -230,7 +231,7 @@ function toDeviceFramePoint(clientX: number, clientY: number): { x: number; y: n
 }
 
 /** The actual placement game, once a room has been picked. */
-function EnglishHomePlay({ topic, onExit }: { topic: HomeTopicDetail; onExit: () => void }) {
+function EnglishHomePlay({ topic, onExit, onComplete }: { topic: HomeTopicDetail; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
   const rounds = topic.rounds;
   const [roundIdx, setRoundIdx] = useState(0);
@@ -294,6 +295,7 @@ function EnglishHomePlay({ topic, onExit }: { topic: HomeTopicDetail; onExit: ()
   function nextRound() {
     if (roundIdx + 1 >= rounds.length) {
       setFinished(true);
+      onComplete?.();
       return;
     }
     setRoundIdx((i) => i + 1);
