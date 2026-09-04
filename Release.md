@@ -55,10 +55,9 @@ người dùng thật trả tiền/công khai trên store.**
 - **Đã xử lý vật phẩm test "Đói ngay" (`test-lam-doi`) ngày 2026-09-04:**
   item không còn trong seed/UI; data migration và deny-list trong seed buộc
   mọi database cũ đặt `isActive=false`, giữ quan hệ lịch sử thay vì xoá cứng.
-- **16/40 pet vẫn thiếu ảnh "sad"** (angel, aqua, berry, blaze, ember,
-  frostwing, gargo, glacio, mystic, nocty, papillon, prism, sprout, stella,
-  umbra, void) — pet đói của 16 loài này lặng lẽ rơi về ảnh vui bình thường,
-  không lỗi nhưng thiếu nhất quán cảm xúc nếu người dùng để ý.
+- **Đã đủ ảnh buồn cho 44/44 pet (2026-09-04):** bổ sung 17 asset còn thiếu,
+  gồm cả Dori mới; toàn bộ ảnh trong `public/pets/sad/` đều là WebP có alpha
+  thật, đã kiểm tra trên cả nền sáng và tối, không còn fallback sang ảnh vui.
 - **Test coverage tự động rất mỏng**: chỉ 1 file (`backend/tests/
   progress.service.test.ts`). Toàn bộ phần verify trong lịch sử `TASKS.md`
   là test tay (curl/Playwright) từng tính năng lúc code — không có safety

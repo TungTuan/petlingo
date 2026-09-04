@@ -47,9 +47,8 @@ export default function PetPortrait({ petId, name, className = "", animated = fa
     if (mediaAnimated && level !== undefined && level >= 30 && ANIMATED_MAX_PET_IDS.has(petId)) {
       return `/pets/animation/${petId}-max-v1.webp`;
     }
-    // Chỉ 24/40 pet có sẵn ảnh buồn riêng (frontend/public/pets/sad/) — pet
-    // còn thiếu sẽ tự rơi về ảnh vui bình thường qua onError bên dưới (fallback
-    // vốn đã trỏ đúng `/pets/${petId}.webp`), không cần danh sách kiểm tra ở đây.
+    // Every catalog pet has a dedicated transparent sad sprite. Keep onError
+    // as a defensive fallback for malformed API data or a missing future asset.
     return `/pets/${petId}.webp`;
   }, [level, mediaAnimated, mood, petId, rarity, stage]);
   const fallback = `/pets/${petId}.webp`;

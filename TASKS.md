@@ -1126,6 +1126,16 @@ sự đổi ảnh theo `mood` — trừ đúng 1 trường hợp đặc biệt (
   `<img>` src đổi đúng thành `/pets/sad/waffle.png` và ảnh hiện hợp lý (chó
   ngồi buồn) cùng lúc speech bubble "Mình hơi đói rồi!" đã có sẵn.
 
+**Cập nhật release (2026-09-04) — hoàn tất 44/44 ảnh buồn:** catalog đã tăng
+từ 40 lên 44 pet nên danh sách thiếu thực tế là 17, không phải 16 (bổ sung
+Dori). Đã tạo ảnh riêng cho angel, aqua, berry, blaze, dori, ember, frostwing,
+gargo, glacio, mystic, nocty, papillon, prism, sprout, stella, umbra và void;
+chuẩn hoá sang WebP quality cao. Metadata xác nhận cả 44 file có alpha thật;
+contact sheet nền sáng/tối xác nhận không có nền caro hay viền trắng.
+- [x] QA anatomy theo phản hồi: tạo lại `void` để còn đúng 2 chân sau + 2 tay
+  + 1 cặp cánh; tạo lại `nocty` để xoá cánh thứ ba chạy chéo trước thân. Cả
+  hai bản sửa tiếp tục dùng alpha thật và đã kiểm tra lại trên nền tối.
+
 **Cập nhật (cùng ngày) — 17/24 ảnh buồn bị lộ nền caro, đã xoá nền:** user báo
 "pet đói đang có nền caro". Kiểm tra: 17/24 file trong
 `frontend/public/pets/sad/` là PNG **không có kênh alpha** (mode RGB) — nền
@@ -1786,7 +1796,8 @@ dưới đây là đúng những gì THẬT SỰ còn tồn, đã cập nhật l
 ### Nhỏ / cosmetic
 - [ ] Chủ đề Memory Match không phải "Animals" dùng emoji thay vì ảnh minh hoạ (không có asset ảnh cho trái cây/màu sắc/số đếm...) — chấp nhận được, có thể thay ảnh thật sau
 - [ ] Icon loa cạnh câu hỏi trong Word Catch cố tình để trang trí (không phát âm) vì sẽ lộ đáp án tiếng Anh trước khi bé chọn
-- [ ] 16/40 pet chưa có ảnh buồn ở `frontend/public/pets/sad/` (angel, aqua, berry, blaze, ember, frostwing, gargo, glacio, mystic, nocty, papillon, prism, sprout, stella, umbra, void) — pet đói vẫn tự rơi về ảnh vui bình thường (không lỗi, chỉ thiếu cảm xúc riêng), xem mục "Pet đói → đổi sang ảnh buồn" ở trên
+- [x] Đủ ảnh buồn riêng cho 44/44 pet trong `frontend/public/pets/sad/`; toàn
+  bộ file có alpha thật và đã kiểm tra trên nền sáng/tối (2026-09-04)
 
 ### Đấu trường
 - [ ] Trạng thái trận đấu đang sống chỉ nằm trong bộ nhớ 1 process Node (`liveRoomManager.ts`) — nếu backend restart giữa trận thì trận đó mất, và scale ra nhiều instance sẽ cần chuyển sang cái gì đó dùng chung được (Redis pub/sub) thay vì `Map` trong RAM. Ước tính sơ bộ: 1000 phòng × 10 người = 10.000 WebSocket cùng lúc vẫn nhẹ cho 1 process (~300-400MB RAM), chỉ cần nâng `ulimit -n` và connection pool DB — xem cấu hình đề xuất đã trao đổi

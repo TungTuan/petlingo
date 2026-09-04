@@ -264,9 +264,8 @@
   will-change: transform, filter;
 }
 
-/* Every pet must visibly react to hunger, including species that do not yet
-   have a bespoke sad sprite. The class also stays on bespoke sad art, giving
-   the whole catalog one consistent tired/droopy body language. */
+/* The class complements each pet's bespoke sad sprite with one consistent
+   tired/droopy body language across the whole catalog. */
 @keyframes pet-hungry-droop {
   0%, 100% { transform: translateY(3px) rotate(-1.2deg) scaleY(.97); }
   50% { transform: translateY(8px) rotate(1.2deg) scaleY(.94); }
