@@ -8,7 +8,7 @@ import { isCloseSpeechMatch, useSpeechRecognition } from "../lib/useSpeechRecogn
 
 interface EchoParrotProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 /** Vẹt Con Tập Nói (Echo Parrot) — the one game in the app that practices
@@ -41,7 +41,7 @@ export default function EchoParrot({ onExit, onComplete }: EchoParrotProps) {
     }
   }
 
-  if (topic) return <EchoParrotPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
+  if (topic) return <EchoParrotPlay topic={topic} onExit={() => setTopic(null)} onComplete={() => onComplete?.(topic.id)} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#FFE8CF] to-[#FFF6E9]">

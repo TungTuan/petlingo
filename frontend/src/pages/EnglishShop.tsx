@@ -6,7 +6,7 @@ import { useT } from "../lib/i18n";
 
 interface EnglishShopProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 const SHOP_TOPIC_ICON: Record<string, string> = {
@@ -44,7 +44,7 @@ export default function EnglishShop({ onExit, onComplete }: EnglishShopProps) {
     }
   }
 
-  if (topic && difficulty) return <EnglishShopPlay topic={topic} difficulty={difficulty} onExit={() => setDifficulty(null)} onComplete={onComplete} />;
+  if (topic && difficulty) return <EnglishShopPlay topic={topic} difficulty={difficulty} onExit={() => setDifficulty(null)} onComplete={() => onComplete?.(topic.id)} />;
   if (topic) return <ShopDifficulty topic={topic} onPick={setDifficulty} onExit={() => setTopic(null)} />;
 
   return (

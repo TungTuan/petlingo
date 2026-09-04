@@ -5,7 +5,7 @@ import { useT } from "../lib/i18n";
 
 interface WordCatchProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 const BORDERS = ["#E69A2C", "#4F9DC8", "#72AA45", "#8B6BC7"];
@@ -38,7 +38,7 @@ export default function WordCatch({ onExit, onComplete }: WordCatchProps) {
     }
   }
 
-  if (topic && difficulty) return <WordCatchPlay topic={topic} difficulty={difficulty} onExit={() => setDifficulty(null)} onComplete={onComplete} />;
+  if (topic && difficulty) return <WordCatchPlay topic={topic} difficulty={difficulty} onExit={() => setDifficulty(null)} onComplete={() => onComplete?.(topic.id)} />;
   if (topic) return <WordCatchDifficulty topic={topic} onPick={setDifficulty} onExit={() => setTopic(null)} />;
 
   return (

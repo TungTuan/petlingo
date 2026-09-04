@@ -12,7 +12,7 @@ import { useT } from "../lib/i18n";
 
 interface EnglishDetectiveProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 /** English Detective — nhắm tới người lớn/trẻ lớn hơn (xem TASKS.md): đọc 1
@@ -43,7 +43,7 @@ export default function EnglishDetective({ onExit, onComplete }: EnglishDetectiv
     }
   }
 
-  if (detectiveCase) return <EnglishDetectivePlay detectiveCase={detectiveCase} onExit={() => setDetectiveCase(null)} onComplete={onComplete} />;
+  if (detectiveCase) return <EnglishDetectivePlay detectiveCase={detectiveCase} onExit={() => setDetectiveCase(null)} onComplete={() => onComplete?.(detectiveCase.id)} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#2A2E45] to-[#454B6B]">

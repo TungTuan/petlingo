@@ -6,7 +6,7 @@ import { useT } from "../lib/i18n";
 
 interface StoryProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 /** Story reader — matches the reference sheet's "Phần 6 · Đọc truyện" panel.
@@ -36,7 +36,7 @@ export default function Story({ onExit, onComplete }: StoryProps) {
     }
   }
 
-  if (story) return <StoryReader story={story} onExit={() => setStory(null)} onComplete={onComplete} />;
+  if (story) return <StoryReader story={story} onExit={() => setStory(null)} onComplete={() => onComplete?.(story.id)} />;
 
   return (
     <div className="flex h-full flex-col bg-cream-card">

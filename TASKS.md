@@ -1663,9 +1663,8 @@ code thật, không chỉ đoán):**
   try/catch + `console.warn`, đúng mẫu đã dùng cho các lời gọi
   fire-and-forget khác trong `App.tsx`.
 
-**Phát hiện, CHƯA sửa — cần user quyết định (ảnh hưởng thiết kế kinh tế
-trong game, không phải lỗi kỹ thuật đơn thuần):**
-- [ ] **`rewardActivity()`/`rewardFlappyDragon()` không giới hạn số lần/ngày
+**Phát hiện về kinh tế game:**
+- [x] **`rewardActivity()`/`rewardFlappyDragon()` không giới hạn số lần/ngày
   — 9 mini-game + Flappy Dragon giờ đều cộng COIN THẬT mỗi lần hoàn thành,
   nhưng mọi game này vẫn giữ đúng triết lý "không phạt, chơi lại thoải mái"
   (nút "Chơi lại"/"Học lại" luôn có, không khoá). Nghĩa là 1 bé có thể đứng ở
@@ -1678,8 +1677,15 @@ trong game, không phải lỗi kỹ thuật đơn thuần):**
   ngay (`BattlePassClaim`/`ChildPackageClaim` — 1 dòng DB unique constraint
   chặn nhận trùng): có thể áp dụng kiểu "mỗi topic/mỗi bé chỉ cộng coin thật
   1 lần/ngày, chơi lại thêm trong ngày đó chỉ để luyện tập" nếu user muốn
-  chặn. Chưa tự sửa vì đây là quyết định thiết kế kinh tế, không phải bug kỹ
-  thuật rõ ràng đúng/sai.
+  chặn. **Đã xử lý (2026-09-04):** thêm bảng `ActivityRewardClaim` với unique
+  constraint theo bé + activity + chủ đề + ngày Việt Nam. Mỗi chủ đề của 9
+  mini-game chỉ nhận coin/XP thật 1 lần/ngày; chơi lại vẫn hoạt động và UI
+  hiện rõ đây là lượt ôn tập. Flappy Dragon dùng hạn mức cộng dồn 200
+  coin/ngày (không chốt thưởng ở lượt đầu), server trả số coin thực nhận và
+  số còn lại trong ngày. Kiểm thử tích hợp bằng hồ sơ tạm: cùng topic nhận
+  `25→0`, topic khác vẫn nhận `25`; Flappy `150→50→0`, tổng cuối đúng 250
+  coin; hồ sơ test đã xoá. Migration `add_activity_reward_claims`, backend
+  build + 5 test và frontend build/lint đều qua.
 
 **Xác nhận sạch, không có lỗi (đọc kỹ nhưng không cần sửa):**
 - Quest system (`quest.service.ts`/`quest.routes.ts`): claim server-tự-check

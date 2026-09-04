@@ -6,7 +6,7 @@ import { speak } from "../lib/tts";
 
 interface ChatBuddyProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 /** Trò Chuyện Cùng Bạn Thú (Chat with Buddy) — luyện hội thoại tương tác,
@@ -40,7 +40,7 @@ export default function ChatBuddy({ onExit, onComplete }: ChatBuddyProps) {
     }
   }
 
-  if (topic) return <ChatBuddyPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
+  if (topic) return <ChatBuddyPlay topic={topic} onExit={() => setTopic(null)} onComplete={() => onComplete?.(topic.id)} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#FFF3D6] to-[#FFF9EC]">

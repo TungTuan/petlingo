@@ -103,9 +103,32 @@ model Child {
   friendRequestsReceived Friendship[] @relation("FriendAddressee")
   giftsSent Gift[] @relation("GiftSender")
   giftsReceived Gift[] @relation("GiftReceiver")
+  activityRewardClaims ActivityRewardClaim[]
 
   @@index([parentId])
   @@map("children")
+}
+
+/// Sổ thưởng theo ngày cho các mini-game có thể chơi lại. `contentKey` là
+/// topic/story id; Flappy Dragon dùng một key cố định và cộng dồn đến daily cap.
+/// Unique constraint là hàng rào chống double-claim thật khi client gửi đồng
+/// thời hoặc retry request.
+model ActivityRewardClaim {
+  id           String   @id @default(cuid())
+  childId      String
+  activity     String
+  contentKey   String
+  rewardDay    String
+  rewardCoins  Int      @default(0)
+  rewardXp     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@unique([childId, activity, contentKey, rewardDay])
+  @@index([childId, rewardDay])
+  @@map("activity_reward_claims")
 }
 
 enum FriendshipStatus {

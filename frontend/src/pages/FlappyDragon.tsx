@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BackIcon, CoinIcon } from "../components/ui";
 import { FLAPPY_REQUIRE_LEARNED_WORDS, FLAPPY_UNLOCK_WORDS, getLearnedWords } from "../lib/learningGate";
+import type { FlappyDragonRewardResult } from "../lib/api";
 
 interface FlappyDragonProps {
   childId: string;
   onExit: () => void;
-  onReward: (score: number) => Promise<unknown>;
+  onReward: (score: number) => Promise<FlappyDragonRewardResult>;
 }
 
 type Phase = "locked" | "ready" | "playing" | "over";
@@ -54,6 +55,7 @@ export default function FlappyDragon({ childId: _childId, onExit, onReward }: Fl
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(() => Number(localStorage.getItem("petlingo.flappyDragonBest") ?? 0));
   const [saving, setSaving] = useState(false);
+  const [rewardMessage, setRewardMessage] = useState("");
   const phaseRef = useRef(phase);
   const yRef = useRef(44);
   const velocityRef = useRef(0);
@@ -76,7 +78,15 @@ export default function FlappyDragon({ childId: _childId, onExit, onReward }: Fl
     });
     if (finalScore > 0) {
       setSaving(true);
-      onReward(finalScore).catch(() => {}).finally(() => setSaving(false));
+      setRewardMessage("");
+      onReward(finalScore)
+        .then(({ rewardCoins, dailyRemaining }) => {
+          setRewardMessage(rewardCoins > 0
+            ? `Đã nhận ${rewardCoins} coin · Còn ${dailyRemaining} coin thưởng hôm nay.`
+            : "Đã đạt giới hạn 200 coin hôm nay · Bạn vẫn có thể chơi để lập kỷ lục!");
+        })
+        .catch(() => setRewardMessage("Chưa lưu được phần thưởng, thử lại sau nhé."))
+        .finally(() => setSaving(false));
     }
   }, [onReward]);
 
@@ -91,6 +101,7 @@ export default function FlappyDragon({ childId: _childId, onExit, onReward }: Fl
       setDragonY(44);
       setTrees([]);
       setScore(0);
+      setRewardMessage("");
       phaseRef.current = "playing";
       setPhase("playing");
       return;
@@ -211,7 +222,7 @@ export default function FlappyDragon({ childId: _childId, onExit, onReward }: Fl
                 <>
                   <div className="text-5xl">{phase === "over" ? "🌟" : "🐉"}</div>
                   <h2 className="mt-2 font-baloo text-2xl font-extrabold text-[#4B3E33]">{phase === "over" ? `Bạn đã vượt ${score} cây!` : "Sẵn sàng bay chưa?"}</h2>
-                  <p className="mt-2 font-baloo font-semibold text-[#7A6A58]">{saving ? "Đang lưu coin..." : phase === "over" ? `Đã nhận ${score} coin. Chạm để chơi lại!` : "Chạm màn hình hoặc nhấn Space để vỗ cánh."}</p>
+                  <p className="mt-2 font-baloo font-semibold text-[#7A6A58]">{saving ? "Đang xác nhận phần thưởng..." : phase === "over" ? `${rewardMessage || "Đang tính phần thưởng..."} Chạm để chơi lại!` : "Chạm màn hình hoặc nhấn Space để vỗ cánh."}</p>
                   <span className="mt-5 inline-block rounded-2xl bg-[#F5822B] px-7 py-3 font-baloo font-extrabold text-white shadow-[0_5px_0_#C55F1A]">{phase === "over" ? "Bay lại" : "Bắt đầu"}</span>
                 </>
               )}

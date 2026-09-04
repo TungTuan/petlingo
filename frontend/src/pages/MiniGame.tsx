@@ -7,7 +7,7 @@ import { useT } from "../lib/i18n";
 interface MiniGameProps {
   onExit: () => void;
   /** Fired once per completed game (all pairs matched) — used to credit the "Chơi 1 mini-game" daily quest. */
-  onWin?: () => void;
+  onWin?: (contentKey: string) => void;
 }
 
 const PET_KEYS = new Set(PETS.map((p) => p.id));
@@ -69,7 +69,7 @@ export default function MiniGame({ onExit, onWin }: MiniGameProps) {
     }
   }
 
-  if (topic && difficulty) return <MiniGamePlay topic={topic} pairCount={difficulty} onExit={() => setDifficulty(null)} onWin={onWin} />;
+  if (topic && difficulty) return <MiniGamePlay topic={topic} pairCount={difficulty} onExit={() => setDifficulty(null)} onWin={() => onWin?.(topic.id)} />;
   if (topic) return <DifficultyPicker topic={topic} onPick={setDifficulty} onExit={() => setTopic(null)} />;
 
   return (

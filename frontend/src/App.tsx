@@ -127,6 +127,8 @@ function AppInner() {
   const [petStatsById, setPetStatsById] = useState<Record<string, PetStatsState>>({});
   const [dailyQuests, setDailyQuests] = useState<Quest[] | null>(null);
   const [evolution, setEvolution] = useState<{ petId: string; petName: string; fromLevel: number; toLevel: number } | null>(null);
+  const [activityRewardNotice, setActivityRewardNotice] = useState("");
+  const activityRewardTimer = useRef<number | null>(null);
   // Settings.tsx's "Khoá bằng mã phụ huynh" gate — re-locks every time Parent
   // Area is left, so a device-level PIN actually has to be re-entered each
   // visit rather than just once per app launch.
@@ -465,8 +467,8 @@ function AppInner() {
     return result;
   }
 
-  async function handleActivityComplete(activity: RewardableActivity) {
-    if (!child) return;
+  async function handleActivityComplete(activity: RewardableActivity, contentKey: string) {
+    if (!child) return undefined;
     // Fire-and-forget from every game's onComplete (none of them await this),
     // so a failed request here would otherwise be a silent unhandled
     // rejection — the child would see the "you won!" screen with no coins
@@ -474,13 +476,19 @@ function AppInner() {
     // pattern already used for the other fire-and-forget calls in this file
     // (lesson quest bump, notification report, etc.).
     try {
-      const result = await api.rewardActivity(child.id, activity);
+      const result = await api.rewardActivity(child.id, activity, contentKey);
       setProgress(result.progress);
       if (result.petStats) {
         setPetStats(result.petStats);
         setPetStatsById((stats) => ({ ...stats, [result.petStats!.petKey]: result.petStats! }));
       }
       setDailyQuests(null);
+      setActivityRewardNotice(result.rewarded
+        ? `Đã nhận +${result.rewardCoins} coin và +${result.rewardXp} XP!`
+        : "Chủ đề này đã nhận thưởng hôm nay · Chơi lại vẫn giúp bạn ôn tập!");
+      if (activityRewardTimer.current !== null) window.clearTimeout(activityRewardTimer.current);
+      activityRewardTimer.current = window.setTimeout(() => setActivityRewardNotice(""), 4200);
+      return result;
     } catch (err) {
       console.warn(`Failed to reward activity "${activity}":`, err);
     }
@@ -805,7 +813,7 @@ function AppInner() {
             // All playable activities now live under the Game tab. Back must
             // return to that hub instead of the legacy More destination.
             onExit={() => goBack("gameHub")}
-            onWin={() => handleActivityComplete("memoryMatch")}
+            onWin={(contentKey) => handleActivityComplete("memoryMatch", contentKey)}
           />
         );
 
@@ -899,31 +907,35 @@ function AppInner() {
         return <Notifications childId={child.id} onExit={() => goBack("more")} />;
 
       case "wordCatch":
-        return <WordCatch onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("wordCatch")} />;
+        return <WordCatch onExit={() => goBack("gameHub")} onComplete={(contentKey) => handleActivityComplete("wordCatch", contentKey)} />;
 
       case "flappyDragon":
-        return <FlappyDragon childId={child.id} onExit={() => goBack("gameHub")} onReward={(score) => api.rewardFlappyDragon(child.id, score).then(({ progress }) => setProgress(progress))} />;
+        return <FlappyDragon childId={child.id} onExit={() => goBack("gameHub")} onReward={async (score) => {
+          const result = await api.rewardFlappyDragon(child.id, score);
+          setProgress(result.progress);
+          return result;
+        }} />;
 
       case "englishShop":
-        return <EnglishShop onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("englishShop")} />;
+        return <EnglishShop onExit={() => goBack("gameHub")} onComplete={(contentKey) => handleActivityComplete("englishShop", contentKey)} />;
 
       case "englishHome":
-        return <EnglishHome onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("englishHome")} />;
+        return <EnglishHome onExit={() => goBack("gameHub")} onComplete={(contentKey) => handleActivityComplete("englishHome", contentKey)} />;
 
       case "wordRpg":
         return <WordRpg child={child} onExit={() => goBack("gameHub")} />;
 
       case "wordTrain":
-        return <WordTrain onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("wordTrain")} />;
+        return <WordTrain onExit={() => goBack("gameHub")} onComplete={(contentKey) => handleActivityComplete("wordTrain", contentKey)} />;
 
       case "englishDetective":
-        return <EnglishDetective onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("englishDetective")} />;
+        return <EnglishDetective onExit={() => goBack("gameHub")} onComplete={(contentKey) => handleActivityComplete("englishDetective", contentKey)} />;
 
       case "echoParrot":
-        return <EchoParrot onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("echoParrot")} />;
+        return <EchoParrot onExit={() => goBack("gameHub")} onComplete={(contentKey) => handleActivityComplete("echoParrot", contentKey)} />;
 
       case "chatBuddy":
-        return <ChatBuddy onExit={() => goBack("gameHub")} onComplete={() => handleActivityComplete("chatBuddy")} />;
+        return <ChatBuddy onExit={() => goBack("gameHub")} onComplete={(contentKey) => handleActivityComplete("chatBuddy", contentKey)} />;
 
       case "systemStates":
         return <SystemStates onExit={() => goBack("more")} />;
@@ -950,7 +962,7 @@ function AppInner() {
         );
 
       case "story":
-        return <Story onExit={() => goBack("more")} onComplete={() => handleActivityComplete("story")} />;
+        return <Story onExit={() => goBack("more")} onComplete={(contentKey) => handleActivityComplete("story", contentKey)} />;
 
       case "myContent":
         return <MyContent childId={child.id} onExit={() => goBack("more")} onOpenPremium={() => navigateTo("premium")} />;
@@ -1006,6 +1018,11 @@ function AppInner() {
       <div className="relative h-full w-full overflow-hidden">
         {page}
         {evolution && <PetEvolutionCelebration {...evolution} onClose={() => setEvolution(null)} />}
+        {activityRewardNotice && (
+          <div className="animate-pop pointer-events-none absolute left-1/2 top-5 z-50 -translate-x-1/2 rounded-full border-2 border-white/80 bg-[#4A3728] px-6 py-3 text-center font-baloo text-sm font-extrabold text-white shadow-[0_8px_24px_rgba(0,0,0,.24)]">
+            {activityRewardNotice}
+          </div>
+        )}
       </div>
     </ScreenFrame>
   );

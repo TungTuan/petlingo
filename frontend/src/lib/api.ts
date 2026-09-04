@@ -158,7 +158,8 @@ export interface FriendRanchSnapshot {
 export interface GiftMail { id: string; direction: "sent" | "received"; sender: { id: string; displayName: string }; receiver: { id: string; displayName: string }; item: { id: string; name: string; imagePath: string }; quantity: number; createdAt: string; readAt: string | null }
 export type CareAction = "feed" | "bathe" | "play" | "sleep" | "pat";
 export type RewardableActivity = "memoryMatch" | "wordCatch" | "englishShop" | "englishHome" | "wordTrain" | "englishDetective" | "echoParrot" | "chatBuddy" | "story";
-export interface ActivityRewardResult { progress: ProgressState; petStats: PetStatsState | null; rewardCoins: number; rewardXp: number }
+export interface ActivityRewardResult { progress: ProgressState; petStats: PetStatsState | null; rewardCoins: number; rewardXp: number; rewarded: boolean }
+export interface FlappyDragonRewardResult { progress: ProgressState; rewardCoins: number; dailyRemaining: number }
 export interface CareResult {
   petStats: PetStatsState;
   progress: ProgressState;
@@ -1102,8 +1103,8 @@ export const api = {
 
   checkIn: (childId: string) => request<CheckInResult>(`/children/${childId}/checkin`, { method: "POST" }),
 
-  rewardActivity: (childId: string, activity: RewardableActivity) =>
-    request<ActivityRewardResult>(`/children/${childId}/activity-reward`, { method: "POST", body: { activity } }),
+  rewardActivity: (childId: string, activity: RewardableActivity, contentKey: string) =>
+    request<ActivityRewardResult>(`/children/${childId}/activity-reward`, { method: "POST", body: { activity, contentKey } }),
 
   claimLegendary: (childId: string) => request<ClaimLegendaryResult>(`/children/${childId}/legendary-claim`, { method: "POST" }),
 
@@ -1160,7 +1161,7 @@ export const api = {
   rewardLessonExperience: (childId: string, petKey: string) =>
     request<{ petStats: PetStatsState }>(`/children/${childId}/pets/${petKey}/lesson-experience`, { method: "POST" }),
   rewardFlappyDragon: (childId: string, score: number) =>
-    request<{ progress: ProgressState; rewardCoins: number }>(`/children/${childId}/flappy-reward`, { method: "POST", body: { score } }),
+    request<FlappyDragonRewardResult>(`/children/${childId}/flappy-reward`, { method: "POST", body: { score } }),
   listFoodShop: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/food-shop`),
   listHomeBackgroundShop: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/home-background-shop`),
   purchaseItem: (childId: string, itemId: string) => request<{ progress: ProgressState; quantity: number }>(`/children/${childId}/items/${itemId}/purchase`, { method: "POST" }),

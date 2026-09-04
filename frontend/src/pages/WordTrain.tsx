@@ -7,7 +7,7 @@ import { getMockWordTrainTopic, isMockWordTrainId, listMockWordTrainTopics } fro
 
 interface WordTrainProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 function shuffle<T>(items: T[]): T[] {
@@ -96,7 +96,7 @@ export default function WordTrain({ onExit, onComplete }: WordTrainProps) {
     }
   }
 
-  if (topic) return <WordTrainPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
+  if (topic) return <WordTrainPlay topic={topic} onExit={() => setTopic(null)} onComplete={() => onComplete?.(topic.id)} />;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#BCEB9A]">

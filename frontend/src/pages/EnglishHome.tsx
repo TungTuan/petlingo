@@ -6,7 +6,7 @@ import { useT } from "../lib/i18n";
 
 interface EnglishHomeProps {
   onExit: () => void;
-  onComplete?: () => void;
+  onComplete?: (contentKey: string) => void;
 }
 
 const HOME_TOPIC_ICON: Record<string, string> = {
@@ -54,7 +54,7 @@ export default function EnglishHome({ onExit, onComplete }: EnglishHomeProps) {
     }
   }
 
-  if (topic) return <EnglishHomePlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
+  if (topic) return <EnglishHomePlay topic={topic} onExit={() => setTopic(null)} onComplete={() => onComplete?.(topic.id)} />;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#CFEAF6_0%,#EEF8FF_45%,#FFF4DE_100%)]">

@@ -9,6 +9,7 @@ import { rewardActivity } from "../services/activityReward.service.js";
 
 const activityRewardSchema = z.object({
   activity: z.enum(["memoryMatch", "wordCatch", "englishShop", "englishHome", "wordTrain", "englishDetective", "echoParrot", "chatBuddy", "story"]),
+  contentKey: z.string().trim().min(1).max(120),
 });
 const flappyRewardSchema = z.object({ score: z.number().int().min(0).max(200) });
 
@@ -32,8 +33,8 @@ export async function progressRoutes(app: FastifyInstance) {
   });
 
   app.post<{ Params: { id: string }; Body: { activity: string } }>("/:id/activity-reward", async (request, reply) => {
-    const { activity } = activityRewardSchema.parse(request.body);
-    return reply.send(await rewardActivity(request.params.id, request.parentId, activity));
+    const { activity, contentKey } = activityRewardSchema.parse(request.body);
+    return reply.send(await rewardActivity(request.params.id, request.parentId, activity, contentKey));
   });
 
   app.post<{ Params: { id: string }; Body: { score: number } }>("/:id/flappy-reward", async (request, reply) => {
