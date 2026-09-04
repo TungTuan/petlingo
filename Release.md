@@ -58,11 +58,11 @@ người dùng thật trả tiền/công khai trên store.**
 - **Đã đủ ảnh buồn cho 44/44 pet (2026-09-04):** bổ sung 17 asset còn thiếu,
   gồm cả Dori mới; toàn bộ ảnh trong `public/pets/sad/` đều là WebP có alpha
   thật, đã kiểm tra trên cả nền sáng và tối, không còn fallback sang ảnh vui.
-- **Test coverage tự động rất mỏng**: chỉ 1 file (`backend/tests/
-  progress.service.test.ts`). Toàn bộ phần verify trong lịch sử `TASKS.md`
-  là test tay (curl/Playwright) từng tính năng lúc code — không có safety
-  net tự động để bắt regression khi sửa code sau này. Không chặn release
-  đầu tiên, nhưng rủi ro tăng dần theo thời gian nếu không bổ sung.
+- **Đã bổ sung regression test cho kinh tế/pet (2026-09-04):** backend hiện
+  có 4 file/17 test (từ 2 file/8 test), khóa các luật pet no, max level, dùng
+  đồ XP, mua bằng coin/gem, level curve, clamp chỉ số và reset level. Coverage
+  vẫn chưa toàn diện cho mọi route/game, nhưng các luồng mất tiền/vật phẩm và
+  tiến hóa có safety net tự động thay vì chỉ dựa vào test tay.
 - **Premium vẫn quảng cáo 2 quyền lợi chưa có gì backing thật**: "Báo cáo
   phụ huynh chi tiết" (`ParentArea.tsx` 100% mock, chưa có hạ tầng log nào)
   và "Tải bài học offline" (chưa làm). App đã tự gỡ 1 dòng quảng cáo sai

@@ -1794,6 +1794,12 @@ dưới đây là đúng những gì THẬT SỰ còn tồn, đã cập nhật l
   thẳng world Forest, không qua bước chọn zone nữa nên mục sao/tiến độ theo zone không còn áp dụng
 
 ### Nhỏ / cosmetic
+- [x] **Regression test kinh tế/pet trước release (2026-09-04):** thêm
+  `inventory.service.test.ts` và `petStats.service.test.ts`, nâng suite backend
+  từ 8 lên 17 test. Đã khóa các case: không trừ item khi pet no/max level;
+  vẫn dùng được đồ XP lúc no nếu chưa max; thiếu gem không đổi balance; mua
+  bằng coin trừ đúng giá và tăng quantity atomically; XP lên level 2/cap level
+  30; care stat clamp 0..100; reset level giữ nguyên hunger/happiness/health.
 - [ ] Chủ đề Memory Match không phải "Animals" dùng emoji thay vì ảnh minh hoạ (không có asset ảnh cho trái cây/màu sắc/số đếm...) — chấp nhận được, có thể thay ảnh thật sau
 - [ ] Icon loa cạnh câu hỏi trong Word Catch cố tình để trang trí (không phát âm) vì sẽ lộ đáp án tiếng Anh trước khi bé chọn
 - [x] Đủ ảnh buồn riêng cho 44/44 pet trong `frontend/public/pets/sad/`; toàn
