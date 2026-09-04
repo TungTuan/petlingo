@@ -102,6 +102,17 @@ export const DICTIONARY: Record<string, string> = {
   "Tài khoản trẻ em do phụ huynh tạo và quản lý. Trẻ đăng nhập bằng mã PIN 4 số, không cần email.":
     "Child accounts are created and managed by parents. Kids log in with a 4-digit PIN, no email needed.",
   "Đăng nhập thành công — vào Home": "Logged in successfully — heading Home",
+  "Tài khoản phụ huynh quản lý các hồ sơ trẻ trên thiết bị. Trẻ không cần cung cấp email.": "A parent account manages child profiles on the device. Children do not need to provide an email.",
+  "Vui lòng đồng ý Điều khoản và Chính sách quyền riêng tư.": "Please accept the Terms and Privacy Policy.",
+  "Tôi là phụ huynh/người giám hộ và đồng ý với": "I am a parent/legal guardian and agree to the",
+  "Điều khoản": "Terms",
+  "và": "and",
+  "Chính sách quyền riêng tư": "Privacy Policy",
+  "Điều khoản sử dụng": "Terms of Service",
+  "Dành cho phụ huynh": "For parents and guardians",
+  "Trước khi tạo hoặc tiếp tục quản lý hồ sơ trẻ, vui lòng đọc các tài liệu về dữ liệu và quy tắc sử dụng PetLingo.": "Before creating or continuing to manage a child profile, please review how PetLingo handles data and the rules for using the service.",
+  "Tôi xác nhận mình là phụ huynh/người giám hộ có thẩm quyền và đồng ý với Điều khoản cùng Chính sách quyền riêng tư.": "I confirm that I am an authorized parent/legal guardian and accept the Terms and Privacy Policy.",
+  "Đồng ý và tiếp tục": "Agree and continue",
 
   // ---- CreateChild.tsx -------------------------------------------------
   "Tên hiển thị": "Display name",
@@ -117,6 +128,8 @@ export const DICTIONARY: Record<string, string> = {
   "Số điện thoại": "Phone number",
   "Tôi là phụ huynh, đồng ý điều khoản và cho phép trẻ dùng app (không quảng cáo, không mua trong app).":
     "I am the parent, I agree to the terms and allow my child to use the app (no ads, no in-app purchases).",
+  "Hồ sơ do phụ huynh quản lý": "Parent-managed profile",
+  "Điều khoản và Chính sách quyền riêng tư đã được xác nhận trên tài khoản phụ huynh.": "The Terms and Privacy Policy were accepted on the parent account.",
 
   // ---- Onboarding.tsx ----------------------------------------------------
   // (STEPS content itself has parallel VI/EN arrays — no dictionary needed)
@@ -1050,6 +1063,17 @@ export const DICTIONARY_JA: Record<string, string> = {
   "Tài khoản trẻ em do phụ huynh tạo và quản lý. Trẻ đăng nhập bằng mã PIN 4 số, không cần email.":
     "子どもアカウントは保護者が作成・管理します。子どもは4桁のPINでログインでき、メールは不要です。",
   "Đăng nhập thành công — vào Home": "ログイン成功——ホームへ",
+  "Tài khoản phụ huynh quản lý các hồ sơ trẻ trên thiết bị. Trẻ không cần cung cấp email.": "保護者アカウントが端末上の子どもプロフィールを管理します。子どものメールアドレスは不要です。",
+  "Vui lòng đồng ý Điều khoản và Chính sách quyền riêng tư.": "利用規約とプライバシーポリシーに同意してください。",
+  "Tôi là phụ huynh/người giám hộ và đồng ý với": "私は保護者として次の内容に同意します:",
+  "Điều khoản": "利用規約",
+  "và": "および",
+  "Chính sách quyền riêng tư": "プライバシーポリシー",
+  "Điều khoản sử dụng": "利用規約",
+  "Dành cho phụ huynh": "保護者の方へ",
+  "Trước khi tạo hoặc tiếp tục quản lý hồ sơ trẻ, vui lòng đọc các tài liệu về dữ liệu và quy tắc sử dụng PetLingo.": "子どものプロフィールを作成・管理する前に、PetLingoのデータ取扱いと利用ルールをご確認ください。",
+  "Tôi xác nhận mình là phụ huynh/người giám hộ có thẩm quyền và đồng ý với Điều khoản cùng Chính sách quyền riêng tư.": "私は権限のある保護者であり、利用規約とプライバシーポリシーに同意します。",
+  "Đồng ý và tiếp tục": "同意して続ける",
 
   // ---- CreateChild.tsx -------------------------------------------------
   "Tên hiển thị": "表示名",
@@ -1065,6 +1089,8 @@ export const DICTIONARY_JA: Record<string, string> = {
   "Số điện thoại": "電話番号",
   "Tôi là phụ huynh, đồng ý điều khoản và cho phép trẻ dùng app (không quảng cáo, không mua trong app).":
     "私は保護者であり、利用規約に同意し、子どもがアプリを使うことを許可します(広告なし、アプリ内課金なし)。",
+  "Hồ sơ do phụ huynh quản lý": "保護者が管理するプロフィール",
+  "Điều khoản và Chính sách quyền riêng tư đã được xác nhận trên tài khoản phụ huynh.": "利用規約とプライバシーポリシーは保護者アカウントで確認済みです。",
 
   // ---- Home.tsx ------------------------------------------------------------
   "Chạm để vuốt Buddy": "タップしてバディをなでる",
@@ -1986,6 +2012,17 @@ export const DICTIONARY_KO: Record<string, string> = {
   "Tài khoản trẻ em do phụ huynh tạo và quản lý. Trẻ đăng nhập bằng mã PIN 4 số, không cần email.":
     "어린이 계정은 부모가 만들고 관리합니다. 아이는 4자리 PIN으로 로그인하며 이메일이 필요 없습니다.",
   "Đăng nhập thành công — vào Home": "로그인 성공 — 홈으로 이동",
+  "Tài khoản phụ huynh quản lý các hồ sơ trẻ trên thiết bị. Trẻ không cần cung cấp email.": "부모 계정이 기기의 자녀 프로필을 관리합니다. 자녀는 이메일을 제공할 필요가 없습니다.",
+  "Vui lòng đồng ý Điều khoản và Chính sách quyền riêng tư.": "이용약관과 개인정보 처리방침에 동의해 주세요.",
+  "Tôi là phụ huynh/người giám hộ và đồng ý với": "저는 부모/법적 보호자이며 다음에 동의합니다:",
+  "Điều khoản": "이용약관",
+  "và": "및",
+  "Chính sách quyền riêng tư": "개인정보 처리방침",
+  "Điều khoản sử dụng": "이용약관",
+  "Dành cho phụ huynh": "부모 및 보호자용",
+  "Trước khi tạo hoặc tiếp tục quản lý hồ sơ trẻ, vui lòng đọc các tài liệu về dữ liệu và quy tắc sử dụng PetLingo.": "자녀 프로필을 만들거나 계속 관리하기 전에 PetLingo의 데이터 처리 방식과 이용 규칙을 확인해 주세요.",
+  "Tôi xác nhận mình là phụ huynh/người giám hộ có thẩm quyền và đồng ý với Điều khoản cùng Chính sách quyền riêng tư.": "저는 권한 있는 부모/법적 보호자이며 이용약관과 개인정보 처리방침에 동의합니다.",
+  "Đồng ý và tiếp tục": "동의하고 계속",
 
   // ---- CreateChild.tsx -------------------------------------------------
   "Tên hiển thị": "표시 이름",
@@ -2001,6 +2038,8 @@ export const DICTIONARY_KO: Record<string, string> = {
   "Số điện thoại": "전화번호",
   "Tôi là phụ huynh, đồng ý điều khoản và cho phép trẻ dùng app (không quảng cáo, không mua trong app).":
     "저는 보호자이며, 이용약관에 동의하고 자녀가 앱을 사용하도록 허락합니다(광고 없음, 인앱 결제 없음).",
+  "Hồ sơ do phụ huynh quản lý": "부모가 관리하는 프로필",
+  "Điều khoản và Chính sách quyền riêng tư đã được xác nhận trên tài khoản phụ huynh.": "이용약관과 개인정보 처리방침은 부모 계정에서 확인되었습니다.",
 
   // ---- Home.tsx ------------------------------------------------------------
   "Chạm để vuốt Buddy": "탭해서 버디를 쓰다듬기",

@@ -4,6 +4,7 @@ export const registerSchema = z.object({
   email: z.string().trim().toLowerCase().email("Email không đúng định dạng."),
   password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự."),
   phone: z.string().trim().min(8).max(20).optional(),
+  acceptedLegal: z.boolean().refine(Boolean, "Phụ huynh cần đồng ý Điều khoản và Chính sách quyền riêng tư."),
 });
 export type RegisterInput = z.infer<typeof registerSchema>;
 
@@ -24,6 +25,9 @@ export type RefreshInput = z.infer<typeof refreshSchema>;
  * (/auth/google, /auth/facebook, /auth/apple). */
 export const socialLoginSchema = z.object({
   token: z.string().min(1, "Thiếu token đăng nhập."),
+  // Only required when this provider token creates a brand-new account.
+  // Existing social accounts can continue signing in normally.
+  acceptedLegal: z.boolean().optional().default(false),
 });
 export type SocialLoginInput = z.infer<typeof socialLoginSchema>;
 

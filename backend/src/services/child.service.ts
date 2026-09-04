@@ -1,6 +1,7 @@
 import { prisma } from "../lib/prisma.js";
 import { AppError } from "../middleware/errorHandler.js";
 import type { CreateChildInput, UpdateChildInput } from "../schemas/child.schema.js";
+import { PRIVACY_VERSION, TERMS_VERSION } from "../config/legal.js";
 
 /**
  * Loads a child and verifies it belongs to `parentId`. Every mutation below
@@ -31,6 +32,10 @@ const STARTER_UNLOCKED_PETS = ["buddy", "mimi", "poppy"];
 const STARTER_UNLOCKED_WORLDS = ["forest", "town"];
 
 export async function createChild(parentId: string, input: CreateChildInput) {
+  const parent = await prisma.parent.findUnique({ where: { id: parentId }, select: { legalAcceptedAt: true, termsVersion: true, privacyVersion: true } });
+  if (!parent?.legalAcceptedAt || parent.termsVersion !== TERMS_VERSION || parent.privacyVersion !== PRIVACY_VERSION) {
+    throw new AppError(403, "Phụ huynh cần đồng ý Điều khoản và Chính sách quyền riêng tư trước khi tạo hồ sơ trẻ.", "LEGAL_ACCEPTANCE_REQUIRED");
+  }
   const child = await prisma.child.create({
     data: {
       parentId,

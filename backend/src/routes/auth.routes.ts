@@ -4,7 +4,7 @@ import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../lib/jw
 import { AppError } from "../middleware/errorHandler.js";
 import { verifyAuth } from "../middleware/verifyAuth.js";
 import { deleteAccountSchema, loginSchema, refreshSchema, registerSchema, socialLoginSchema, updateLanguageSchema } from "../schemas/auth.schema.js";
-import { activatePremium, deleteAccount, getParentById, loginParent, loginWithSocial, registerParent, updateLanguage, type SocialProvider } from "../services/auth.service.js";
+import { acceptCurrentLegal, activatePremium, deleteAccount, getParentById, loginParent, loginWithSocial, registerParent, updateLanguage, type SocialProvider } from "../services/auth.service.js";
 
 // Tight in production to slow down brute-force/credential-stuffing.
 // Loose in dev — otherwise everyone testing from localhost shares one
@@ -43,8 +43,8 @@ export async function authRoutes(app: FastifyInstance) {
   const SOCIAL_PROVIDERS: SocialProvider[] = ["google", "facebook", "apple"];
   for (const provider of SOCIAL_PROVIDERS) {
     app.post(`/${provider}`, { config: { rateLimit: LOGIN_RATE_LIMIT } }, async (request, reply) => {
-      const { token } = socialLoginSchema.parse(request.body);
-      const parent = await loginWithSocial(provider, token);
+      const { token, acceptedLegal } = socialLoginSchema.parse(request.body);
+      const parent = await loginWithSocial(provider, token, acceptedLegal);
       const tokens = issueTokenPair(app, parent.id);
       return reply.send({ parent, ...tokens });
     });
@@ -76,6 +76,11 @@ export async function authRoutes(app: FastifyInstance) {
   app.patch("/me/language", { preHandler: verifyAuth }, async (request, reply) => {
     const { language } = updateLanguageSchema.parse(request.body);
     const parent = await updateLanguage(request.parentId, language);
+    return reply.send({ parent });
+  });
+
+  app.patch("/me/legal-acceptance", { preHandler: verifyAuth }, async (request, reply) => {
+    const parent = await acceptCurrentLegal(request.parentId);
     return reply.send({ parent });
   });
 

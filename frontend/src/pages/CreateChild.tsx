@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { CheckIcon } from "../components/ui";
 import { api, ApiError, type Child } from "../lib/api";
 import { useLang, useT } from "../lib/i18n";
+import { ShieldCheck } from "lucide-react";
 
 interface CreateChildProps {
   onCreated: (child: Child) => Promise<void>;
@@ -19,18 +19,12 @@ export default function CreateChild({ onCreated }: CreateChildProps) {
   const [avatar, setAvatar] = useState(0);
   const [displayName, setDisplayName] = useState("Lily");
   const [age, setAge] = useState(1);
-  const [consent, setConsent] = useState(true);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
 
-  const isChild = age < 3;
   const avatarNames = lang === "en" ? AVATAR_NAMES_EN : AVATAR_NAMES_VI;
 
   const handleSubmit = async () => {
-    if (isChild && !consent) {
-      setMsg(t("Cần phụ huynh đồng ý điều khoản"));
-      return;
-    }
     setMsg("");
     setLoading(true);
     try {
@@ -107,30 +101,10 @@ export default function CreateChild({ onCreated }: CreateChildProps) {
           </div>
         </div>
 
-        {isChild ? (
-          <div className="animate-slide-down flex flex-col gap-2.5 rounded-[20px] border-[3px] border-[#C9E5F7] bg-[#EAF6FF] p-4">
-            <div className="flex items-center gap-2 font-baloo text-base font-extrabold text-[#3E7FB0]">
-              <span className="grid h-[26px] w-[26px] place-items-center rounded-full bg-[#5C7BC9] font-baloo text-[15px] font-extrabold text-white">!</span>
-              {t("Thông tin phụ huynh (bắt buộc)")}
-            </div>
-            <div className="flex gap-2.5">
-              <input placeholder={t("Email bố/mẹ")} className="flex-1 rounded-chip border-[3px] border-[#C9E5F7] bg-white px-3.5 py-3 font-baloo font-semibold outline-none" />
-              <input placeholder={t("Số điện thoại")} className="w-[170px] rounded-chip border-[3px] border-[#C9E5F7] bg-white px-3.5 py-3 font-baloo font-semibold outline-none" />
-            </div>
-            <button onClick={() => setConsent((v) => !v)} className="flex items-start gap-2.5 text-left font-baloo text-[13px] font-semibold leading-snug text-[#5A7080]">
-              <span
-                className={`grid h-[26px] w-[26px] shrink-0 place-items-center rounded-[9px] border-[3px] ${consent ? "border-brand-green bg-brand-green" : "border-[#C9E5F7] bg-white"}`}
-              >
-                {consent && <CheckIcon />}
-              </span>
-              {t("Tôi là phụ huynh, đồng ý điều khoản và cho phép trẻ dùng app (không quảng cáo, không mua trong app).")}
-            </button>
-          </div>
-        ) : (
-          <div className="animate-slide-down rounded-[20px] border-[3px] border-[#FFD9A6] bg-[#FFF1DE] p-4 font-baloo text-[13.5px] font-semibold leading-snug text-[#8A5A3B]">
-            {t("Tài khoản người lớn: học theo chủ đề với spaced repetition, có quảng cáo sau mỗi bài học (mở khoá Premium để tắt).")}
-          </div>
-        )}
+        <div className="animate-slide-down flex items-center gap-3 rounded-[20px] border-[3px] border-[#C9E5F7] bg-[#EAF6FF] p-4">
+          <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#5C7BC9] text-white"><ShieldCheck size={24} /></span>
+          <div><div className="font-baloo text-base font-extrabold text-[#3E7FB0]">{t("Hồ sơ do phụ huynh quản lý")}</div><div className="font-baloo text-[12.5px] font-semibold leading-snug text-[#5A7080]">{t("Điều khoản và Chính sách quyền riêng tư đã được xác nhận trên tài khoản phụ huynh.")}</div></div>
+        </div>
 
         <div className="mt-auto flex items-center gap-3">
           <button

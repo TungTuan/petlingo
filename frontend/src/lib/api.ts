@@ -22,6 +22,9 @@ export interface Parent {
   /** null = chưa từng chọn ngôn ngữ — App.tsx dùng để hiện LanguagePicker lần đầu vào app. */
   language: "vi" | "en" | "ja" | "ko" | null;
   isPremium: boolean;
+  legalAcceptedAt: string | null;
+  termsVersion: string | null;
+  privacyVersion: string | null;
 }
 
 /** "Nội dung của tôi" free-tier limits — see backend's premium.service.ts. */
@@ -1055,7 +1058,7 @@ export const api = {
   register: (email: string, password: string, phone?: string) =>
     request<{ parent: Parent; accessToken: string; refreshToken: string }>("/auth/register", {
       method: "POST",
-      body: { email, password, phone },
+      body: { email, password, phone, acceptedLegal: true },
       skipAuth: true,
     }),
 
@@ -1069,15 +1072,17 @@ export const api = {
   // `token` is whatever lib/socialAuth.ts's signInWith<Provider>() returned —
   // an idToken/accessToken/identityToken depending on the provider, see its
   // doc comment. Same response shape as login/register either way.
-  loginWithGoogle: (token: string) => request<{ parent: Parent; accessToken: string; refreshToken: string }>("/auth/google", { method: "POST", body: { token }, skipAuth: true }),
-  loginWithFacebook: (token: string) => request<{ parent: Parent; accessToken: string; refreshToken: string }>("/auth/facebook", { method: "POST", body: { token }, skipAuth: true }),
-  loginWithApple: (token: string) => request<{ parent: Parent; accessToken: string; refreshToken: string }>("/auth/apple", { method: "POST", body: { token }, skipAuth: true }),
+  loginWithGoogle: (token: string, acceptedLegal = false) => request<{ parent: Parent; accessToken: string; refreshToken: string }>("/auth/google", { method: "POST", body: { token, acceptedLegal }, skipAuth: true }),
+  loginWithFacebook: (token: string, acceptedLegal = false) => request<{ parent: Parent; accessToken: string; refreshToken: string }>("/auth/facebook", { method: "POST", body: { token, acceptedLegal }, skipAuth: true }),
+  loginWithApple: (token: string, acceptedLegal = false) => request<{ parent: Parent; accessToken: string; refreshToken: string }>("/auth/apple", { method: "POST", body: { token, acceptedLegal }, skipAuth: true }),
 
   me: () => request<{ parent: Parent }>("/auth/me"),
 
   fetchTtsAudio,
 
   updateLanguage: (language: "vi" | "en" | "ja" | "ko") => request<{ parent: Parent }>("/auth/me/language", { method: "PATCH", body: { language } }),
+
+  acceptLegal: () => request<{ parent: Parent }>("/auth/me/legal-acceptance", { method: "PATCH" }),
 
   activatePremium: () => request<{ parent: Parent }>("/auth/me/premium", { method: "PATCH" }),
 

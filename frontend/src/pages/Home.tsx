@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties } from "react";
-import { ArrowRight, BookOpen, CalendarCheck2, Check, Gift, Palette, Trophy } from "lucide-react";
+import { ArrowRight, BookOpen, CalendarCheck2, Check, Gift, Palette, ShieldCheck, Trophy } from "lucide-react";
 import { ChunkyButton, CoinIcon, GearIcon, GemIcon, HeartIcon, StarIcon } from "../components/ui";
 import BottomTabs from "../components/BottomTabs";
 import PetPortrait from "../components/PetPortrait";
@@ -92,6 +92,7 @@ interface HomeProps {
   onOpenDailyQuest: () => void;
   onOpenBattlePass: () => void;
   onOpenSettings: () => void;
+  onOpenPrivacy: () => void;
   customization: HomeCustomization;
   backgroundShop: InventoryEntry[];
   ownedBackgroundKeys: Set<string>;
@@ -116,6 +117,7 @@ export default function Home({
   onOpenDailyQuest,
   onOpenBattlePass,
   onOpenSettings,
+  onOpenPrivacy,
   customization,
   backgroundShop,
   ownedBackgroundKeys,
@@ -252,6 +254,9 @@ export default function Home({
       <div className="relative flex justify-center px-5 pb-4.5">
         <BottomTabs active="Home" onChange={onNavigate} className="w-[760px]" />
       </div>
+      <button onClick={onOpenPrivacy} className="absolute bottom-2.5 right-4 z-20 flex items-center gap-1.5 rounded-full bg-[#173D60]/75 px-3 py-1.5 font-baloo text-[10px] font-extrabold text-white/90 backdrop-blur-sm hover:bg-[#173D60]">
+        <ShieldCheck size={14} /> {t("Chính sách quyền riêng tư")}
+      </button>
       {showCustomizer && <HomeCustomizationModal value={customization} coins={coins} gems={gems} shopItems={backgroundShop} ownedItemKeys={ownedBackgroundKeys} busyItemKey={busyBackground} onChange={onChangeCustomization} onPurchase={purchaseBackground} onClose={() => setShowCustomizer(false)} />}
     </div>
   );

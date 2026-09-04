@@ -5,19 +5,21 @@ import { useT } from "../lib/i18n";
 import { signInWithApple, signInWithFacebook, signInWithGoogle } from "../lib/socialAuth";
 import { tokenStorage } from "../lib/tokenStorage";
 import { Check, Eye, EyeOff, KeyRound, LockKeyhole, Mail, ShieldCheck, Sparkles } from "lucide-react";
+import type { LegalKind } from "../lib/legal";
 
 interface LoginProps {
   onAuthenticated: (parent: Parent) => Promise<void>;
+  onOpenLegal: (kind: LegalKind) => void;
 }
 
-const SOCIALS: { label: string; brand: string; color: string; signIn: () => Promise<string>; loginWithToken: (token: string) => ReturnType<typeof api.loginWithGoogle> }[] = [
+const SOCIALS: { label: string; brand: string; color: string; signIn: () => Promise<string>; loginWithToken: (token: string, acceptedLegal?: boolean) => ReturnType<typeof api.loginWithGoogle> }[] = [
   { label: "Google", brand: "G", color: "#4285F4", signIn: signInWithGoogle, loginWithToken: api.loginWithGoogle },
   { label: "Apple", brand: "●", color: "#24211F", signIn: signInWithApple, loginWithToken: api.loginWithApple },
   { label: "Facebook", brand: "f", color: "#4267B2", signIn: signInWithFacebook, loginWithToken: api.loginWithFacebook },
 ];
 
 /** Login / Register — matches the reference sheet's "Phần 4 · Đăng nhập" panel. */
-export default function Login({ onAuthenticated }: LoginProps) {
+export default function Login({ onAuthenticated, onOpenLegal }: LoginProps) {
   const t = useT();
   const [tab, setTab] = useState<0 | 1>(0);
   const [email, setEmail] = useState("");
@@ -26,12 +28,13 @@ export default function Login({ onAuthenticated }: LoginProps) {
   const [remember, setRemember] = useState(true);
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
+  const [acceptedLegal, setAcceptedLegal] = useState(false);
 
   const authTitle = tab === 0 ? t("Đăng nhập") : t("Đăng ký");
 
   const handleSubmit = async (event?: FormEvent) => {
     event?.preventDefault();
-    if (!email || password.length < 8 || loading) return;
+    if (!email || password.length < 8 || loading || (tab === 1 && !acceptedLegal)) return;
     setMsg("");
     setLoading(true);
     try {
@@ -47,11 +50,15 @@ export default function Login({ onAuthenticated }: LoginProps) {
   };
 
   const handleSocialLogin = async (social: (typeof SOCIALS)[number]) => {
+    if (tab === 1 && !acceptedLegal) {
+      setMsg(t("Vui lòng đồng ý Điều khoản và Chính sách quyền riêng tư."));
+      return;
+    }
     setMsg("");
     setLoading(true);
     try {
       const token = await social.signIn();
-      const result = await social.loginWithToken(token);
+      const result = await social.loginWithToken(token, tab === 1 && acceptedLegal);
       tokenStorage.set(result.accessToken, result.refreshToken);
       setMsg(t("Đăng nhập thành công — vào Home"));
       await onAuthenticated(result.parent);
@@ -154,7 +161,18 @@ export default function Login({ onAuthenticated }: LoginProps) {
           </button>
         </div>
 
-        <ChunkyButton type="submit" shine disabled={loading || !email || password.length < 8} className="flex items-center justify-center gap-2">
+        {tab === 1 && (
+          <button type="button" onClick={() => setAcceptedLegal((value) => !value)} className="flex items-start gap-2.5 rounded-2xl border-2 border-[#E9DDC8] bg-[#FFF9ED] p-3 text-left">
+            <span className={`mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-lg border-2 ${acceptedLegal ? "border-brand-green bg-brand-green text-white" : "border-line bg-white"}`}>{acceptedLegal && <Check size={14} strokeWidth={3.5} />}</span>
+            <span className="font-baloo text-[12px] font-bold leading-5 text-[#6E6047]">
+              {t("Tôi là phụ huynh/người giám hộ và đồng ý với")}{" "}
+              <span role="link" tabIndex={0} onClick={(event) => { event.stopPropagation(); onOpenLegal("terms"); }} onKeyDown={(event) => { if (event.key === "Enter") onOpenLegal("terms"); }} className="text-brand-orange underline">{t("Điều khoản")}</span>{" "}{t("và")}{" "}
+              <span role="link" tabIndex={0} onClick={(event) => { event.stopPropagation(); onOpenLegal("privacy"); }} onKeyDown={(event) => { if (event.key === "Enter") onOpenLegal("privacy"); }} className="text-brand-orange underline">{t("Chính sách quyền riêng tư")}</span>.
+            </span>
+          </button>
+        )}
+
+        <ChunkyButton type="submit" shine disabled={loading || !email || password.length < 8 || (tab === 1 && !acceptedLegal)} className="flex items-center justify-center gap-2">
           <KeyRound size={20} /> {loading ? t("Đang xử lý...") : authTitle}
         </ChunkyButton>
 
@@ -168,7 +186,7 @@ export default function Login({ onAuthenticated }: LoginProps) {
             <button
               type="button"
               key={s.label}
-              disabled={loading}
+              disabled={loading || (tab === 1 && !acceptedLegal)}
               onClick={() => handleSocialLogin(s)}
               className="flex flex-1 items-center justify-center gap-2.5 rounded-2xl border-[3px] border-line bg-white py-3.5 font-baloo text-[15px] font-bold text-[#6E6047] shadow-[0_4px_0_#E7D4B2] disabled:opacity-50"
             >
@@ -181,8 +199,12 @@ export default function Login({ onAuthenticated }: LoginProps) {
         <div className="mt-auto flex items-center gap-3 rounded-2xl border-[3px] border-[#C9E5F7] bg-[#EAF6FF] p-3.5">
           <span className="grid h-[34px] w-[34px] shrink-0 place-items-center rounded-xl bg-[#5C7BC9] text-white"><ShieldCheck size={20} strokeWidth={2.8} /></span>
           <div className="font-baloo text-[12.5px] font-semibold leading-snug text-[#5A7080]">
-            {t("Tài khoản trẻ em do phụ huynh tạo và quản lý. Trẻ đăng nhập bằng mã PIN 4 số, không cần email.")}
+            {t("Tài khoản phụ huynh quản lý các hồ sơ trẻ trên thiết bị. Trẻ không cần cung cấp email.")}
           </div>
+        </div>
+        <div className="flex justify-center gap-4 font-baloo text-[11px] font-bold text-[#817366]">
+          <button type="button" onClick={() => onOpenLegal("privacy")} className="underline hover:text-brand-orange">{t("Chính sách quyền riêng tư")}</button>
+          <button type="button" onClick={() => onOpenLegal("terms")} className="underline hover:text-brand-orange">{t("Điều khoản sử dụng")}</button>
         </div>
         <div role="alert" aria-live="polite" className="min-h-5 font-baloo text-sm font-bold text-brand-orange">{msg}</div>
       </form>

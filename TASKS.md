@@ -1805,6 +1805,12 @@ dưới đây là đúng những gì THẬT SỰ còn tồn, đã cập nhật l
 - [ ] Test lại các API trình duyệt nhạy cảm với WebView: audio TTS (`new Audio()` + autoplay), fallback Web Speech API, JWT refresh khi app resume từ background — chưa test kỹ trên app thật
 - [ ] **iOS lên App Store thật:** cần tài khoản Apple Developer trả phí ($99/năm) — hiện đang dùng Apple ID thường (miễn phí, app tự hết hạn 7 ngày) để test tạm; đã ghi đủ bước nâng cấp lên TestFlight khi có tài khoản trả phí trong `frontend/MOBILE_BUILD.md`
 - [ ] **Android lên Google Play thật:** cần tạo keystore ký bản release + tài khoản Google Play Console ($25 trả 1 lần) — sideload APK debug trực tiếp là đủ để test tạm, chưa cần thiết ngay
+- [ ] **Privacy/Terms & trẻ em:** phần code hoàn thành 2026-09-04 — policy VI/EN
+  mở công khai qua `?legal=privacy|terms`, link từ Login/Home/Settings, backend
+  lưu timestamp + version chấp nhận và chặn tạo hồ sơ trẻ nếu chưa đồng ý.
+  Việc ngoài code còn thiếu: điền pháp nhân/email thật, legal review từng thị
+  trường, dịch JA/KO và chọn phương thức verifiable parental consent nếu luật
+  yêu cầu. Checklist + nguồn chính thức: `LEGAL_RELEASE.md`
 - [ ] Token đăng nhập hiện lưu ở `localStorage` (`tokenStorage.ts`) — cân nhắc chuyển sang `@capacitor/preferences` (Keychain/Keystore native) trước khi release rộng rãi (không bắt buộc để test)
 - [ ] Trước khi release thật: **phần code/config đã xử lý (2026-09-04)** —
   Android/iOS Release chặn cleartext, Debug vẫn test LAN được; app ID Android

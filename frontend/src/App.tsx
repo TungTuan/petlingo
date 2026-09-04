@@ -69,8 +69,11 @@ import { rememberLearnedWords } from "./lib/learningGate";
 import GameHub from "./pages/GameHub";
 import type { NavTab, Screen } from "./types/nav";
 import PetEvolutionCelebration from "./components/PetEvolutionCelebration";
+import LegalDocument from "./pages/LegalDocument";
+import LegalConsent from "./pages/LegalConsent";
+import { LEGAL_EFFECTIVE_DATE, type LegalKind } from "./lib/legal";
 
-type Phase = "boot" | "login" | "offline" | "pickLanguage" | "createChild" | "onboarding" | "ready";
+type Phase = "boot" | "login" | "offline" | "legalConsent" | "pickLanguage" | "createChild" | "onboarding" | "ready";
 
 const ONBOARDED_KEY = "petlingo.onboarded";
 
@@ -97,6 +100,10 @@ function AppInner() {
   const { setLang } = useLang();
   const t = useT();
   const [phase, setPhase] = useState<Phase>("boot");
+  const [legalDocument, setLegalDocument] = useState<LegalKind | null>(() => {
+    const value = new URLSearchParams(window.location.search).get("legal");
+    return value === "privacy" || value === "terms" ? value : null;
+  });
   const [screen, setScreen] = useState<Screen>("home");
   const screenHistory = useRef<Screen[]>([]);
   const [parent, setParent] = useState<Parent | null>(null);
@@ -135,6 +142,29 @@ function AppInner() {
   const [parentAreaUnlocked, setParentAreaUnlocked] = useState(false);
   // phase === "offline"'s "Thử lại" button — see checkStoredSession().
   const [retryingSession, setRetryingSession] = useState(false);
+
+  useEffect(() => {
+    const syncLegalUrl = () => {
+      const value = new URLSearchParams(window.location.search).get("legal");
+      setLegalDocument(value === "privacy" || value === "terms" ? value : null);
+    };
+    window.addEventListener("popstate", syncLegalUrl);
+    return () => window.removeEventListener("popstate", syncLegalUrl);
+  }, []);
+
+  function openLegal(kind: LegalKind) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("legal", kind);
+    window.history.pushState({}, "", url);
+    setLegalDocument(kind);
+  }
+
+  function closeLegal() {
+    const url = new URL(window.location.href);
+    url.searchParams.delete("legal");
+    window.history.replaceState({}, "", url);
+    setLegalDocument(null);
+  }
 
   /**
    * App-level navigation history. Screens used to hard-code their Back
@@ -266,6 +296,14 @@ function AppInner() {
 
   async function afterAuth(parent: Parent) {
     setParent(parent);
+    if (!parent.legalAcceptedAt || parent.termsVersion !== LEGAL_EFFECTIVE_DATE || parent.privacyVersion !== LEGAL_EFFECTIVE_DATE) {
+      setPhase("legalConsent");
+      return;
+    }
+    await proceedAfterLegal(parent);
+  }
+
+  async function proceedAfterLegal(parent: Parent) {
     if (parent.language === null) {
       setPhase("pickLanguage");
       return;
@@ -560,6 +598,8 @@ function AppInner() {
     navigateTo(map[tab]);
   }
 
+  if (legalDocument) return <LegalDocument kind={legalDocument} onExit={closeLegal} />;
+
   if (phase === "boot") {
     return (
       <div className="fixed inset-0 grid place-items-center bg-[#1a1714]">
@@ -574,7 +614,21 @@ function AppInner() {
   if (phase === "login") {
     return (
       <ScreenFrame>
-        <Login onAuthenticated={afterAuth} />
+        <Login onAuthenticated={afterAuth} onOpenLegal={openLegal} />
+      </ScreenFrame>
+    );
+  }
+
+  if (phase === "legalConsent" && parent) {
+    return (
+      <ScreenFrame>
+        <LegalConsent
+          onOpenLegal={openLegal}
+          onAccepted={async (acceptedParent) => {
+            setParent(acceptedParent);
+            await proceedAfterLegal(acceptedParent);
+          }}
+        />
       </ScreenFrame>
     );
   }
@@ -708,6 +762,7 @@ function AppInner() {
             onOpenDailyQuest={() => navigateTo("questStreak")}
             onOpenBattlePass={() => navigateTo("battlePass")}
             onOpenSettings={() => navigateTo("settings")}
+            onOpenPrivacy={() => openLegal("privacy")}
             customization={homeCustomization}
             backgroundShop={homeBackgroundShop}
             ownedBackgroundKeys={new Set((inventory ?? []).filter((entry) => entry.item.key.startsWith("background-") && entry.quantity > 0).map((entry) => entry.item.key))}
@@ -981,6 +1036,7 @@ function AppInner() {
             onToggleRankVisibility={handleToggleRankVisibility}
             onDeleteAccount={handleDeleteAccount}
             onLogout={handleLogout}
+            onOpenLegal={openLegal}
             onExit={() => goBack("more")}
           />
         );

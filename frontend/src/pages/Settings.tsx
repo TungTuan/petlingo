@@ -6,6 +6,7 @@ import { useLang, useT, type Lang } from "../lib/i18n";
 import { clearParentPin, isParentPinEnabled, setParentPin } from "../lib/parentPin";
 import { disableDailyReminder, enableDailyReminder, isReminderEnabled, isReminderSupported } from "../lib/dailyReminder";
 import { getAutoSpeak, getTtsRate, getTtsVoice, setAutoSpeak, setTtsRate, setTtsVoice } from "../lib/ttsPrefs";
+import type { LegalKind } from "../lib/legal";
 
 interface SettingsProps {
   parentEmail: string;
@@ -13,6 +14,7 @@ interface SettingsProps {
   onToggleRankVisibility: (hidden: boolean) => Promise<unknown>;
   onDeleteAccount: (confirmEmail: string) => Promise<void>;
   onLogout: () => void;
+  onOpenLegal: (kind: LegalKind) => void;
   onExit: () => void;
 }
 
@@ -78,6 +80,8 @@ type RowKind =
   | "rankVisibility"
   | "deleteAccount"
   | "synced"
+  | "privacy"
+  | "terms"
   | "soon";
 type Row = { label: string; desc: string; kind: RowKind };
 
@@ -91,7 +95,7 @@ type Row = { label: string; desc: string; kind: RowKind };
  * app doesn't have yet (background music, push notifications... wait, no —
  * reminder IS real now, see below) before it can be built for real.
  */
-export default function Settings({ parentEmail, hiddenFromRank, onToggleRankVisibility, onDeleteAccount, onLogout, onExit }: SettingsProps) {
+export default function Settings({ parentEmail, hiddenFromRank, onToggleRankVisibility, onDeleteAccount, onLogout, onOpenLegal, onExit }: SettingsProps) {
   const t = useT();
   const { lang, setLang } = useLang();
   const [group, setGroup] = useState(0);
@@ -242,6 +246,8 @@ export default function Settings({ parentEmail, hiddenFromRank, onToggleRankVisi
         { label: "Sao lưu tiến độ", desc: "Tiến độ đã luôn được lưu trực tiếp trên máy chủ — không cần sao lưu tay", kind: "synced" },
         { label: "Tải bài học offline", desc: "Đang phát triển", kind: "soon" },
         { label: "Xuất báo cáo học tập", desc: "Đang phát triển", kind: "soon" },
+        { label: "Chính sách quyền riêng tư", desc: "Dữ liệu được thu thập, sử dụng và quyền kiểm soát của phụ huynh", kind: "privacy" },
+        { label: "Điều khoản sử dụng", desc: "Quy tắc tài khoản, nội dung và vật phẩm ảo", kind: "terms" },
         { label: "Xoá toàn bộ dữ liệu", desc: "Không thể hoàn tác — cần gõ lại email để xác nhận", kind: "deleteAccount" },
       ],
     },
@@ -325,6 +331,8 @@ export default function Settings({ parentEmail, hiddenFromRank, onToggleRankVisi
                   </button>
                 )}
                 {row.kind === "synced" && <Pill text={t("Đã đồng bộ")} color="#7CC24A" />}
+                {row.kind === "privacy" && <button onClick={() => onOpenLegal("privacy")} className="shrink-0 rounded-2xl bg-[#2FA9A5] px-5 py-2.5 font-baloo text-[15px] font-extrabold text-white shadow-[0_3px_0_#247E7B]">{t("Xem")}</button>}
+                {row.kind === "terms" && <button onClick={() => onOpenLegal("terms")} className="shrink-0 rounded-2xl bg-[#8B6BCB] px-5 py-2.5 font-baloo text-[15px] font-extrabold text-white shadow-[0_3px_0_#654B9B]">{t("Xem")}</button>}
                 {row.kind === "soon" && <Pill text={t("Sắp ra mắt")} color="#B3A691" />}
               </div>
             ))}

@@ -22,11 +22,12 @@ người dùng thật trả tiền/công khai trên store.**
    StoreKit/Billing Library, xác thực receipt, gia hạn/hết hạn thật).
    Nếu ý định ban đầu chỉ là app miễn phí + có gói ảo demo, mục này không
    phải blocker — nhưng cần xác nhận rõ trước khi công bố giá.
-2. **Chưa có Privacy Policy / Terms of Service.** Không tìm thấy file nào
-   (`privacy`, `terms`) trong repo. Đây là **bắt buộc pháp lý** để lên App
-   Store/Google Play, và đặc biệt nhạy cảm vì đây là app cho trẻ em (thu thập
-   dữ liệu qua tài khoản phụ huynh, có thể vướng COPPA nếu có người dùng ở
-   Mỹ, hoặc luật tương đương ở VN/khác). Cần soạn trước khi nộp app lên store.
+2. **Privacy/Terms đã có nền tảng kỹ thuật, nhưng chưa hoàn tất pháp lý.** App
+   đã có policy VI/EN công khai không cần đăng nhập, link từ Login/Home/
+   Settings, lưu phiên bản + thời điểm phụ huynh chấp nhận và chặn tạo hồ sơ
+   trẻ ở server nếu chưa chấp nhận. Trước release vẫn phải điền pháp nhân/email
+   thật, legal review từng thị trường, dịch JA/KO và triển khai phương thức xác
+   minh đồng ý phụ huynh phù hợp nơi pháp luật yêu cầu. Xem `LEGAL_RELEASE.md`.
 3. **Google/Facebook/Apple login: code xong nhưng chưa có credentials thật,
    chưa test đầu-cuối.** `.env`/`.env` (frontend) đang để trống
    `GOOGLE_CLIENT_ID`/`FACEBOOK_APP_ID`/`APPLE_CLIENT_ID` — 3 nút này hiện
@@ -152,8 +153,8 @@ người dùng thật trả tiền/công khai trên store.**
    Sign-In + chuyển sang flow native, chuẩn bị domain HTTPS thật.
 4. Nếu nhắm cả Android: cài Android Studio, test build thật trên ≥1 máy
    Android thật, tạo keystore release + Google Play Console ($25 một lần).
-5. Soạn Privacy Policy/Terms (kể cả bản đơn giản, đúng thực tế app đang thu
-   thập gì) trước khi nộp app lên bất kỳ store nào.
+5. Hoàn tất các mục ngoài code trong `LEGAL_RELEASE.md`: pháp nhân, email,
+   legal review, bản dịch và verifiable parental consent nếu áp dụng.
 6. Sau khi có domain HTTPS thật: tạo `.env.release` và secrets backend
    production từ các file `.example`, rồi chạy `npm run cap:sync:release`
    theo checklist trong `frontend/MOBILE_BUILD.md`.

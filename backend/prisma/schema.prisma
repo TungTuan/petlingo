@@ -28,35 +28,41 @@ enum Language {
 /// role = ADMIN mở thêm quyền vào trang /admin (quản lý user/bài học/pet);
 /// tài khoản admin vẫn là 1 Parent bình thường, chỉ khác quyền.
 model Parent {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  phone        String?
+  id              String    @id @default(cuid())
+  email           String    @unique
+  phone           String?
   /// NULL cho tài khoản đăng nhập thuần qua social (Google/Facebook/Apple)
   /// chưa từng đặt mật khẩu — xem loginParent() trong auth.service.ts, chặn
   /// đăng nhập bằng email/mật khẩu rõ ràng thay vì lỗi argon2.verify() mơ hồ.
-  passwordHash String?
+  passwordHash    String?
   /// 3 cột định danh social login (xem lib/socialProviders.ts + auth.service.ts's
   /// loginWithSocial()) — 1 Parent có thể có nhiều social ID cùng lúc nếu đăng
   /// nhập cả email lẫn 1-2 bên social đều trỏ về cùng địa chỉ email đó (tự
   /// động "gộp" vào tài khoản có sẵn theo email khi lần đầu liên kết).
-  googleId     String?   @unique
-  facebookId   String?   @unique
-  appleId      String?   @unique
-  role         Role      @default(PARENT)
+  googleId        String?   @unique
+  facebookId      String?   @unique
+  appleId         String?   @unique
+  role            Role      @default(PARENT)
   /// Ngôn ngữ mẹ đẻ đã chọn — đổi cả chrome UI lẫn ngôn ngữ giải nghĩa nội
   /// dung học (xem catalog.service.ts's pickLang()), trừ "en" (xem enum ở
   /// trên). NULL = chưa từng chọn — dùng để quyết định có hiện màn hình
   /// chọn ngôn ngữ lần đầu vào app hay không (xem LanguagePicker.tsx/App.tsx);
   /// tài khoản tạo trước khi có tính năng này giữ nguyên giá trị cũ, không
   /// bị đổi về NULL, nên không bị hiện lại màn chọn ngôn ngữ ngoài ý muốn.
-  language     Language?
+  language        Language?
   /// Bật lên khi bấm "Dùng thử 7 ngày" ở trang Premium (app chưa tích hợp
   /// cổng thanh toán thật nên đây là cờ demo, không có ngày hết hạn) — mở
   /// khoá giới hạn "Nội dung của tôi" (xem services/premium.service.ts).
-  isPremium    Boolean   @default(false)
-  isActive     Boolean   @default(true)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  isPremium       Boolean   @default(false)
+  /// Parent/guardian acknowledgement recorded before any child profile is
+  /// created. This is an audit record of acceptance, not by itself a claim
+  /// that a jurisdiction-specific verifiable-consent method was completed.
+  legalAcceptedAt DateTime?
+  termsVersion    String?
+  privacyVersion  String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   children            Child[]
   ownLessons          Lesson[]
@@ -86,24 +92,24 @@ model Child {
   birthYear   Int?
   createdAt   DateTime @default(now())
 
-  parent             Parent               @relation(fields: [parentId], references: [id], onDelete: Cascade)
-  progress           Progress?
-  vocab              ChildVocab[]
-  items              ChildItem[]
-  petStats           PetStats[]
-  dailyQuestProgress DailyQuestProgress[]
-  fightRoomsHosted   FightRoom[]          @relation("FightRoomHost")
-  fightRoomsWon      FightRoom[]          @relation("FightRoomWinner")
-  fightParticipation FightParticipant[]
-  savedWords         SavedWord[]
-  notifications      Notification[]
-  battlePassProgress ChildBattlePassProgress[]
-  packageClaims      ChildPackageClaim[]
-  friendRequestsSent Friendship[] @relation("FriendRequester")
-  friendRequestsReceived Friendship[] @relation("FriendAddressee")
-  giftsSent Gift[] @relation("GiftSender")
-  giftsReceived Gift[] @relation("GiftReceiver")
-  activityRewardClaims ActivityRewardClaim[]
+  parent                 Parent                    @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  progress               Progress?
+  vocab                  ChildVocab[]
+  items                  ChildItem[]
+  petStats               PetStats[]
+  dailyQuestProgress     DailyQuestProgress[]
+  fightRoomsHosted       FightRoom[]               @relation("FightRoomHost")
+  fightRoomsWon          FightRoom[]               @relation("FightRoomWinner")
+  fightParticipation     FightParticipant[]
+  savedWords             SavedWord[]
+  notifications          Notification[]
+  battlePassProgress     ChildBattlePassProgress[]
+  packageClaims          ChildPackageClaim[]
+  friendRequestsSent     Friendship[]              @relation("FriendRequester")
+  friendRequestsReceived Friendship[]              @relation("FriendAddressee")
+  giftsSent              Gift[]                    @relation("GiftSender")
+  giftsReceived          Gift[]                    @relation("GiftReceiver")
+  activityRewardClaims   ActivityRewardClaim[]
 
   @@index([parentId])
   @@map("children")
@@ -114,15 +120,15 @@ model Child {
 /// Unique constraint là hàng rào chống double-claim thật khi client gửi đồng
 /// thời hoặc retry request.
 model ActivityRewardClaim {
-  id           String   @id @default(cuid())
-  childId      String
-  activity     String
-  contentKey   String
-  rewardDay    String
-  rewardCoins  Int      @default(0)
-  rewardXp     Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id          String   @id @default(cuid())
+  childId     String
+  activity    String
+  contentKey  String
+  rewardDay   String
+  rewardCoins Int      @default(0)
+  rewardXp    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
 
@@ -156,13 +162,13 @@ model Friendship {
 }
 
 model Gift {
-  id         String   @id @default(cuid())
+  id         String    @id @default(cuid())
   senderId   String
   receiverId String
   itemId     String
   quantity   Int
   message    String?
-  createdAt  DateTime @default(now())
+  createdAt  DateTime  @default(now())
   readAt     DateTime?
 
   sender   Child @relation("GiftSender", fields: [senderId], references: [id], onDelete: Cascade)
@@ -210,41 +216,41 @@ model Notification {
 /// Tiến độ học, quan hệ 1-1 với Child. localVersion dùng để resolve
 /// conflict khi client (offline-first) sync progress lên server.
 model Progress {
-  id              String    @id @default(cuid())
-  childId         String    @unique
-  coins           Int       @default(0)
-  gems            Int       @default(0)
-  unlockedPets    Json      @default("[]")
+  id                   String    @id @default(cuid())
+  childId              String    @unique
+  coins                Int       @default(0)
+  gems                 Int       @default(0)
+  unlockedPets         Json      @default("[]")
   /// Số bản pet đang sở hữu theo key, ví dụ { "ember": 3, "buddy": 5 }.
   /// unlockedPets vẫn giữ danh sách loài duy nhất để tương thích client cũ.
-  petCopies       Json      @default("{}")
+  petCopies            Json      @default("{}")
   /// Trứng dự phòng chưa được nuôi, tách khỏi pet chính có PetStats riêng.
-  petEggs         Json      @default("{}")
-  unlockedWorlds  Json      @default("[]")
+  petEggs              Json      @default("{}")
+  unlockedWorlds       Json      @default("[]")
   /// Pet đang chọn làm bạn đồng hành — hiển thị ở Home, PetCare mặc định
   /// chọn đúng con này. null nghĩa là chưa chọn (client tự fallback về
   /// unlockedPets[0]).
-  activePetId     String?
-  streakDays      Int       @default(0)
-  lastActiveDate  DateTime?
+  activePetId          String?
+  streakDays           Int       @default(0)
+  lastActiveDate       DateTime?
   /// Ngày cuối bấm "Điểm danh" nhận thưởng — TÁCH RIÊNG khỏi lastActiveDate.
   /// lastActiveDate được cập nhật bởi bất kỳ lần sync progress nào (học bài,
   /// mua đồ...), nên nếu dùng chung 1 field thì chơi 1 bài học trước sẽ làm
   /// nút "Điểm danh" hiện "đã nhận" dù trẻ chưa bấm — tách field để việc
   /// nhận thưởng điểm danh độc lập với các hoạt động khác trong ngày.
-  lastCheckinDate DateTime?
+  lastCheckinDate      DateTime?
   /// Điểm xếp hạng "Đường đua Hạng" — chỉ đổi khi thắng/thua 1 trận Đấu
   /// trường (xem services/fight/rank.ts), KHÔNG liên quan gì đến coins/gems.
   /// Không zero-sum như Elo thật: thắng cộng nhiều hơn thua trừ, để không
   /// làm trẻ nản — xem RANK_WIN/RANK_LOSS trong rank.ts.
-  rating          Int       @default(0)
+  rating               Int       @default(0)
   /// Tổng XP tích luỹ từ Word RPG (xem services/rpg.service.ts's getLevel())
   /// — tách hẳn khỏi coins/gems, chỉ dùng để tính Level hiển thị trong game.
   /// Cộng dồn mãi mãi (không reset theo lượt chơi/theo dungeon) — mỗi lần hạ
   /// gục quái đều cộng thẳng vào đây ngay lúc đó (services/rpg.service.ts's
   /// defeatMonster()), không đợi hết dungeon mới cộng, nên 1 lượt chơi thua
   /// giữa chừng vẫn giữ nguyên XP đã kiếm được tới lúc đó.
-  rpgXp           Int       @default(0)
+  rpgXp                Int       @default(0)
   /// Tháng gần nhất đã nhận thưởng "+2 pet Legendary/tháng" của Premium (xem
   /// services/progress.service.ts's claimMonthlyLegendaryPets()) — cùng kiểu
   /// "action rõ ràng, idempotent theo field riêng" như lastCheckinDate ở
@@ -255,18 +261,18 @@ model Progress {
   /// `unlockedPets`, nên quy đổi thành 1 mảnh của ĐÚNG bậc vừa ra thay vì bỏ
   /// phí) — xem services/petFusion.service.ts. Không có cột riêng cho
   /// Legendary vì không có công thức nào tiêu pet Legendary để phối lên nữa.
-  commonShards    Int       @default(0)
-  rareShards      Int       @default(0)
-  epicShards      Int       @default(0)
+  commonShards         Int       @default(0)
+  rareShards           Int       @default(0)
+  epicShards           Int       @default(0)
   /// Settings.tsx's "Cho phép bảng xếp hạng" toggle — true excludes this
   /// child from the global leaderboard entirely (leaderboard.service.ts's
   /// getLeaderboard()/getMyRank()), both showing their name to others AND
   /// counting toward everyone else's rank position. Default false (opted IN)
   /// to match the leaderboard's pre-existing behavior for every account
   /// created before this setting existed.
-  hiddenFromRank  Boolean   @default(false)
-  localVersion    Int       @default(0)
-  updatedAt       DateTime  @updatedAt
+  hiddenFromRank       Boolean   @default(false)
+  localVersion         Int       @default(0)
+  updatedAt            DateTime  @updatedAt
 
   child Child @relation(fields: [childId], references: [id], onDelete: Cascade)
 
@@ -1138,8 +1144,8 @@ model ChildBattlePassProgress {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  child  Child            @relation(fields: [childId], references: [id], onDelete: Cascade)
-  season BattlePassSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  child  Child             @relation(fields: [childId], references: [id], onDelete: Cascade)
+  season BattlePassSeason  @relation(fields: [seasonId], references: [id], onDelete: Cascade)
   claims BattlePassClaim[]
 
   @@unique([childId, seasonId])

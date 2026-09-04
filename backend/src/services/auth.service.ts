@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { AppError } from "../middleware/errorHandler.js";
 import { verifyAppleIdentityToken, verifyFacebookAccessToken, verifyGoogleIdToken, type SocialProfile } from "../lib/socialProviders.js";
 import type { LoginInput, RegisterInput } from "../schemas/auth.schema.js";
+import { PRIVACY_VERSION, TERMS_VERSION } from "../config/legal.js";
 
 export type SocialProvider = "google" | "facebook" | "apple";
 
@@ -16,11 +17,14 @@ export interface SafeParent {
   /** null = chưa từng chọn — App.tsx dùng để quyết định hiện LanguagePicker. */
   language: LanguageCode | null;
   isPremium: boolean;
+  legalAcceptedAt: Date | null;
+  termsVersion: string | null;
+  privacyVersion: string | null;
 }
 
-function toSafeParent(parent: { id: string; email: string; phone: string | null; role: "PARENT" | "ADMIN"; language: LanguageCode | null; isPremium: boolean }): SafeParent {
+function toSafeParent(parent: { id: string; email: string; phone: string | null; role: "PARENT" | "ADMIN"; language: LanguageCode | null; isPremium: boolean; legalAcceptedAt: Date | null; termsVersion: string | null; privacyVersion: string | null }): SafeParent {
   // Never leak passwordHash (or isActive — irrelevant to the client) out of this service.
-  return { id: parent.id, email: parent.email, phone: parent.phone, role: parent.role, language: parent.language, isPremium: parent.isPremium };
+  return { id: parent.id, email: parent.email, phone: parent.phone, role: parent.role, language: parent.language, isPremium: parent.isPremium, legalAcceptedAt: parent.legalAcceptedAt, termsVersion: parent.termsVersion, privacyVersion: parent.privacyVersion };
 }
 
 export async function updateLanguage(id: string, language: LanguageCode): Promise<SafeParent> {
@@ -46,7 +50,14 @@ export async function registerParent(input: RegisterInput): Promise<SafeParent> 
 
   const passwordHash = await argon2.hash(input.password);
   const parent = await prisma.parent.create({
-    data: { email: input.email, phone: input.phone, passwordHash },
+    data: {
+      email: input.email,
+      phone: input.phone,
+      passwordHash,
+      legalAcceptedAt: new Date(),
+      termsVersion: TERMS_VERSION,
+      privacyVersion: PRIVACY_VERSION,
+    },
   });
 
   return toSafeParent(parent);
@@ -95,7 +106,7 @@ async function verifySocialToken(provider: SocialProvider, token: string): Promi
  * Google using the same address); if no account exists at all, creates a
  * brand-new one with no password set.
  */
-export async function loginWithSocial(provider: SocialProvider, token: string): Promise<SafeParent> {
+export async function loginWithSocial(provider: SocialProvider, token: string, acceptedLegal = false): Promise<SafeParent> {
   const profile = await verifySocialToken(provider, token);
 
   let parent =
@@ -108,15 +119,34 @@ export async function loginWithSocial(provider: SocialProvider, token: string): 
   if (!parent) {
     const idField = provider === "google" ? { googleId: profile.id } : provider === "facebook" ? { facebookId: profile.id } : { appleId: profile.id };
     const existingByEmail = await prisma.parent.findUnique({ where: { email: profile.email } });
+    if (!existingByEmail && !acceptedLegal) {
+      throw new AppError(409, "Hãy chuyển sang Đăng ký và đồng ý Điều khoản trước khi tạo tài khoản.", "LEGAL_ACCEPTANCE_REQUIRED");
+    }
     parent = existingByEmail
       ? await prisma.parent.update({ where: { id: existingByEmail.id }, data: idField })
-      : await prisma.parent.create({ data: { email: profile.email, ...idField } });
+      : await prisma.parent.create({
+          data: {
+            email: profile.email,
+            ...idField,
+            legalAcceptedAt: new Date(),
+            termsVersion: TERMS_VERSION,
+            privacyVersion: PRIVACY_VERSION,
+          },
+        });
   }
 
   if (!parent.isActive) {
     throw new AppError(403, "Tài khoản này đã bị khoá.", "ACCOUNT_DISABLED");
   }
 
+  return toSafeParent(parent);
+}
+
+export async function acceptCurrentLegal(parentId: string): Promise<SafeParent> {
+  const parent = await prisma.parent.update({
+    where: { id: parentId },
+    data: { legalAcceptedAt: new Date(), termsVersion: TERMS_VERSION, privacyVersion: PRIVACY_VERSION },
+  });
   return toSafeParent(parent);
 }
 
