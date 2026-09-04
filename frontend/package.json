@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "build:mobile": "tsc -b && vite build --mode mobile",
+    "build:release": "tsc -b && vite build --mode release",
     "cap:sync": "npm run build:mobile && cap sync",
+    "cap:sync:release": "npm run build:release && cap sync",
     "lint": "oxlint",
     "preview": "vite preview"
   },

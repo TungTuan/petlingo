@@ -40,23 +40,14 @@ người dùng thật trả tiền/công khai trên store.**
 5. **Android: chưa từng test trên thiết bị thật.** Máy dev chưa cài Android
    Studio/SDK. Cần cài + build + cài thử lên ít nhất 1 máy Android thật
    trước khi release — hiện tại 100% verify là qua iOS + web/Playwright.
-6. **Backend chưa có domain HTTPS thật, đang test qua LAN IP/ngrok.**
-   `NSAllowsArbitraryLoads` (iOS) và `usesCleartextTraffic`/`server.cleartext`
-   (Android) đang **bật** để tiện test — đây là cấu hình **không an toàn cho
-   production** (cho phép app gọi HTTP thường, cả 2 App Store/Play Console
-   soi hồ sơ bảo mật đều có thể flag). Phải: (a) có domain + TLS thật, (b)
-   trỏ `VITE_API_URL` production sang domain đó, (c) tắt cả 2 cờ trên, trước
-   khi build bản release cuối.
-7. **`NODE_ENV=development` trong `.env` hiện tại** — chưa có cấu hình môi
-   trường production riêng (secrets khác, log level khác, v.v.). Cần một bộ
-   `.env` production riêng biệt trước khi deploy backend thật.
-8. **99% thay đổi của tuần làm việc gần nhất CHƯA được commit vào git.**
-   `git log` chỉ có đúng 1 commit ("Initial commit"); `git status` hiện
-   ~12 file sửa + 6 file mới (Shop Packages, Battle Pass service refactor,
-   Echo Parrot `petKey`, toàn bộ nội dung Lesson/Detective/Chat Buddy mở
-   rộng nằm trong `seed.ts` cũng chưa commit). Nếu máy này có sự cố, **toàn
-   bộ khối lượng công việc lớn nhất của app sẽ mất** vì chưa có bản sao lưu
-   nào trên GitHub. Nên commit + push ngay, độc lập với quyết định release.
+6. **Backend chưa có domain HTTPS thật, đang test qua LAN IP/ngrok.** Phần
+   cấu hình trong repo đã an toàn hơn: iOS/Android Release chặn HTTP thường,
+   chỉ Debug cho phép LAN; `build:release` bắt buộc `VITE_API_URL` dùng HTTPS.
+   Việc còn thiếu là cấp domain + TLS thật và điền URL đó vào `.env.release`.
+7. **Chưa triển khai bộ secrets production thật.** Repo đã có
+   `backend/.env.production.example` và backend từ chối JWT secret mẫu/yếu
+   khi `NODE_ENV=production`; trước deploy vẫn phải tạo secrets ngẫu nhiên
+   thật trong secret manager của hạ tầng, không commit vào git.
 
 ## 🟠 Nên xử lý trước khi release (không chặn cứng nhưng rủi ro/uy tín thật)
 
@@ -153,19 +144,16 @@ người dùng thật trả tiền/công khai trên store.**
 
 ## Đề xuất thứ tự xử lý
 
-1. **Commit + push ngay** toàn bộ thay đổi chưa lưu (Blocker #8) — không phụ
-   thuộc quyết định release, chỉ là rủi ro mất dữ liệu thuần tuý.
-2. Gỡ/ẩn vật phẩm test "Đói ngay" khỏi Shop thật.
-3. Quyết định rõ mô hình kinh doanh (miễn phí hoàn toàn, hay có thu phí thật)
+1. Gỡ/ẩn vật phẩm test "Đói ngay" khỏi Shop thật.
+2. Quyết định rõ mô hình kinh doanh (miễn phí hoàn toàn, hay có thu phí thật)
    — quyết định này chi phối toàn bộ Blocker #1, #2 (nếu thu phí thật thì
    Privacy Policy càng bắt buộc và cần kỹ hơn).
-4. Nếu nhắm iOS trước: mua Apple Developer ($99/năm), điền credentials Apple
+3. Nếu nhắm iOS trước: mua Apple Developer ($99/năm), điền credentials Apple
    Sign-In + chuyển sang flow native, chuẩn bị domain HTTPS thật.
-5. Nếu nhắm cả Android: cài Android Studio, test build thật trên ≥1 máy
+4. Nếu nhắm cả Android: cài Android Studio, test build thật trên ≥1 máy
    Android thật, tạo keystore release + Google Play Console ($25 một lần).
-6. Soạn Privacy Policy/Terms (kể cả bản đơn giản, đúng thực tế app đang thu
+5. Soạn Privacy Policy/Terms (kể cả bản đơn giản, đúng thực tế app đang thu
    thập gì) trước khi nộp app lên bất kỳ store nào.
-7. Sau khi có domain HTTPS thật: tắt `NSAllowsArbitraryLoads`/
-   `usesCleartextTraffic`/`server.cleartext`, set `NODE_ENV=production` +
-   `.env` production riêng, build lại bản release cuối theo checklist có sẵn
-   trong `frontend/MOBILE_BUILD.md`.
+6. Sau khi có domain HTTPS thật: tạo `.env.release` và secrets backend
+   production từ các file `.example`, rồi chạy `npm run cap:sync:release`
+   theo checklist trong `frontend/MOBILE_BUILD.md`.

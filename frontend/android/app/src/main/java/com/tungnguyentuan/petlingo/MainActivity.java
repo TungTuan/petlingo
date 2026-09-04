@@ -1,4 +1,4 @@
-package com.petlingo.app;
+package com.tungnguyentuan.petlingo;
 
 import com.getcapacitor.BridgeActivity;
 

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Debug-only: lets a physical device reach the developer's HTTP LAN
+         backend. The release manifest intentionally has no cleartext opt-in. -->
+    <application android:usesCleartextTraffic="true" />
+</manifest>

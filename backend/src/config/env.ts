@@ -32,6 +32,32 @@ const envSchema = z.object({
   // for "Sign in with Apple JS" on web, or the app's bundle ID for the native
   // flow (see TASKS.md's note on the native Capacitor upgrade still needed).
   APPLE_CLIENT_ID: z.string().optional(),
+}).superRefine((env, ctx) => {
+  if (env.NODE_ENV !== "production") return;
+
+  const placeholderPattern = /replace_with|change[-_ ]?me|example/i;
+  const secrets = [
+    ["JWT_ACCESS_SECRET", env.JWT_ACCESS_SECRET],
+    ["JWT_REFRESH_SECRET", env.JWT_REFRESH_SECRET],
+  ] as const;
+
+  for (const [field, value] of secrets) {
+    if (value.length < 32 || placeholderPattern.test(value)) {
+      ctx.addIssue({
+        code: "custom",
+        path: [field],
+        message: `${field} must be a non-placeholder secret of at least 32 characters in production`,
+      });
+    }
+  }
+
+  if (env.JWT_ACCESS_SECRET === env.JWT_REFRESH_SECRET) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["JWT_REFRESH_SECRET"],
+      message: "JWT_REFRESH_SECRET must differ from JWT_ACCESS_SECRET in production",
+    });
+  }
 });
 
 const parsed = envSchema.safeParse(process.env);

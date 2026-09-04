@@ -13,7 +13,9 @@ Hướng dẫn này giả định bạn đang ở macOS, đã có repo này, và
 - Đã cài CocoaPods qua Homebrew (`brew install cocoapods`) và chạy `pod install` cho iOS
 - **Xcode 26.6 đã được cài** (`/Applications/Xcode.app`, đủ platform iPhoneOS/iPhoneSimulator) — chỉ còn thiếu 1 bước bạn cần tự làm (cần mật khẩu sudo, tôi không chạy thay được), xem Bước 1
 - Đã sinh icon + splash screen thật cho cả 2 nền tảng (từ logo có sẵn ở `public/favicon.svg`, nguồn ảnh gốc ở `assets/`) — không phải icon mặc định của Capacitor nữa
-- Đã bật `usesCleartextTraffic` (Android) + `NSAllowsArbitraryLoads` (iOS) để app gọi được backend qua `http://` (LAN IP) khi test — **nhớ tắt lại trước khi phát hành thật**, xem mục "Trước khi release thật" cuối file
+- Bản Debug cho phép HTTP LAN qua manifest riêng của Android và
+  `Info-Debug.plist` của iOS; bản Release đã chặn cleartext/ATS exception.
+  Xem mục "Trước khi release thật" cuối file
 - Đã cài `ngrok` qua Homebrew — dùng được nếu bạn muốn expose backend qua HTTPS công khai thay vì IP LAN, xem Bước 0
 - Backend's CORS (`backend/src/app.ts`) đã tự động cho phép mọi origin `https://*.ngrok-free.app`/`*.ngrok.io`/`*.ngrok.app` (chỉ ngoài production) — **không cần sửa `CORS_ORIGIN` tay mỗi lần ngrok đổi URL**
 - Đã thêm script `npm run build:mobile` (build web + trỏ `VITE_API_URL` sang file `.env.mobile`) và `npm run cap:sync` (build:mobile rồi đồng bộ sang cả 2 project native)
@@ -314,12 +316,14 @@ Checklist riêng, khác hẳn build test — đừng release với cấu hình t
 
 - [ ] Backend phải có domain thật + HTTPS (chưa có ở thời điểm viết file
       này) — không được release app trỏ vào IP LAN nhà bạn
-- [ ] Xoá `NSAllowsArbitraryLoads` khỏi `ios/App/App/Info.plist` (ATS phải
-      bật lại đầy đủ cho bản release)
-- [ ] Xoá `android:usesCleartextTraffic="true"` khỏi
-      `android/app/src/main/AndroidManifest.xml`, và bỏ `server.cleartext`
-      trong `capacitor.config.ts`
-- [ ] Đổi `frontend/.env.mobile`'s `VITE_API_URL` sang domain HTTPS thật, build lại
+- [x] Release iOS dùng `Info.plist` không có `NSAllowsArbitraryLoads`; riêng
+      Debug dùng `Info-Debug.plist` để tiếp tục test backend LAN qua HTTP
+- [x] Release Android không bật cleartext; riêng
+      `android/app/src/debug/AndroidManifest.xml` bật cho debug LAN
+- [x] Đã bỏ `server.cleartext` khỏi `capacitor.config.ts`
+- [ ] Copy `.env.release.example` thành `.env.release`, đổi sang domain HTTPS
+      thật rồi chạy `npm run cap:sync:release`. Lệnh này tự từ chối URL HTTP
+      hoặc URL bị bỏ trống
 - [ ] Token đăng nhập hiện lưu ở `localStorage` (`tokenStorage.ts`) — nên
       chuyển sang `@capacitor/preferences` (Keychain/Keystore thật) trước khi
       phát hành rộng rãi (không bắt buộc để test, chỉ nên làm trước khi release)

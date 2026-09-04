@@ -1806,7 +1806,13 @@ dưới đây là đúng những gì THẬT SỰ còn tồn, đã cập nhật l
 - [ ] **iOS lên App Store thật:** cần tài khoản Apple Developer trả phí ($99/năm) — hiện đang dùng Apple ID thường (miễn phí, app tự hết hạn 7 ngày) để test tạm; đã ghi đủ bước nâng cấp lên TestFlight khi có tài khoản trả phí trong `frontend/MOBILE_BUILD.md`
 - [ ] **Android lên Google Play thật:** cần tạo keystore ký bản release + tài khoản Google Play Console ($25 trả 1 lần) — sideload APK debug trực tiếp là đủ để test tạm, chưa cần thiết ngay
 - [ ] Token đăng nhập hiện lưu ở `localStorage` (`tokenStorage.ts`) — cân nhắc chuyển sang `@capacitor/preferences` (Keychain/Keystore native) trước khi release rộng rãi (không bắt buộc để test)
-- [ ] Trước khi release thật (khác hẳn build test hiện tại): cần domain backend HTTPS thật (chưa có), bỏ `NSAllowsArbitraryLoads`/`usesCleartextTraffic`/`server.cleartext` đang bật cho tiện test qua LAN IP/ngrok — checklist đầy đủ ở cuối `frontend/MOBILE_BUILD.md`
+- [ ] Trước khi release thật: **phần code/config đã xử lý (2026-09-04)** —
+  Android/iOS Release chặn cleartext, Debug vẫn test LAN được; app ID Android
+  đã đồng nhất `com.tungnguyentuan.petlingo`; `build:release` bắt buộc URL
+  HTTPS; backend production từ chối JWT secret mẫu, ngắn hoặc trùng nhau.
+  Phần ngoài repo còn thiếu: cấp domain backend + TLS thật, copy
+  `.env.release.example` thành `.env.release` và điền URL production — checklist
+  đầy đủ ở cuối `frontend/MOBILE_BUILD.md`
 - [ ] Safe-area (tai thỏ, status bar) — class `.safe-top`/`.safe-bottom` đã có sẵn trong `index.css` nhưng chưa gắn vào screen nào; khung game cố định 1194×834 tự co giãn vừa màn hình nên phần lớn trường hợp không cần, nhưng nên rà lại trên máy có tai thỏ thật
 
 ---
