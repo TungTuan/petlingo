@@ -115,7 +115,7 @@ function PetForm({ initial, onClose, onSaved, onDelete }: { initial: PetInput; o
             disabled={!!editingPet}
             pattern="[a-z0-9-]+"
             value={form.key}
-            onChange={(e) => setForm({ ...form, key: e.target.value, imagePath: form.imagePath || `/pets/${e.target.value}.png` })}
+            onChange={(e) => setForm({ ...form, key: e.target.value, imagePath: form.imagePath || `/pets/${e.target.value}.webp` })}
           />
           <TextInput label="Tên hiển thị" required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
         </div>

@@ -100,7 +100,7 @@ export default function WordTrain({ onExit, onComplete }: WordTrainProps) {
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#BCEB9A]">
-      <img src="/games/word-train/railway-map-v1.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <img src="/games/word-train/railway-map-v1.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-[#153A45]/18 backdrop-blur-[1px]" />
       <div className="relative flex items-center gap-3.5 border-b-2 border-white/50 bg-white/72 p-4.5 backdrop-blur-md">
         <button onClick={onExit} className="grid h-[50px] w-[50px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F]">
@@ -186,7 +186,7 @@ function WordTrainPlay({ topic, onExit, onComplete }: { topic: WordTrainTopicDet
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[#BCEB9A]">
-      <img src="/games/word-train/railway-map-v1.png" alt="" className="absolute inset-0 h-full w-full object-cover" />
+      <img src="/games/word-train/railway-map-v1.webp" alt="" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-white/6" />
       <div className="relative z-20 flex items-center gap-3.5 border-b-2 border-white/60 bg-white/78 p-3.5 backdrop-blur-md">
         <button onClick={onExit} className="grid h-[50px] w-[50px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F]">

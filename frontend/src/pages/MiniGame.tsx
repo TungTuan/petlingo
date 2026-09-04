@@ -32,6 +32,15 @@ function buildDeck(words: { en: string; vi: string; img: string }[]): DeckCard[]
   return cards;
 }
 
+function pickRoundWords(words: { en: string; vi: string; img: string }[], count: number, round: number) {
+  const groups = new Map<string, typeof words>();
+  for (const word of words) groups.set(word.img, [...(groups.get(word.img) ?? []), word]);
+  const distinct = [...groups.values()];
+  for (let i = distinct.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [distinct[i], distinct[j]] = [distinct[j]!, distinct[i]!]; }
+  const shifted = [...distinct.slice(round % distinct.length), ...distinct.slice(0, round % distinct.length)];
+  return shifted.slice(0, count).map((group) => group[Math.floor(Math.random() * group.length)]!);
+}
+
 /** Memory Match — matches the reference sheet's "Phần 2 · Mini-game" panel.
  * Now backed by real MiniGameTopic/MiniGameWord catalog data (see
  * /catalog/minigame-topics): shows a topic picker first, then plays
@@ -40,6 +49,7 @@ export default function MiniGame({ onExit, onWin }: MiniGameProps) {
   const t = useT();
   const [list, setList] = useState<MiniGameTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<MiniGameTopicDetail | null>(null);
+  const [difficulty, setDifficulty] = useState<4 | 8 | 20 | null>(null);
   const [loadErr, setLoadErr] = useState("");
 
   useEffect(() => {
@@ -59,7 +69,8 @@ export default function MiniGame({ onExit, onWin }: MiniGameProps) {
     }
   }
 
-  if (topic) return <MiniGamePlay topic={topic} onExit={() => setTopic(null)} onWin={onWin} />;
+  if (topic && difficulty) return <MiniGamePlay topic={topic} pairCount={difficulty} onExit={() => setDifficulty(null)} onWin={onWin} />;
+  if (topic) return <DifficultyPicker topic={topic} onPick={setDifficulty} onExit={() => setTopic(null)} />;
 
   return (
     <div className="flex h-full flex-col bg-gradient-to-b from-[#E9E2FB] to-[#F7EFDD]">
@@ -101,10 +112,21 @@ export default function MiniGame({ onExit, onWin }: MiniGameProps) {
   );
 }
 
+function DifficultyPicker({ topic, onPick, onExit }: { topic: MiniGameTopicDetail; onPick: (count: 4 | 8 | 20) => void; onExit: () => void }) {
+  const levels = [
+    { count: 4 as const, name: "Dễ", note: "4 cặp · làm quen", icon: "🌱", color: "#7CC24A" },
+    { count: 8 as const, name: "Trung bình", note: "8 cặp · luyện nhớ", icon: "⭐", color: "#F2A81C" },
+    { count: 20 as const, name: "Khó", note: "20 cặp · thử thách", icon: "🔥", color: "#EF6A5A" },
+  ];
+  return <div className="flex h-full flex-col bg-gradient-to-b from-[#E9E2FB] to-[#F7EFDD]"><div className="flex items-center gap-3.5 p-4.5"><button onClick={onExit} className="grid h-[50px] w-[50px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F]"><BackIcon /></button><div><div className="font-baloo text-[26px] font-extrabold">{topic.name}</div><div className="font-baloo text-[13px] font-semibold text-[#8A7A62]">Chọn độ khó cho lượt chơi</div></div><span className="ml-auto rounded-full bg-white px-4 py-2 font-baloo text-sm font-extrabold text-[#7A6B5A]">Kho {topic.words.length} từ</span></div><div className="grid flex-1 place-items-center px-8 pb-8"><div className="grid w-full max-w-[900px] grid-cols-3 gap-6">{levels.map((level) => <button key={level.count} onClick={() => onPick(level.count)} className="group relative overflow-hidden rounded-[30px] border-4 border-white bg-white p-7 text-left shadow-[0_8px_0_#DCCDB4,0_18px_35px_rgba(65,50,36,.14)] transition-transform hover:-translate-y-2"><div className="mb-5 grid h-20 w-20 place-items-center rounded-[24px] text-4xl shadow-inner" style={{background:`${level.color}25`}}>{level.icon}</div><div className="font-baloo text-2xl font-extrabold" style={{color:level.color}}>{level.name}</div><div className="mt-2 font-baloo text-sm font-bold text-[#8A7A62]">{level.note}</div><div className="mt-6 h-3 overflow-hidden rounded-full bg-[#EFE7D7]"><div className="h-full rounded-full" style={{width:`${level.count / 20 * 100}%`,background:level.color}} /></div></button>)}</div></div></div>;
+}
+
 /** The actual matching game, once a topic has been picked. */
-function MiniGamePlay({ topic, onExit, onWin }: { topic: MiniGameTopicDetail; onExit: () => void; onWin?: () => void }) {
+function MiniGamePlay({ topic, pairCount, onExit, onWin }: { topic: MiniGameTopicDetail; pairCount: 4 | 8 | 20; onExit: () => void; onWin?: () => void }) {
   const t = useT();
-  const deck = useMemo(() => buildDeck(topic.words), [topic]);
+  const [round, setRound] = useState(0);
+  const roundWords = useMemo(() => pickRoundWords(topic.words, pairCount, round), [topic, pairCount, round]);
+  const deck = useMemo(() => buildDeck(roundWords), [roundWords]);
   const [flipped, setFlipped] = useState<number[]>([]);
   const [matched, setMatched] = useState<number[]>([]);
   const [wrongPair, setWrongPair] = useState<number[]>([]);
@@ -149,22 +171,22 @@ function MiniGamePlay({ topic, onExit, onWin }: { topic: MiniGameTopicDetail; on
     setWrongPair([]);
     setCoins(0);
     setMsg(t("Chạm 2 thẻ để ghép từ với hình"));
+    setRound((value) => value + 1);
   }
 
   return (
-    <div className="flex h-full flex-col bg-gradient-to-b from-[#E9E2FB] to-[#F7EFDD]">
-      <div className="flex items-center gap-3.5 p-4">
-        <button onClick={onExit} className="grid h-[50px] w-[50px] place-items-center rounded-full bg-[#5C7BC9] shadow-[0_4px_0_#43609F]">
+    <div className="relative flex h-full min-h-0 flex-col overflow-hidden bg-[radial-gradient(circle_at_10%_15%,#F9F4FF_0_8%,transparent_25%),linear-gradient(145deg,#E8E0FA,#FFF8E8)]">
+      <div className="pointer-events-none absolute -left-16 top-24 h-52 w-52 rounded-full bg-[#BFA9F0]/20 blur-2xl" /><div className="pointer-events-none absolute bottom-0 right-40 h-64 w-64 rounded-full bg-[#FFD36E]/15 blur-3xl" />
+      <div className="relative z-10 flex h-[82px] shrink-0 items-center gap-3.5 border-b border-white/70 bg-white/35 px-5 backdrop-blur-sm">
+        <button onClick={onExit} className="grid h-[46px] w-[46px] place-items-center rounded-[16px] bg-[#5C7BC9] shadow-[0_4px_0_#43609F]">
           <BackIcon />
         </button>
         <div className="flex flex-col">
-          <span className="font-baloo text-[26px] font-extrabold">{topic.name}</span>
-          <span className="font-baloo text-[13px] font-semibold text-[#8A7A62]">{t("Ghép từ với hình · spaced repetition")}</span>
+          <span className="font-baloo text-[23px] font-extrabold">{topic.name}</span>
+          <span className="font-baloo text-[12px] font-bold text-[#8A7A62]">Memory Match · {pairCount === 4 ? "Dễ" : pairCount === 8 ? "Trung bình" : "Khó"}</span>
         </div>
         <div className="flex-1" />
-        <div className="rounded-full bg-white px-4.5 py-2 font-baloo text-[17px] font-extrabold text-[#6E6047] shadow-[0_3px_0_#E3CFA8]">
-          {t("Cặp")} {matched.length / 2}/{topic.words.length}
-        </div>
+        <div className="w-[180px]"><div className="mb-1 flex justify-between font-baloo text-[11px] font-extrabold text-[#746451]"><span>TIẾN ĐỘ</span><span>{matched.length / 2}/{pairCount}</span></div><div className="h-3 overflow-hidden rounded-full border-2 border-white bg-[#DDD2C1]"><div className="h-full rounded-full bg-[linear-gradient(90deg,#74C94C,#A7E06E)] transition-[width]" style={{width:`${matched.length / 2 / pairCount * 100}%`}} /></div></div>
         <div className="relative flex items-center gap-2 rounded-full bg-white px-4.5 py-2 font-baloo text-[17px] font-extrabold text-[#B07A0C] shadow-[0_3px_0_#E3CFA8]">
           <CoinIcon size={20} />
           {coins}
@@ -174,13 +196,13 @@ function MiniGamePlay({ topic, onExit, onWin }: { topic: MiniGameTopicDetail; on
             </span>
           )}
         </div>
-        <button onClick={reset} className="rounded-2xl border-[3px] border-line bg-cream-card px-5 py-2.5 font-baloo text-[15px] font-bold text-brand-brown shadow-[0_4px_0_#E7D4B2]">
+        <button onClick={reset} className="rounded-[15px] border-2 border-[#E2CFA9] bg-[#FFF9EA] px-4 py-2.5 font-baloo text-[13px] font-extrabold text-brand-brown shadow-[0_3px_0_#D8C39C]">
           {t("Chơi lại")}
         </button>
       </div>
 
-      <div className="relative flex flex-1 gap-5.5 px-6 pb-6">
-        <div className="grid flex-1 grid-cols-4 grid-rows-2 gap-4.5">
+      <div className="relative z-10 flex min-h-0 flex-1 gap-4 p-4">
+        <div className={`grid min-h-0 min-w-0 flex-1 rounded-[26px] border-2 border-white/80 bg-white/38 p-3 shadow-[inset_0_1px_0_white,0_12px_30px_rgba(79,57,115,.09)] ${pairCount === 4 ? "grid-cols-4 grid-rows-2 gap-4" : pairCount === 8 ? "grid-cols-4 grid-rows-4 gap-2.5" : "grid-cols-8 grid-rows-5 gap-[7px]"}`}>
           {deck.map((c, i) => (
             <MemoryCard
               key={i}
@@ -188,18 +210,20 @@ function MiniGamePlay({ topic, onExit, onWin }: { topic: MiniGameTopicDetail; on
               open={flipped.includes(i) || matched.includes(i)}
               matched={matched.includes(i)}
               wrong={wrongPair.includes(i)}
+              density={pairCount === 20 ? "dense" : pairCount === 8 ? "compact" : "normal"}
               onClick={() => flip(i)}
             />
           ))}
         </div>
-        <div className="flex w-[280px] flex-col gap-3.5">
-          <div className="flex flex-col gap-2.5 rounded-[22px] border-[3px] border-line2 bg-white p-4.5 shadow-[0_5px_0_#EADAB8]">
-            <div className="font-baloo text-[18px] font-extrabold">{t("Từ trong lượt này")}</div>
-            {topic.words.map((w, i) => {
+        <div className="flex min-h-0 w-[255px] shrink-0 flex-col gap-3">
+          <div className="flex min-h-0 flex-1 flex-col rounded-[22px] border-2 border-white bg-white/90 p-3.5 shadow-[0_5px_0_#EADAB8,0_12px_25px_rgba(77,58,37,.1)]">
+            <div className="mb-2 flex items-center justify-between font-baloo text-[16px] font-extrabold"><span>{t("Từ trong lượt này")}</span><span className="rounded-full bg-[#EEE6FA] px-2 py-1 text-[10px] text-[#7657B5]">{pairCount} TỪ</span></div>
+            <div className={`min-h-0 flex-1 overflow-y-auto pr-1 ${pairCount === 20 ? "grid grid-cols-2 content-start gap-1.5" : "space-y-2"}`}>
+            {roundWords.map((w, i) => {
               const solved = deck.some((c, idx) => c.key === i && matched.includes(idx));
               return (
-                <div key={w.en} className="flex items-center gap-2.5 font-baloo text-[15px] font-bold" style={{ color: solved ? "#4F7C2A" : "#4A3728" }}>
-                  <span className="grid h-[22px] w-[22px] place-items-center rounded-lg" style={{ background: solved ? "#7CC24A" : "#E4D3BC" }}>
+                <div key={w.en} className={`flex items-center rounded-xl font-baloo font-bold ${pairCount === 20 ? "gap-1.5 bg-[#F8F4ED] p-1.5 text-[10px]" : "gap-2.5 text-[13px]"}`} style={{ color: solved ? "#4F7C2A" : "#4A3728" }}>
+                  <span className="grid h-[18px] w-[18px] shrink-0 place-items-center rounded-md" style={{ background: solved ? "#7CC24A" : "#E4D3BC" }}>
                     {solved && (
                       <svg width="13" height="13" viewBox="0 0 24 24" stroke="#fff" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M5 13l4.5 4.5L19 7" />
@@ -207,15 +231,15 @@ function MiniGamePlay({ topic, onExit, onWin }: { topic: MiniGameTopicDetail; on
                     )}
                   </span>
                   {w.en}
-                  <span className="font-semibold text-[#A2947C]">{w.vi}</span>
+                  {pairCount !== 20 && <span className="font-semibold text-[#A2947C]">{w.vi}</span>}
                 </div>
               );
-            })}
+            })}</div>
           </div>
-          <div className="rounded-[22px] border-[3px] border-[#DDCFF5] bg-[#F1EAFB] p-4 font-baloo text-[13px] font-semibold leading-snug text-[#6E56A8]">
+          {pairCount !== 20 && <div className="rounded-[18px] border-2 border-[#DDCFF5] bg-[#F1EAFB] p-3 font-baloo text-[11px] font-semibold leading-snug text-[#6E56A8]">
             {t("Từ ghép sai sẽ quay lại sớm hơn; ghép đúng 3 lần thì giãn ra 1 ngày → 3 ngày → 7 ngày.")}
-          </div>
-          <div className="mt-auto font-baloo text-sm font-semibold text-[#8A7A62]">{msg}</div>
+          </div>}
+          <div className="min-h-9 rounded-[14px] bg-[#4A3728]/80 px-3 py-2 font-baloo text-[11px] font-bold text-white shadow-sm">{msg}</div>
         </div>
 
         {won && (

@@ -275,7 +275,7 @@ export default function Onboarding({ onDone }: OnboardingProps) {
         <div className="relative grid h-[420px] w-[420px] place-items-center">
           <span className="animate-ring absolute h-[330px] w-[330px] rounded-full bg-white/50" />
           <span className="absolute bottom-14 h-11 w-[250px] rounded-[50%] bg-black/[.14]" />
-          <img src={`/pets/${s.img}.png`} alt="" className="animate-bob h-[340px] w-[340px] object-contain object-bottom" />
+          <img src={`/pets/${s.img}.webp`} alt="" className="animate-bob h-[340px] w-[340px] object-contain object-bottom" />
           <span
             className="animate-pulse-soft absolute right-4.5 top-8.5 rounded-full px-5 py-2.5 font-baloo text-base font-extrabold text-white shadow-[0_4px_0_rgba(0,0,0,.18)]"
             style={{ background: s.badge[1] }}

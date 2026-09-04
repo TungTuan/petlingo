@@ -18,6 +18,7 @@ export function MemoryCard({
   matched,
   wrong,
   onClick,
+  density = "normal",
 }: {
   card: MemoryCardDef;
   open: boolean;
@@ -25,24 +26,31 @@ export function MemoryCard({
   /** True for a brief moment right after a mismatch is revealed — triggers a shake before flipping back. */
   wrong?: boolean;
   onClick: () => void;
+  density?: "normal" | "compact" | "dense";
 }) {
+  const radius = density === "dense" ? "rounded-[13px]" : density === "compact" ? "rounded-[17px]" : "rounded-[24px]";
+  const border = density === "dense" ? "border-2" : "border-[3px]";
+  const wordSize = density === "dense" ? "text-[13px] leading-tight px-1" : density === "compact" ? "text-base leading-tight px-2" : "text-2xl";
+  const emojiSize = density === "dense" ? "text-3xl" : density === "compact" ? "text-4xl" : "text-6xl";
   return (
-    <button onClick={onClick} disabled={open} className={`relative block h-full w-full [perspective:900px] ${wrong ? "animate-shake" : ""}`}>
+    <button onClick={onClick} disabled={open} className={`relative block min-h-0 h-full w-full [perspective:900px] ${wrong ? "animate-shake" : ""}`}>
       <div
         className={`relative h-full w-full transition-transform duration-500 [transform-style:preserve-3d] ${open ? "[transform:rotateY(180deg)]" : ""} ${matched ? "animate-match-glow" : ""}`}
       >
         {/* Back face — face-down pattern, shown while closed. */}
-        <div className="absolute inset-0 grid place-items-center rounded-[24px] border-4 border-line bg-brand-purple shadow-[0_6px_0_#7A5EBC] [backface-visibility:hidden] hover:brightness-105">
-          <span className="h-11 w-11 rounded-full bg-white/90" />
+        <div className={`absolute inset-0 grid place-items-center overflow-hidden ${radius} ${border} border-[#C9B4F2] bg-[linear-gradient(145deg,#A88AE8,#8062CE)] shadow-[0_4px_0_#6749B4,0_8px_16px_rgba(83,57,145,.18)] [backface-visibility:hidden] hover:brightness-105`}>
+          <span className="absolute -right-5 -top-5 h-16 w-16 rounded-full bg-white/10" />
+          <span className="absolute -bottom-7 -left-5 h-20 w-20 rounded-full bg-[#6245B5]/20" />
+          <span className={`grid rounded-full border-2 border-white/70 bg-white/20 text-white shadow-inner ${density === "dense" ? "h-8 w-8 text-sm" : density === "compact" ? "h-10 w-10 text-lg" : "h-12 w-12 text-xl"}`}>✦</span>
         </div>
         {/* Front face — word or pet image, only reachable via the 180° flip. */}
         <div
-          className={`absolute inset-0 grid place-items-center overflow-hidden rounded-[24px] border-4 bg-white shadow-[0_6px_0_#E7D4B2] [backface-visibility:hidden] [transform:rotateY(180deg)] ${matched ? "border-brand-green bg-[#EEF9E3]" : "border-line"}`}
+          className={`absolute inset-0 grid place-items-center overflow-hidden ${radius} ${border} bg-white shadow-[0_4px_0_#E7D4B2] [backface-visibility:hidden] [transform:rotateY(180deg)] ${matched ? "border-brand-green bg-[#EEF9E3]" : "border-line"}`}
         >
           {card.kind === "word" ? (
-            <span className="font-baloo text-2xl font-extrabold text-ink">{card.word}</span>
+            <span className={`text-center font-baloo font-extrabold text-ink ${wordSize}`}>{card.word}</span>
           ) : card.kind === "emoji" ? (
-            <span className="text-6xl leading-none">{card.emoji}</span>
+            <span className={`${emojiSize} leading-none`}>{card.emoji}</span>
           ) : (
             <PetImage id={card.pet!} className="absolute inset-3.5" />
           )}

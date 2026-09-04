@@ -142,7 +142,7 @@ export default function SystemStates({ onExit }: SystemStatesProps) {
         >
           <div className="relative grid h-[200px] w-[220px] place-items-center">
             <span className="absolute bottom-3.5 h-8.5 w-[170px] rounded-[50%] bg-black/[.12]" />
-            <img src={`/pets/${st.img}.png`} alt="" className="animate-bob h-[200px] w-[200px] object-contain object-bottom" style={{ filter: st.filter }} />
+            <img src={`/pets/${st.img}.webp`} alt="" className="animate-bob h-[200px] w-[200px] object-contain object-bottom" style={{ filter: st.filter }} />
             <span
               className="absolute right-1 top-1.5 grid h-13 w-13 place-items-center rounded-full font-baloo text-2xl font-extrabold text-white shadow-[0_4px_0_rgba(0,0,0,.16)]"
               style={{ background: st.btnBg, animation: st.key === "offline" ? "wifi 1.6s ease-in-out infinite" : "pulseSoft 2s ease-in-out infinite" }}

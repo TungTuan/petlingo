@@ -78,7 +78,7 @@ export default function EnglishHome({ onExit, onComplete }: EnglishHomeProps) {
         ) : (
           <div className="mx-auto flex h-full max-h-[570px] w-full max-w-[1080px] items-center justify-center">
             <div className="relative aspect-[1672/941] w-full overflow-hidden rounded-[32px] border-4 border-white bg-[#BFE9FA] shadow-[0_8px_0_#9ABCCA,0_22px_55px_rgba(49,91,114,.24)]">
-              <img src="/games/english-home/dollhouse-v1.png" alt="Ngôi nhà English Home" className="absolute inset-0 h-full w-full object-cover" />
+              <img src="/games/english-home/dollhouse-v1.webp" alt="Ngôi nhà English Home" className="absolute inset-0 h-full w-full object-cover" />
               <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,.06),transparent_45%,rgba(35,73,45,.08))]" />
               {list.map((tp) => {
                 const spot = HOME_TOPIC_HOTSPOT[tp.key] ?? { left: "40%", top: "35%", width: "22%", height: "24%" };
@@ -356,7 +356,7 @@ function EnglishHomePlay({ topic, onExit, onComplete }: { topic: HomeTopicDetail
         {/* The room scene — furniture is decorative, the dashed boxes are real drop targets (hit-tested against on pointer-up). */}
         <div className="relative w-full flex-1 overflow-hidden rounded-[28px] border-4 border-white shadow-[0_7px_0_#C8B994,0_16px_32px_rgba(80,64,39,.16)]" style={{ background: scene?.bg ?? "#F7EFDD", minHeight: 260 }}>
           <img
-            src="/games/english-home/dollhouse-v1.png"
+            src="/games/english-home/dollhouse-v1.webp"
             alt=""
             className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-transform duration-700"
             style={{ transform: "scale(2.05)", transformOrigin: HOME_SCENE_FOCUS[topic.key] ?? "50% 50%" }}

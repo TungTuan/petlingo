@@ -1,4 +1,4 @@
-import { useState, type CSSProperties } from "react";
+import { useRef, useState, type CSSProperties } from "react";
 import { ArrowRight, BookOpen, CalendarCheck2, Check, Gift, Palette, Trophy } from "lucide-react";
 import { ChunkyButton, CoinIcon, GearIcon, GemIcon, HeartIcon, StarIcon } from "../components/ui";
 import BottomTabs from "../components/BottomTabs";
@@ -124,6 +124,13 @@ export default function Home({
 }: HomeProps) {
   const t = useT();
   const [pats, setPats] = useState(0);
+  const lastPatAt = useRef(0);
+  function reactToPat() {
+    const now = performance.now();
+    if (now - lastPatAt.current < 350) return;
+    lastPatAt.current = now;
+    setPats((value) => value + 1);
+  }
   const [showCustomizer, setShowCustomizer] = useState(false);
   const [busyBackground, setBusyBackground] = useState<string | null>(null);
   const petLevel = petStats?.level ?? 1;
@@ -213,11 +220,11 @@ export default function Home({
             {stage === "egg" ? t("Học cùng mình để trứng nở nhé!") : mood === "sad" ? t("Mình hơi đói rồi!") : `${t("Xin chào! Mình là")} ${petName}!`}
             <span className="absolute bottom-[-12px] left-8 h-[18px] w-[18px] rotate-45 border-b-[3px] border-r-[3px] border-line bg-white" />
           </div>
-          <button onClick={() => setPats((p) => p + 1)} className={`relative z-[5] grid h-[260px] w-[380px] place-items-end border-none bg-transparent p-0 ${petLevel >= 30 ? "pet-max-preview" : ""}`} title={t("Chạm để vuốt Buddy")}>
+          <button onClick={reactToPat} onDoubleClick={(event) => event.preventDefault()} className={`relative z-[5] grid h-[260px] w-[380px] place-items-end border-none bg-transparent p-0 ${petLevel >= 30 ? "pet-max-preview" : ""}`} title={t("Chạm để vuốt Buddy")}>
             <span className="pet-ground-shadow absolute bottom-5 h-11 w-[245px] rounded-[50%] bg-[#365625]/25 blur-[2px]" />
-            <PetPortrait petId={petId} name={petName} level={petLevel} mood={mood} animated className="relative z-10 h-[260px] w-[320px] drop-shadow-[0_18px_16px_rgba(51,72,29,.28)] transition-transform duration-200 hover:scale-[1.025] active:scale-95" />
+            <span key={`pet-action-${pats}`} className={pats > 0 ? "home-pet-cute-action relative z-10 block" : "relative z-10 block"}><PetPortrait petId={petId} name={petName} level={petLevel} mood={mood} animated className="h-[260px] w-[320px] drop-shadow-[0_18px_16px_rgba(51,72,29,.28)] transition-transform duration-200 hover:scale-[1.025] active:scale-95" /></span>
             {pats > 0 && (
-              <span key={pats} className="animate-float-up pointer-events-none absolute right-[46px] top-5 font-baloo text-[30px] font-extrabold text-[#EF6A5A]">
+              <span key={`pet-heart-${pats}`} className="animate-float-up pointer-events-none absolute right-[46px] top-5 font-baloo text-[30px] font-extrabold text-[#EF6A5A]">
                 ♥
               </span>
             )}

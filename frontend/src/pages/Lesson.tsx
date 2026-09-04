@@ -149,7 +149,7 @@ export default function Lesson({ questions, isPremium, topicLabel, onExit, onCom
           <div className="flex min-w-0 items-center gap-4">
             <div className="relative shrink-0">
               <div className="absolute inset-3 rounded-full bg-[#FFEBA8] blur-xl" />
-              <img src="/pets/buddy.png" alt="Buddy" className="animate-bob relative h-[100px] w-[100px] object-contain" />
+              <img src="/pets/buddy.webp" alt="Buddy" className="animate-bob relative h-[100px] w-[100px] object-contain" />
             </div>
             <div className="relative min-w-0 flex-1 rounded-[25px] border-[3px] border-[#E7D4B2] bg-white px-5 py-4 shadow-[0_5px_0_#E7D4B2]">
               <span className="absolute -left-[11px] top-1/2 h-5 w-5 -translate-y-1/2 rotate-45 border-b-[3px] border-l-[3px] border-[#E7D4B2] bg-white" />

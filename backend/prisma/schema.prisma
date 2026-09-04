@@ -79,6 +79,7 @@ model Parent {
 /// sinh đầy đủ, để hạn chế dữ liệu cá nhân nhạy cảm của trẻ.
 model Child {
   id          String   @id @default(cuid())
+  friendCode  String?  @unique @default(cuid())
   parentId    String
   displayName String
   avatarId    String
@@ -98,9 +99,56 @@ model Child {
   notifications      Notification[]
   battlePassProgress ChildBattlePassProgress[]
   packageClaims      ChildPackageClaim[]
+  friendRequestsSent Friendship[] @relation("FriendRequester")
+  friendRequestsReceived Friendship[] @relation("FriendAddressee")
+  giftsSent Gift[] @relation("GiftSender")
+  giftsReceived Gift[] @relation("GiftReceiver")
 
   @@index([parentId])
   @@map("children")
+}
+
+enum FriendshipStatus {
+  pending
+  accepted
+}
+
+/// Quan hệ bạn bè ở cấp hồ sơ trẻ. Không có tìm kiếm công khai: người gửi
+/// phải biết chính xác friendCode; người nhận luôn phải chấp nhận trước khi
+/// trang trại của họ có thể được xem.
+model Friendship {
+  id          String           @id @default(cuid())
+  requesterId String
+  addresseeId String
+  status      FriendshipStatus @default(pending)
+  createdAt   DateTime         @default(now())
+  acceptedAt  DateTime?
+
+  requester Child @relation("FriendRequester", fields: [requesterId], references: [id], onDelete: Cascade)
+  addressee Child @relation("FriendAddressee", fields: [addresseeId], references: [id], onDelete: Cascade)
+
+  @@unique([requesterId, addresseeId])
+  @@index([addresseeId, status])
+  @@map("friendships")
+}
+
+model Gift {
+  id         String   @id @default(cuid())
+  senderId   String
+  receiverId String
+  itemId     String
+  quantity   Int
+  message    String?
+  createdAt  DateTime @default(now())
+  readAt     DateTime?
+
+  sender   Child @relation("GiftSender", fields: [senderId], references: [id], onDelete: Cascade)
+  receiver Child @relation("GiftReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  item     Item  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@index([receiverId, createdAt])
+  @@index([senderId, createdAt])
+  @@map("gifts")
 }
 
 enum NotificationKind {
@@ -269,7 +317,7 @@ enum Currency {
 }
 
 /// Danh mục pet có thể mở khoá trong Shop — quản lý ở trang Admin.
-/// `key` là slug ổn định dùng làm tên file ảnh (/pets/<key>.png) và giá trị
+/// `key` là slug ổn định dùng làm tên file ảnh (/pets/<key>.webp) và giá trị
 /// lưu trong Progress.unlockedPets, nên không đổi sau khi tạo.
 model Pet {
   id        String   @id @default(cuid())
@@ -381,6 +429,7 @@ model Item {
   updatedAt   DateTime     @updatedAt
 
   ownedBy ChildItem[]
+  gifts   Gift[]
 
   @@map("items")
 }

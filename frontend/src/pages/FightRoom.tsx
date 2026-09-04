@@ -113,7 +113,7 @@ export default function FightRoom({ child, onExit, onRefreshProgress }: FightRoo
       <div className="flex min-h-0 flex-1 items-center justify-center p-6">
         {phase === "menu" && (
           <div className="flex flex-col items-center gap-4">
-            <img src={`/pets/${child.avatarId}.png`} alt="" className="animate-bob h-[130px] w-[130px] object-contain" />
+            <img src={`/pets/${child.avatarId}.webp`} alt="" className="animate-bob h-[130px] w-[130px] object-contain" />
             <ChunkyButton tone="orange" shine onClick={openPickLesson} className="w-72">
               {t("Tạo phòng mới")}
             </ChunkyButton>
@@ -200,7 +200,7 @@ function WaitingView({ code, childId, socket, t }: { code: string; childId: stri
             className="flex w-[64px] flex-col items-center gap-1 rounded-2xl border-[3px] px-2 py-2.5 transition-opacity"
             style={{ borderColor: p.childId === childId ? "#FFC93C" : "rgba(255,255,255,.2)", background: p.childId === childId ? "rgba(255,201,60,.12)" : "rgba(255,255,255,.05)", opacity: p.connected ? 1 : 0.4 }}
           >
-            <img src={`/pets/${p.avatarId}.png`} alt="" className="h-9 w-9 object-contain" />
+            <img src={`/pets/${p.avatarId}.webp`} alt="" className="h-9 w-9 object-contain" />
             <span className="w-full truncate text-center font-baloo text-[10.5px] font-bold text-white">{p.childId === childId ? t("Bạn") : p.displayName}</span>
           </div>
         ))}
@@ -321,7 +321,7 @@ function ScoreChip({ player, score, me, t }: { player: RosterPlayer; score: numb
       className="flex shrink-0 flex-col items-center gap-0.5 rounded-2xl border-[3px] px-3 py-2 transition-opacity"
       style={{ borderColor: me ? "#FFC93C" : "rgba(255,255,255,.18)", background: me ? "rgba(255,201,60,.14)" : "rgba(255,255,255,.05)", opacity: player.connected ? 1 : 0.4 }}
     >
-      <img src={`/pets/${player.avatarId}.png`} alt="" className="h-8 w-8 object-contain" />
+      <img src={`/pets/${player.avatarId}.webp`} alt="" className="h-8 w-8 object-contain" />
       <span className="max-w-[64px] truncate font-baloo text-[10.5px] font-extrabold text-white">{me ? t("Bạn") : player.displayName}</span>
       <span className="font-baloo text-base font-extrabold text-[#FFC93C]">{score}</span>
     </div>
@@ -331,7 +331,7 @@ function ScoreChip({ player, score, me, t }: { player: RosterPlayer; score: numb
 function PlayerBadge({ avatarId, name, score, align }: { avatarId: string; name: string; score: number; align: "left" | "right" }) {
   return (
     <div className={`flex items-center gap-2.5 ${align === "right" ? "flex-row-reverse text-right" : ""}`}>
-      <img src={`/pets/${avatarId}.png`} alt="" className="h-14 w-14 object-contain" />
+      <img src={`/pets/${avatarId}.webp`} alt="" className="h-14 w-14 object-contain" />
       <div className="flex flex-col">
         <span className="font-baloo text-sm font-extrabold text-white">{name}</span>
         <span className="font-baloo text-2xl font-extrabold text-[#FFC93C]">{score}</span>
@@ -370,7 +370,7 @@ function ResultView({
 
   return (
     <div className="animate-pop flex w-[92%] max-w-md flex-col items-center gap-4 rounded-[30px] border-4 border-white/20 bg-white p-8 shadow-[0_14px_40px_rgba(0,0,0,.35)]">
-      <img src={`/pets/${me?.avatarId ?? "buddy"}.png`} alt="" className={`h-[120px] w-[120px] object-contain ${won ? "animate-bob" : ""}`} />
+      <img src={`/pets/${me?.avatarId ?? "buddy"}.webp`} alt="" className={`h-[120px] w-[120px] object-contain ${won ? "animate-bob" : ""}`} />
       <div className="font-baloo text-[26px] font-extrabold" style={{ color: titleColor }}>
         {title}
       </div>
@@ -388,7 +388,7 @@ function ResultView({
               style={{ background: p.childId === childId ? "#FFF1DE" : "transparent" }}
             >
               <span className="w-5 text-center font-baloo text-[13px] font-extrabold text-[#8A7A62]">{i + 1}</span>
-              <img src={`/pets/${p.avatarId}.png`} alt="" className="h-7 w-7 object-contain" />
+              <img src={`/pets/${p.avatarId}.webp`} alt="" className="h-7 w-7 object-contain" />
               <span className="flex-1 truncate font-baloo text-[13.5px] font-bold text-ink">{p.childId === childId ? t("Bạn") : p.displayName}</span>
               <span className="font-baloo text-[13.5px] font-extrabold text-[#3E7FB0]">{matchEnd.scores[p.childId] ?? 0}</span>
             </div>

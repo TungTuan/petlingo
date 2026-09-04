@@ -582,7 +582,7 @@ const VOCAB_TOPICS: Record<string, [string, string, string, string][]> = {
   ],
 };
 
-type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel" | "renamePet"; delta: number };
+type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel" | "renamePet" | "renameUser"; delta: number };
 type ItemCategory = "food" | "toy" | "accessory" | "special";
 
 // Mirrors frontend/src/pages/Bag.tsx's old BAG_DATA mock, now the real
@@ -592,37 +592,21 @@ type ItemCategory = "food" | "toy" | "accessory" | "special";
 // (accessories) and the XP/Tim tickets (special) are flavor-only for now —
 // no XP/hearts persistence exists yet to hook them into.
 const ITEMS: { key: string; name: string; category: ItemCategory; color: string; radius: string; description: string; effects: ItemEffect[]; defaultQty: number; price?: number; currency?: "coin" | "gem"; imagePath?: string }[] = [
-  { key: "banh-quy-buddy", name: "Bánh quy Buddy", category: "food", color: "#E8A94D", radius: "18px", description: "Giảm đói nhẹ và nhận 8 XP.", effects: [{ stat: "hunger", delta: 15 }, { stat: "experience", delta: 8 }], defaultQty: 0, price: 30, currency: "coin", imagePath: "/items/food/buddy-cookie.png" },
-  { key: "com-ga-cau-vong", name: "Cơm gà cầu vồng", category: "food", color: "#F7C95C", radius: "999px", description: "Bữa ăn no lâu, hồi 35 đồ ăn và nhận 18 XP.", effects: [{ stat: "hunger", delta: 35 }, { stat: "health", delta: 5 }, { stat: "experience", delta: 18 }], defaultQty: 0, price: 80, currency: "coin", imagePath: "/items/food/rainbow-chicken-bowl.png" },
-  { key: "sua-sao-kim-cuong", name: "Sữa sao kim cương", category: "food", color: "#70D7F2", radius: "16px", description: "Sữa phép thuật giúp pet nhận nhanh 100 XP.", effects: [{ stat: "hunger", delta: 20 }, { stat: "experience", delta: 100 }], defaultQty: 0, price: 12, currency: "gem", imagePath: "/items/food/diamond-star-milk.png" },
-  { key: "banh-tang-cap", name: "Bánh tăng cấp", category: "food", color: "#9B7EDE", radius: "999px", description: "Bánh hiếm giúp pet nhận ngay 300 XP.", effects: [{ stat: "hunger", delta: 30 }, { stat: "happiness", delta: 15 }, { stat: "experience", delta: 300 }], defaultQty: 0, price: 30, currency: "gem", imagePath: "/items/food/level-up-cake.png" },
-  { key: "tao", name: "Táo", category: "food", color: "#EF6A5A", radius: "999px", description: "Món trẻ nhất — hồi 8 điểm đồ ăn.", effects: [{ stat: "hunger", delta: 8 }, { stat: "health", delta: 2 }], defaultQty: 4 },
-  { key: "banh-mi", name: "Bánh mì", category: "food", color: "#D9A517", radius: "10px", description: "Bánh nướng, hồi nhiều đồ ăn hơn.", effects: [{ stat: "hunger", delta: 18 }], defaultQty: 2 },
-  { key: "sua", name: "Sữa", category: "food", color: "#EAF6FF", radius: "8px", description: "Uống trước khi ngủ, hồi sức khoẻ.", effects: [{ stat: "health", delta: 10 }], defaultQty: 6 },
-  { key: "ca-rot", name: "Cà rốt", category: "food", color: "#F5822B", radius: "4px 4px 14px 14px", description: "Món ưa thích của Poppy.", effects: [{ stat: "hunger", delta: 12 }, { stat: "happiness", delta: 4 }], defaultQty: 3 },
-  { key: "keo", name: "Kẹo", category: "food", color: "#F79BB0", radius: "999px", description: "Tăng vui vẻ nhanh nhưng giảm sức khoẻ.", effects: [{ stat: "happiness", delta: 14 }, { stat: "health", delta: -3 }], defaultQty: 5 },
-  { key: "xuong", name: "Xương", category: "food", color: "#E7D4B2", radius: "6px", description: "Buddy nhai cả buổi chiều.", effects: [{ stat: "happiness", delta: 10 }], defaultQty: 1 },
-  // 6 món mới (2026-08-28) — lấp khoảng trống giữa nhóm khởi đầu (Táo..Xương, miễn phí)
-  // và nhóm cao cấp có ảnh riêng (Bánh quy Buddy..Bánh tăng cấp) ở trên: đều bán trong
-  // Shop, chưa có ảnh riêng nên dùng khối màu bo góc y hệt 6 món khởi đầu.
-  { key: "dua-hau", name: "Dưa hấu", category: "food", color: "#6FC96B", radius: "999px", description: "Quả hè mát lạnh — hồi 15 đồ ăn và 5 vui vẻ.", effects: [{ stat: "hunger", delta: 15 }, { stat: "happiness", delta: 5 }], defaultQty: 0, price: 15, currency: "coin" },
-  { key: "trung-luoc", name: "Trứng luộc", category: "food", color: "#FFE9B8", radius: "60% 60% 40% 40%", description: "Giàu dinh dưỡng — hồi 10 đồ ăn và 6 sức khoẻ.", effects: [{ stat: "hunger", delta: 10 }, { stat: "health", delta: 6 }], defaultQty: 0, price: 10, currency: "coin" },
-  { key: "pho-mai", name: "Phô mai", category: "food", color: "#F2C94C", radius: "6px 24px 6px 24px", description: "Miếng phô mai béo ngậy — hồi 5 đồ ăn và 8 vui vẻ.", effects: [{ stat: "hunger", delta: 5 }, { stat: "happiness", delta: 8 }], defaultQty: 0, price: 12, currency: "coin" },
-  { key: "mat-ong", name: "Mật ong", category: "food", color: "#E8A33D", radius: "14px", description: "Ngọt lành bổ dưỡng — hồi 8 vui vẻ và 12 sức khoẻ.", effects: [{ stat: "happiness", delta: 8 }, { stat: "health", delta: 12 }], defaultQty: 0, price: 45, currency: "coin" },
-  { key: "sup-bi-do", name: "Súp bí đỏ", category: "food", color: "#E8823C", radius: "999px 999px 12px 12px", description: "Bát súp ấm nóng — hồi 25 đồ ăn và 10 sức khoẻ.", effects: [{ stat: "hunger", delta: 25 }, { stat: "health", delta: 10 }], defaultQty: 0, price: 60, currency: "coin" },
-  { key: "ca-hoi-tuoi", name: "Cá hồi tươi", category: "food", color: "#F2907A", radius: "16px", description: "Món cao cấp — hồi 30 đồ ăn, 15 sức khoẻ và 10 XP.", effects: [{ stat: "hunger", delta: 30 }, { stat: "health", delta: 15 }, { stat: "experience", delta: 10 }], defaultQty: 0, price: 6, currency: "gem" },
-  { key: "kem-may-dau", name: "Kem mây dâu", category: "food", color: "#F69AB5", radius: "18px", description: "Ly kem mát lành — hồi 20 đồ ăn và 12 vui vẻ.", effects: [{ stat: "hunger", delta: 20 }, { stat: "happiness", delta: 12 }], defaultQty: 0, price: 35, currency: "coin", imagePath: "/items/food/strawberry-cloud-parfait.png" },
-  { key: "sup-bi-trang", name: "Súp bí trăng", category: "food", color: "#E99635", radius: "999px", description: "Bữa tối ấm áp — hồi 30 đồ ăn và 15 sức khoẻ.", effects: [{ stat: "hunger", delta: 30 }, { stat: "health", delta: 15 }], defaultQty: 0, price: 75, currency: "coin", imagePath: "/items/food/moon-pumpkin-soup.png" },
-  { key: "cupcake-pha-le", name: "Cupcake pha lê", category: "food", color: "#9C78E7", radius: "18px", description: "Bánh phép thuật — nhận 180 XP và 15 vui vẻ.", effects: [{ stat: "happiness", delta: 15 }, { stat: "experience", delta: 180 }], defaultQty: 0, price: 20, currency: "gem", imagePath: "/items/food/crystal-berry-cupcake.png" },
-  { key: "ca-sao-vang", name: "Cá sao vàng", category: "food", color: "#F2A43C", radius: "999px", description: "Món hoàng gia — hồi 45 đồ ăn, 20 sức khoẻ và nhận 80 XP.", effects: [{ stat: "hunger", delta: 45 }, { stat: "health", delta: 20 }, { stat: "experience", delta: 80 }], defaultQty: 0, price: 14, currency: "gem", imagePath: "/items/food/golden-starfish-steak.png" },
-  { key: "sakura-mochi", name: "Sakura Mochi", category: "food", color: "#F4A9BD", radius: "999px", description: "Bánh gạo hoa anh đào Nhật Bản — hồi 18 đồ ăn và 10 vui vẻ.", effects: [{ stat: "hunger", delta: 18 }, { stat: "happiness", delta: 10 }], defaultQty: 0, price: 40, currency: "coin", imagePath: "/items/food/sakura-mochi.png" },
-  { key: "taiyaki", name: "Taiyaki", category: "food", color: "#DFA451", radius: "18px", description: "Bánh cá nhân đậu đỏ Nhật Bản — hồi 25 đồ ăn và 8 sức khoẻ.", effects: [{ stat: "hunger", delta: 25 }, { stat: "health", delta: 8 }], defaultQty: 0, price: 55, currency: "coin", imagePath: "/items/food/taiyaki.png" },
-  { key: "songpyeon", name: "Songpyeon", category: "food", color: "#87C88B", radius: "999px", description: "Bánh gạo lễ Chuseok Hàn Quốc — hồi 20 đồ ăn và 12 vui vẻ.", effects: [{ stat: "hunger", delta: 20 }, { stat: "happiness", delta: 12 }], defaultQty: 0, price: 45, currency: "coin", imagePath: "/items/food/songpyeon.png" },
-  { key: "bungeoppang", name: "Bungeoppang", category: "food", color: "#E5A55F", radius: "18px", description: "Bánh cá đường phố Hàn Quốc — hồi 28 đồ ăn và 10 sức khoẻ.", effects: [{ stat: "hunger", delta: 28 }, { stat: "health", delta: 10 }], defaultQty: 0, price: 65, currency: "coin", imagePath: "/items/food/bungeoppang.png" },
+  { key: "banh-quy-buddy", name: "Bánh quy Buddy", category: "food", color: "#E8A94D", radius: "18px", description: "Giảm đói nhẹ và nhận 8 XP.", effects: [{ stat: "hunger", delta: 15 }, { stat: "experience", delta: 8 }], defaultQty: 0, price: 30, currency: "coin", imagePath: "/items/food/buddy-cookie.webp" },
+  { key: "com-ga-cau-vong", name: "Cơm gà cầu vồng", category: "food", color: "#F7C95C", radius: "999px", description: "Bữa ăn no lâu, hồi 35 đồ ăn và nhận 18 XP.", effects: [{ stat: "hunger", delta: 35 }, { stat: "health", delta: 5 }, { stat: "experience", delta: 18 }], defaultQty: 0, price: 80, currency: "coin", imagePath: "/items/food/rainbow-chicken-bowl.webp" },
+  { key: "sua-sao-kim-cuong", name: "Sữa sao kim cương", category: "food", color: "#70D7F2", radius: "16px", description: "Sữa phép thuật giúp pet nhận nhanh 100 XP.", effects: [{ stat: "hunger", delta: 20 }, { stat: "experience", delta: 100 }], defaultQty: 0, price: 12, currency: "gem", imagePath: "/items/food/diamond-star-milk.webp" },
+  { key: "banh-tang-cap", name: "Bánh tăng cấp", category: "food", color: "#9B7EDE", radius: "999px", description: "Bánh hiếm giúp pet nhận ngay 300 XP.", effects: [{ stat: "hunger", delta: 30 }, { stat: "happiness", delta: 15 }, { stat: "experience", delta: 300 }], defaultQty: 0, price: 30, currency: "gem", imagePath: "/items/food/level-up-cake.webp" },
+  { key: "kem-may-dau", name: "Kem mây dâu", category: "food", color: "#F69AB5", radius: "18px", description: "Ly kem mát lành — hồi 20 đồ ăn và 12 vui vẻ.", effects: [{ stat: "hunger", delta: 20 }, { stat: "happiness", delta: 12 }], defaultQty: 0, price: 35, currency: "coin", imagePath: "/items/food/strawberry-cloud-parfait.webp" },
+  { key: "sup-bi-trang", name: "Súp bí trăng", category: "food", color: "#E99635", radius: "999px", description: "Bữa tối ấm áp — hồi 30 đồ ăn và 15 sức khoẻ.", effects: [{ stat: "hunger", delta: 30 }, { stat: "health", delta: 15 }], defaultQty: 0, price: 75, currency: "coin", imagePath: "/items/food/moon-pumpkin-soup.webp" },
+  { key: "cupcake-pha-le", name: "Cupcake pha lê", category: "food", color: "#9C78E7", radius: "18px", description: "Bánh phép thuật — nhận 180 XP và 15 vui vẻ.", effects: [{ stat: "happiness", delta: 15 }, { stat: "experience", delta: 180 }], defaultQty: 0, price: 20, currency: "gem", imagePath: "/items/food/crystal-berry-cupcake.webp" },
+  { key: "ca-sao-vang", name: "Cá sao vàng", category: "food", color: "#F2A43C", radius: "999px", description: "Món hoàng gia — hồi 45 đồ ăn, 20 sức khoẻ và nhận 80 XP.", effects: [{ stat: "hunger", delta: 45 }, { stat: "health", delta: 20 }, { stat: "experience", delta: 80 }], defaultQty: 0, price: 14, currency: "gem", imagePath: "/items/food/golden-starfish-steak.webp" },
+  { key: "sakura-mochi", name: "Sakura Mochi", category: "food", color: "#F4A9BD", radius: "999px", description: "Bánh gạo hoa anh đào Nhật Bản — hồi 18 đồ ăn và 10 vui vẻ.", effects: [{ stat: "hunger", delta: 18 }, { stat: "happiness", delta: 10 }], defaultQty: 0, price: 40, currency: "coin", imagePath: "/items/food/sakura-mochi.webp" },
+  { key: "taiyaki", name: "Taiyaki", category: "food", color: "#DFA451", radius: "18px", description: "Bánh cá nhân đậu đỏ Nhật Bản — hồi 25 đồ ăn và 8 sức khoẻ.", effects: [{ stat: "hunger", delta: 25 }, { stat: "health", delta: 8 }], defaultQty: 0, price: 55, currency: "coin", imagePath: "/items/food/taiyaki.webp" },
+  { key: "songpyeon", name: "Songpyeon", category: "food", color: "#87C88B", radius: "999px", description: "Bánh gạo lễ Chuseok Hàn Quốc — hồi 20 đồ ăn và 12 vui vẻ.", effects: [{ stat: "hunger", delta: 20 }, { stat: "happiness", delta: 12 }], defaultQty: 0, price: 45, currency: "coin", imagePath: "/items/food/songpyeon.webp" },
+  { key: "bungeoppang", name: "Bungeoppang", category: "food", color: "#E5A55F", radius: "18px", description: "Bánh cá đường phố Hàn Quốc — hồi 28 đồ ăn và 10 sức khoẻ.", effects: [{ stat: "hunger", delta: 28 }, { stat: "health", delta: 10 }], defaultQty: 0, price: 65, currency: "coin", imagePath: "/items/food/bungeoppang.webp" },
   // Vật phẩm test/dev — làm pet đói ngay lập tức để kiểm thử trạng thái
   // "đói" (speech bubble, cảnh báo...) mà không phải chờ hunger tự giảm.
   // Giá 1 coin theo yêu cầu; KHÔNG dùng ở bản thật, chỉ để test.
-  { key: "test-lam-doi", name: "Đói ngay (Test)", category: "food", color: "#B0463A", radius: "8px", description: "[Test] Làm pet đói ngay lập tức (đồ ăn về 0) để kiểm thử.", effects: [{ stat: "hunger", delta: -100 }], defaultQty: 0, price: 1, currency: "coin" },
   { key: "bong", name: "Bóng", category: "toy", color: "#7CC24A", radius: "999px", description: "Ném bóng để chơi cùng pet.", effects: [{ stat: "happiness", delta: 15 }], defaultQty: 1 },
   { key: "chuot-bong", name: "Chuột bông", category: "toy", color: "#B3A691", radius: "14px", description: "Mèo cực thích.", effects: [{ stat: "happiness", delta: 12 }], defaultQty: 2 },
   { key: "dem-ngu", name: "Đệm ngủ", category: "toy", color: "#9B7EDE", radius: "16px", description: "Ngủ ngon hồi nhiều sức khoẻ hơn.", effects: [{ stat: "health", delta: 20 }], defaultQty: 1 },
@@ -634,8 +618,9 @@ const ITEMS: { key: string; name: string; category: ItemCategory; color: string;
   { key: "ve-xp", name: "Vé XP x2", category: "special", color: "#FFC93C", radius: "8px", description: "Nhân đôi XP trong 30 phút.", effects: [], defaultQty: 2 },
   { key: "ve-hoi-tim", name: "Vé hồi tim", category: "special", color: "#EF6A5A", radius: "999px", description: "Hồi đầy tim khi làm bài.", effects: [], defaultQty: 3 },
   { key: "tui-coin", name: "Túi coin", category: "special", color: "#F2A81C", radius: "12px", description: "Mở ra nhận 200 coin.", effects: [{ stat: "coins", delta: 200 }], defaultQty: 1 },
-  { key: "dong-ho-tai-sinh", name: "Đồng hồ tái sinh", category: "special", color: "#57C6C6", radius: "999px", description: "Đưa pet đang đồng hành về Level 1 và 0 XP. Chỉ reset cấp, không làm mất chỉ số chăm sóc.", effects: [{ stat: "resetLevel", delta: 1 }], defaultQty: 0, price: 999, currency: "gem", imagePath: "/items/special/rebirth-clock.png" },
-  { key: "ve-doi-ten-pet", name: "Vé đổi tên pet", category: "special", color: "#42C7D7", radius: "16px", description: "Đổi tên cho pet đang đồng hành. Mỗi vé sử dụng được một lần.", effects: [{ stat: "renamePet", delta: 1 }], defaultQty: 0, price: 25, currency: "gem", imagePath: "/items/special/pet-rename-ticket.png" },
+  { key: "dong-ho-tai-sinh", name: "Đồng hồ tái sinh", category: "special", color: "#57C6C6", radius: "999px", description: "Đưa pet đang đồng hành về Level 1 và 0 XP. Chỉ reset cấp, không làm mất chỉ số chăm sóc.", effects: [{ stat: "resetLevel", delta: 1 }], defaultQty: 0, price: 999, currency: "gem", imagePath: "/items/special/rebirth-clock.webp" },
+  { key: "ve-doi-ten-pet", name: "Vé đổi tên pet", category: "special", color: "#42C7D7", radius: "16px", description: "Đổi tên cho pet đang đồng hành. Mỗi vé sử dụng được một lần.", effects: [{ stat: "renamePet", delta: 1 }], defaultQty: 0, price: 25, currency: "gem", imagePath: "/items/special/pet-rename-ticket.webp" },
+  { key: "the-doi-ten-ho-so", name: "Thẻ đổi tên hồ sơ", category: "special", color: "#F47D7D", radius: "16px", description: "Đổi tên hiển thị của bạn. Mỗi thẻ sử dụng được một lần.", effects: [{ stat: "renameUser", delta: 1 }], defaultQty: 0, price: 49, currency: "gem", imagePath: "/items/special/profile-rename-card.webp" },
   { key: "background-hoang-hon", name: "Lâu đài hoàng hôn", category: "accessory", color: "#F29A5A", radius: "18px", description: "Vương quốc vàng trên đồi dưới ánh hoàng hôn.", effects: [], defaultQty: 0, price: 350, currency: "coin", imagePath: "/backgrounds/home-castle-sunset-v1.webp" },
   { key: "background-hoa-anh-dao", name: "Thung lũng hoa", category: "accessory", color: "#F3A9C7", radius: "18px", description: "Cổng trăng, suối mơ và hoa anh đào rực rỡ.", effects: [], defaultQty: 0, price: 650, currency: "coin", imagePath: "/backgrounds/home-cherry-valley-v1.webp" },
   { key: "background-lang-tuyet", name: "Làng tuyết", category: "accessory", color: "#B8E5F5", radius: "18px", description: "Ngôi làng mùa đông bên lâu đài pha lê.", effects: [], defaultQty: 0, price: 35, currency: "gem", imagePath: "/backgrounds/home-snow-village-v1.webp" },
@@ -1424,6 +1409,43 @@ const STORIES: StorySeed[] = [
   },
 ];
 
+type LocalizedStoryNoun = [string, string, string, string];
+const BONUS_STORY_THEMES: [string, string, string, string, string, LocalizedStoryNoun, LocalizedStoryNoun, string][] = [
+  ["moon-lantern","Buddy and the Moon Lantern","A1 · Friendship","buddy","mimi",["moon garden","khu vườn trăng","月の庭","달빛 정원"],["lantern","đèn lồng","ランタン","등불"],"#8E7BD8"],
+  ["lost-kite","Poppy's Lost Kite","A1 · Outdoors","poppy","buddy",["green hill","ngọn đồi xanh","緑の丘","초록 언덕"],["kite","cánh diều","たこ","연"],"#62B5D5"],
+  ["tiny-seed","Sprout's Tiny Seed","A1 · Nature","sprout","bamboo",["sunny garden","khu vườn nắng","日当たりの良い庭","햇살 정원"],["seed","hạt giống","種","씨앗"],"#79BE55"],
+  ["blue-shell","Aqua and the Blue Shell","A1 · Beach","aqua","ducky",["quiet beach","bãi biển yên tĩnh","静かな浜辺","조용한 해변"],["blue shell","vỏ sò xanh","青い貝殻","파란 조개"],"#55BED2"],
+  ["warm-scarf","Frosty's Warm Scarf","A1 · Winter","frosty","cocoa",["snowy village","ngôi làng tuyết","雪の村","눈 마을"],["warm scarf","khăn quàng ấm","暖かいマフラー","따뜻한 목도리"],"#8FCDE8"],
+  ["picnic-basket","Coco's Picnic Basket","A1 · Food","coco","waffle",["flower meadow","đồng cỏ hoa","花畑","꽃밭"],["picnic basket","giỏ dã ngoại","ピクニックかご","소풍 바구니"],"#E7A95F"],
+  ["library-key","Mimi Finds a Library Key","A2 · School","mimi","ellie",["old library","thư viện cổ","古い図書館","오래된 도서관"],["golden key","chìa khóa vàng","金の鍵","황금 열쇠"],"#A58AD9"],
+  ["rainbow-paint","Berry's Rainbow Paint","A2 · Colors","berry","prism",["art room","phòng mỹ thuật","美術室","미술실"],["rainbow paint","màu vẽ cầu vồng","虹色の絵の具","무지개 물감"],"#EE83AA"],
+  ["night-train","Nocty and the Night Train","A2 · Travel","nocty","ember",["star station","ga ngôi sao","星の駅","별빛 역"],["silver ticket","vé bạc","銀の切符","은빛 표"],"#5967B8"],
+  ["music-box","Lila's Music Box","A2 · Music","lila","rosie",["music room","phòng âm nhạc","音楽室","음악실"],["music box","hộp nhạc","オルゴール","오르골"],"#D58BC5"],
+  ["forest-map","Bamboo's Forest Map","A2 · Directions","bamboo","stripe",["bamboo forest","rừng tre","竹林","대나무 숲"],["secret map","bản đồ bí mật","秘密の地図","비밀 지도"],"#5BA66A"],
+  ["cloud-castle","Nimbus Visits the Cloud Castle","A2 · Fantasy","nimbus","angel",["cloud castle","lâu đài mây","雲の城","구름 성"],["crystal bell","chuông pha lê","水晶の鐘","수정 종"],"#83BFE6"],
+  ["broken-bridge","Ember Repairs the Bridge","B1 · Teamwork","ember","gargo",["dragon valley","thung lũng rồng","竜の谷","용의 계곡"],["wooden bridge","cây cầu gỗ","木の橋","나무 다리"],"#E77849"],
+  ["coral-rescue","Aqua's Coral Rescue","B1 · Environment","aqua","mystic",["coral reef","rạn san hô","サンゴ礁","산호초"],["young coral","san hô non","若いサンゴ","어린 산호"],"#38B8B5"],
+  ["kind-robot","Ellie and the Kind Robot","B1 · Technology","ellie","milky",["science museum","bảo tàng khoa học","科学博物館","과학 박물관"],["kind robot","robot tốt bụng","親切なロボット","친절한 로봇"],"#6D92CC"],
+  ["windmill-mystery","Stripe and the Windmill Mystery","B1 · Mystery","stripe","pepper",["windy farm","nông trại lộng gió","風の農場","바람 농장"],["missing gear","bánh răng bị mất","なくなった歯車","사라진 톱니바퀴"],"#B88A55"],
+  ["star-compass","Stella's Star Compass","B1 · Space","stella","void",["space observatory","đài quan sát vũ trụ","宇宙観測所","우주 관측소"],["star compass","la bàn ngôi sao","星のコンパス","별 나침반"],"#6559B8"],
+  ["festival-drum","Haetae's Festival Drum","B1 · Culture","haetae","maru",["festival square","quảng trường lễ hội","祭りの広場","축제 광장"],["festival drum","trống lễ hội","祭り太鼓","축제 북"],"#E85F55"],
+  ["sakura-letter","Kitsune's Sakura Letter","B1 · Culture","kitsune","sia",["sakura path","con đường hoa anh đào","桜の道","벚꽃길"],["thank-you letter","lá thư cảm ơn","感謝の手紙","감사 편지"],"#E997B7"],
+  ["city-garden","Maru Builds a City Garden","B2 · Community","maru","sprout",["busy city","thành phố nhộn nhịp","にぎやかな町","분주한 도시"],["community garden","vườn cộng đồng","共同庭園","공동체 정원"],"#6AAF72"],
+];
+
+function makeBonusStory([key, title, topic, hero, friend, place, object, color]: (typeof BONUS_STORY_THEMES)[number]): StorySeed {
+  const word = (en: string, vi: string, ja: string, ko: string, wordColor: string): StoryWordSeed => [en, vi, ja, ko, wordColor];
+  const heroName = hero[0]!.toUpperCase() + hero.slice(1);
+  const friendName = friend[0]!.toUpperCase() + friend.slice(1);
+  return { key, title, topic, colorTheme: color, pages: [
+    { en: `${heroName} visits the ${place[0]} early in the morning.`, vi: `${heroName} đến ${place[1]} vào sáng sớm.`, ja: `${heroName}は朝早く${place[2]}を訪れます。`, ko: `${heroName}는 아침 일찍 ${place[3]}에 가요.`, img1: hero, img2: friend, label: place[1], sceneBg: `${color}33`, ground: `${color}88`, words: [word("visit","ghé thăm","訪れる","방문하다",color), word(place[0],place[1],place[2],place[3],"#57C6C6"), word("morning","buổi sáng","朝","아침","#FFC93C")] },
+    { en: `${heroName} finds a ${object[0]} beside the path.`, vi: `${heroName} tìm thấy ${object[1]} bên cạnh con đường.`, ja: `${heroName}は道のそばで${object[2]}を見つけます。`, ko: `${heroName}는 길가에서 ${object[3]}을 찾아요.`, img1: hero, img2: friend, label: object[1], sceneBg: `${color}44`, ground: `${color}99`, words: [word("find","tìm thấy","見つける","찾다","#F5822B"), word(object[0],object[1],object[2],object[3],color), word("path","con đường","道","길","#8A5A3B")] },
+    { en: `${friendName} listens carefully and helps solve the problem.`, vi: `${friendName} chăm chú lắng nghe và giúp giải quyết vấn đề.`, ja: `${friendName}はよく話を聞き、問題を解決するのを手伝います。`, ko: `${friendName}는 잘 듣고 문제를 해결하도록 도와줘요.`, img1: friend, img2: hero, label: "Cùng nhau tìm cách", sceneBg: "#EAF6E4", ground: "#94C86C", words: [word("listen","lắng nghe","聞く","듣다","#5C7BC9"), word("help","giúp đỡ","手伝う","돕다","#7CC24A"), word("problem","vấn đề","問題","문제","#EF6A5A")] },
+    { en: `Together they return the ${object[0]} and celebrate with their friends.`, vi: `Cả hai cùng trả lại ${object[1]} và ăn mừng với bạn bè.`, ja: `二人は一緒に${object[2]}を返し、友達とお祝いします。`, ko: `둘은 함께 ${object[3]}을 돌려주고 친구들과 축하해요.`, img1: hero, img2: friend, label: "Kết thúc vui vẻ", sceneBg: "#FFF0C9", ground: "#E7B85F", words: [word("together","cùng nhau","一緒に","함께","#9B7EDE"), word("return","trả lại","返す","돌려주다","#57C6C6"), word("celebrate","ăn mừng","祝う","축하하다","#F79BB0")] },
+  ] };
+}
+STORIES.push(...BONUS_STORY_THEMES.map(makeBonusStory));
+
 // ---------------------------------------------------------------------------
 // Memory Match topics — mirrors the old single hard-coded WORDS array in
 // frontend/src/pages/MiniGame.tsx, now 10 topics with a picker before play.
@@ -1431,7 +1453,7 @@ const STORIES: StorySeed[] = [
 // this, matching the original set) or a single emoji glyph for topics with
 // no matching pet illustration (see frontend's isPetKey()).
 // ---------------------------------------------------------------------------
-type MiniGameWordSeed = [string, string, string, string, string]; // en, vi, ja, ko, img
+type MiniGameWordSeed = [string, string, string | null, string | null, string]; // en, vi, ja, ko, img
 type MiniGameTopicSeed = { key: string; name: string; color: string; words: MiniGameWordSeed[] };
 
 const MINIGAME_TOPICS: MiniGameTopicSeed[] = [
@@ -1546,6 +1568,42 @@ const MINIGAME_TOPICS: MiniGameTopicSeed[] = [
     ],
   },
 ];
+
+// 20 distinct visual concepts × 5 useful forms = 100 entries per topic.
+// The client samples distinct images, so no round contains ambiguous cards.
+const MEMORY_IMAGES: Record<string, string[]> = {
+  animals: ["🐶","🐱","🐰","🐦","🐟","🐘","🦁","🐯","🐻","🐵","🐴","🐄","🐷","🦆","🐔","🐑","🐸","🐍","🐢","🦋"],
+  "farm-animals": ["🐄","🐴","🐷","🐑","🐐","🐔","🦆","🪿","🦃","🐇","🐕","🐈","🐂","🐃","🫏","🐖","🐏","🐣","🐝","🪱"],
+  colors: ["🍎","💧","🍀","🌟","🍊","🍇","🌸","🖤","🤍","🪵","🩶","🏆","🥈","🌌","🌲","🧊","🍦","🏖️","🦚","🍒"],
+  fruits: ["🍎","🍌","🍊","🍇","🍓","🍉","🍍","🥭","🍑","🍐","🍒","🥝","🍋","🥥","🫐","🍈","🍅","🥑","🫒","🌰"],
+  family: ["👩","👨","👧","👦","👵","👴","👩‍🦰","👨‍🦱","🧑","👶","👨‍👩‍👧","🧒","👱‍♀️","🤵","👰","👪","👯","🙋‍♀️","🙋‍♂️","🫂"],
+  weather: ["☀️","🌧️","☁️","💨","❄️","🔥","🥶","🌤️","🍃","⛈️","🌩️","⚡","🌈","🌫️","💧","🌡️","🍂","🌱","🏖️","⛄"],
+  school: ["📖","🖊️","✏️","🧽","📏","🎒","🪵","🪑","👩‍🏫","🧑‍🎓","🏫","🟩","📓","✂️","🧴","🖍️","📝","📚","📄","🏛️"],
+  body: ["🙂","💇","👁️","👂","👃","👄","🦷","✋","☝️","💪","🦵","🦶","🤷","🔙","🫃","🦿","🧣","🤔","💪🏻","❤️"],
+  transportation: ["🚗","🚌","🚲","🏍️","🚆","✈️","🚤","🚢","🚕","🚚","🚇","🚁","🛴","🚑","🚒","⛴️","🚀","🚐","🚋","🚡"],
+};
+const FARM_MEMORY_ROOTS: [string, string][] = [["cow","bò"],["horse","ngựa"],["pig","lợn"],["sheep","cừu"],["goat","dê"],["chicken","gà"],["duck","vịt"],["goose","ngỗng"],["turkey","gà tây"],["rabbit","thỏ"],["farm dog","chó nông trại"],["barn cat","mèo trong chuồng"],["bull","bò đực"],["buffalo","trâu"],["donkey","lừa"],["piglet","lợn con"],["ram","cừu đực"],["chick","gà con"],["bee","ong"],["earthworm","giun đất"]];
+const FRUIT_MEMORY_ROOTS: [string, string][] = [["apple","táo"],["banana","chuối"],["orange","cam"],["grape","nho"],["strawberry","dâu tây"],["watermelon","dưa hấu"],["pineapple","dứa"],["mango","xoài"],["peach","đào"],["pear","lê"],["cherry","anh đào"],["kiwi","kiwi"],["lemon","chanh vàng"],["coconut","dừa"],["blueberry","việt quất"],["melon","dưa lưới"],["tomato","cà chua"],["avocado","bơ"],["olive","ô-liu"],["chestnut","hạt dẻ"]];
+const MEMORY_FORMS: Record<string, [string, string][]> = {
+  animals: [["", ""],["baby ","con non: "],["big ","con lớn: "],["small ","con nhỏ: "],["wild ","con hoang dã: "]],
+  "farm-animals": [["", ""],["baby ","con non: "],["big ","con lớn: "],["small ","con nhỏ: "],["friendly ","con thân thiện: "]],
+  colors: [["", ""],["light ","màu nhạt: "],["dark ","màu đậm: "],["bright ","màu sáng: "],["pale ","màu phấn: "]],
+  fruits: [["", ""],["ripe ","chín: "],["sweet ","ngọt: "],["fresh ","tươi: "],["sliced ","đã cắt: "]],
+  family: [["", ""],["my ","của tôi: "],["your ","của bạn: "],["our ","của chúng ta: "],["kind ","tốt bụng: "]],
+  weather: [["", ""],["very ","rất: "],["slightly ","hơi: "],["unusually ","bất thường: "],["becoming ","đang trở nên: "]],
+  school: [["", ""],["new ","mới: "],["old ","cũ: "],["my ","của tôi: "],["classroom ","trong lớp: "]],
+  body: [["", ""],["my ","của tôi: "],["your ","của bạn: "],["left ","bên trái: "],["right ","bên phải: "]],
+  transportation: [["", ""],["fast ","nhanh: "],["slow ","chậm: "],["new ","mới: "],["electric ","chạy điện: "]],
+};
+function numberWord(n: number) { const s=["zero","one","two","three","four","five","six","seven","eight","nine","ten","eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"]; const t=["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"]; return n<20?s[n]!:n===100?"one hundred":`${t[Math.floor(n/10)]}${n%10?`-${s[n%10]}`:""}`; }
+function vietnameseNumber(n: number) { const d=["không","một","hai","ba","bốn","năm","sáu","bảy","tám","chín"]; if(n<10)return d[n]!; if(n===10)return "mười"; if(n<20)return `mười ${n%10===5?"lăm":d[n%10]}`; if(n===100)return "một trăm"; const u=n%10===0?"":n%10===1?" mốt":n%10===5?" lăm":` ${d[n%10]}`; return `${d[Math.floor(n/10)]} mươi${u}`; }
+function expandMemoryTopic(topic: MiniGameTopicSeed): MiniGameWordSeed[] {
+  if (topic.key === "numbers") return Array.from({ length: 100 }, (_, i) => [numberWord(i + 1), vietnameseNumber(i + 1), null, null, String(i + 1)]);
+  const vocabKey = topic.key === "transportation" ? "transport" : topic.key;
+  const source = topic.key === "farm-animals" ? FARM_MEMORY_ROOTS : topic.key === "fruits" ? FRUIT_MEMORY_ROOTS : VOCAB_TOPICS[vocabKey]!.slice(0, 20).map(([en, vi]) => [en, vi] as [string, string]);
+  return MEMORY_FORMS[topic.key]!.flatMap(([ep, vp], form) => source.map(([en, vi], i) => [form ? `${ep}${en}` : en, form ? `${vp}${vi}` : vi, null, null, MEMORY_IMAGES[topic.key]![i]!]));
+}
+for (const topic of MINIGAME_TOPICS) topic.words = expandMemoryTopic(topic);
 
 // ---------------------------------------------------------------------------
 // Word Catch topics — mirrors the old single hard-coded ROUNDS array in
@@ -1666,6 +1724,27 @@ const WORDCATCH_TOPICS: WordCatchTopicSeed[] = [
     ],
   },
 ];
+
+// Reuse the 100-entry learning pools to keep Memory Match and Word Catch in
+// sync. Distractors stay in the same 20-word form group, so choices remain
+// plausible instead of mixing unrelated difficulty levels.
+function wordCatchPool(key: string): MiniGameWordSeed[] {
+  if (key === "basics") {
+    return ["animals", "fruits", "colors", "school", "numbers"].flatMap((topicKey) => MINIGAME_TOPICS.find((topic) => topic.key === topicKey)!.words.slice(0, 20));
+  }
+  const memoryKey = key === "transportation" ? "transportation" : key;
+  return MINIGAME_TOPICS.find((topic) => topic.key === memoryKey)!.words;
+}
+function makeWordCatchRounds(key: string): WordCatchRoundSeed[] {
+  const pool = wordCatchPool(key);
+  return pool.map(([answer, vi, ja, ko], index) => {
+    const groupStart = Math.floor(index / 20) * 20;
+    const options = [0, 1, 2, 3].map((offset) => pool[groupStart + ((index - groupStart + offset) % Math.min(20, pool.length - groupStart))]![0]);
+    const shift = index % options.length;
+    return { vi, ja: ja ?? vi, ko: ko ?? vi, answer, options: [...options.slice(shift), ...options.slice(0, shift)] };
+  });
+}
+for (const topic of WORDCATCH_TOPICS) topic.rounds = makeWordCatchRounds(topic.key);
 
 // ---------------------------------------------------------------------------
 // English Shop topics — "Buy 2 apples and 1 banana." style shopping-list
@@ -2376,6 +2455,33 @@ const SHOP_TOPICS: ShopTopicSeed[] = [
     ],
   },
 ];
+
+function pluralShopName(name: string, qty: number) {
+  if (qty === 1 || name.endsWith("s")) return name;
+  if (name.endsWith("y") && !/[aeiou]y$/i.test(name)) return `${name.slice(0, -1)}ies`;
+  if (/(ch|sh|x|o)$/i.test(name)) return `${name}es`;
+  return `${name}s`;
+}
+function expandShopTopic(topic: ShopTopicSeed): ShopRoundSeed[] {
+  const pool = [...new Set(topic.rounds.flatMap((round) => round.shelfCounts.map(([key]) => key)))];
+  return Array.from({ length: 100 }, (_, index) => {
+    const tier = index < 34 ? 0 : index < 67 ? 1 : 2;
+    const typeCount = tier === 0 ? 1 + (index % 2) : tier === 1 ? 2 + (index % 2) : 3;
+    const required = Array.from({ length: typeCount }, (_, offset) => {
+      const key = pool[(index + offset * 2) % pool.length]!;
+      const qty = 1 + ((index + offset) % (tier === 2 ? 3 : 2));
+      return [key, qty] as [ShopItemKey, number];
+    });
+    const requiredKeys = new Set(required.map(([key]) => key));
+    const decoys = pool.filter((key) => !requiredKeys.has(key)).slice(index % Math.max(1, pool.length - typeCount), index % Math.max(1, pool.length - typeCount) + 2);
+    while (decoys.length < 2) { const candidate = pool[(index + decoys.length + typeCount) % pool.length]!; if (!requiredKeys.has(candidate) && !decoys.includes(candidate)) decoys.push(candidate); else break; }
+    const shelfCounts: [ShopItemKey, number][] = [...required.map(([key, qty]) => [key, qty + 1] as [ShopItemKey, number]), ...decoys.map((key) => [key, 1] as [ShopItemKey, number])];
+    const enItems = required.map(([key, qty]) => `${qty} ${pluralShopName(SHOP_ITEMS[key].en.toLowerCase(), qty)}`);
+    const viItems = required.map(([key, qty]) => `${qty} ${SHOP_ITEMS[key].vi}`);
+    return { instructionEn: `Buy ${enItems.join(enItems.length > 2 ? ", " : " and ").replace(/, ([^,]+)$/, ", and $1")}.`, instructionVi: `Mua ${viItems.join(" và ")}.`, shelfCounts, required };
+  });
+}
+for (const topic of SHOP_TOPICS) topic.rounds = expandShopTopic(topic);
 
 // ---------------------------------------------------------------------------
 // English Home topics — "Put the red ball under the table." style placement
@@ -4277,8 +4383,8 @@ async function main() {
     const { price, currency } = RARITY_PRICE[rarity];
     await prisma.pet.upsert({
       where: { key },
-      update: { name, species, rarity, price, currency, imagePath: `/pets/${key}.png`, order },
-      create: { key, name, species, rarity, price, currency, imagePath: `/pets/${key}.png`, order },
+      update: { name, species, rarity, price, currency, imagePath: `/pets/${key}.webp`, order },
+      create: { key, name, species, rarity, price, currency, imagePath: `/pets/${key}.webp`, order },
     });
   }
   console.log(`✔ Seeded ${PETS.length} pets`);
@@ -4387,7 +4493,8 @@ async function main() {
       create: { key: t.key, name: t.name, color: t.color, order },
     });
     const existingWords = await prisma.miniGameWord.count({ where: { topicId: topic.id } });
-    if (existingWords === 0) {
+    if (existingWords !== t.words.length) {
+      await prisma.miniGameWord.deleteMany({ where: { topicId: topic.id } });
       await prisma.miniGameWord.createMany({
         data: t.words.map(([en, vi, ja, ko, img], wordOrder) => ({ topicId: topic.id, en, vi, ja, ko, img, order: wordOrder })),
       });
@@ -4404,7 +4511,8 @@ async function main() {
       create: { key: t.key, name: t.name, order },
     });
     const existingRounds = await prisma.wordCatchRound.count({ where: { topicId: topic.id } });
-    if (existingRounds === 0) {
+    if (existingRounds !== t.rounds.length) {
+      await prisma.wordCatchRound.deleteMany({ where: { topicId: topic.id } });
       await prisma.wordCatchRound.createMany({
         data: t.rounds.map((r, roundOrder) => ({ topicId: topic.id, vi: r.vi, ja: r.ja, ko: r.ko, answer: r.answer, options: r.options, order: roundOrder })),
       });
@@ -4421,7 +4529,8 @@ async function main() {
       create: { key: t.key, name: t.name, color: t.color, order },
     });
     const existingRounds = await prisma.shopRound.count({ where: { topicId: topic.id } });
-    if (existingRounds === 0) {
+    if (existingRounds !== t.rounds.length) {
+      await prisma.shopRound.deleteMany({ where: { topicId: topic.id } });
       await prisma.shopRound.createMany({
         data: t.rounds.map((r, roundOrder) => ({
           topicId: topic.id,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { api, ApiError, type ShopShelfItem, type ShopTopicDetail, type ShopTopicListItem } from "../lib/api";
 import { BackIcon, ChunkyButton, CoinIcon, RewardModal, SpeakerIcon } from "../components/ui";
 import { speak } from "../lib/tts";
@@ -24,6 +24,7 @@ export default function EnglishShop({ onExit, onComplete }: EnglishShopProps) {
   const t = useT();
   const [list, setList] = useState<ShopTopicListItem[] | null>(null);
   const [topic, setTopic] = useState<ShopTopicDetail | null>(null);
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard" | null>(null);
   const [loadErr, setLoadErr] = useState("");
 
   useEffect(() => {
@@ -43,7 +44,8 @@ export default function EnglishShop({ onExit, onComplete }: EnglishShopProps) {
     }
   }
 
-  if (topic) return <EnglishShopPlay topic={topic} onExit={() => setTopic(null)} onComplete={onComplete} />;
+  if (topic && difficulty) return <EnglishShopPlay topic={topic} difficulty={difficulty} onExit={() => setDifficulty(null)} onComplete={onComplete} />;
+  if (topic) return <ShopDifficulty topic={topic} onPick={setDifficulty} onExit={() => setTopic(null)} />;
 
   return (
     <div className="relative flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#FFE4B8,#FFF6E6_48%,#EAF6E4)]">
@@ -87,10 +89,28 @@ export default function EnglishShop({ onExit, onComplete }: EnglishShopProps) {
   );
 }
 
+const SHOP_LEVELS = {
+  easy: { label: "Dễ", icon: "🧺", rounds: 5, note: "5 lượt · 1–2 loại hàng", color: "#70B94A", range: [0, 34] },
+  medium: { label: "Trung bình", icon: "🛒", rounds: 10, note: "10 lượt · 2–3 loại hàng", color: "#E6A52D", range: [34, 67] },
+  hard: { label: "Khó", icon: "🏪", rounds: 20, note: "20 lượt · 3 loại · nhiều số lượng", color: "#E76558", range: [67, 100] },
+} as const;
+
+function ShopDifficulty({ topic, onPick, onExit }: { topic: ShopTopicDetail; onPick: (level: keyof typeof SHOP_LEVELS) => void; onExit: () => void }) {
+  return <div className="relative flex h-full flex-col overflow-hidden bg-[linear-gradient(180deg,#FFE1AF,#FFF7E9_58%,#EAF6E4)]"><div className="absolute inset-x-0 top-0 h-20 bg-[repeating-linear-gradient(90deg,#EF6A5A_0_60px,#FFF4DC_60px_120px)] opacity-20"/><div className="relative z-10 flex h-[84px] items-center gap-3 border-b border-white/70 bg-white/45 px-5 backdrop-blur-sm"><button onClick={onExit} className="grid h-[48px] w-[48px] place-items-center rounded-[16px] bg-[#5C7BC9] shadow-[0_4px_0_#43609F]"><BackIcon /></button><div><div className="font-baloo text-[24px] font-extrabold text-[#7C4528]">{topic.name}</div><div className="font-baloo text-xs font-bold text-[#9B765C]">Chọn thử thách mua sắm</div></div><span className="ml-auto rounded-full border-2 border-white bg-white/85 px-4 py-2 font-baloo text-xs font-extrabold text-[#A0693D]">🛍️ Kho {topic.rounds.length} nhiệm vụ</span></div><div className="relative z-10 grid flex-1 place-items-center p-8"><div className="grid w-full max-w-[960px] grid-cols-3 gap-6">{Object.entries(SHOP_LEVELS).map(([key, level])=><button key={key} onClick={()=>onPick(key as keyof typeof SHOP_LEVELS)} className="group rounded-[30px] border-4 border-white bg-white/94 p-7 text-left shadow-[0_8px_0_#D7B77D,0_20px_38px_rgba(120,76,33,.15)] transition-transform hover:-translate-y-2"><div className="mb-5 grid h-20 w-20 place-items-center rounded-[24px] text-4xl" style={{background:`${level.color}20`}}>{level.icon}</div><div className="font-baloo text-2xl font-extrabold" style={{color:level.color}}>{level.label}</div><div className="mt-2 font-baloo text-sm font-bold text-[#8A7965]">{level.note}</div><div className="mt-6 h-3 overflow-hidden rounded-full bg-[#F0E4D1]"><div className="h-full rounded-full" style={{width:`${level.rounds/20*100}%`,background:level.color}}/></div></button>)}</div></div></div>;
+}
+
 /** The actual shopping game, once a topic has been picked. */
-function EnglishShopPlay({ topic, onExit, onComplete }: { topic: ShopTopicDetail; onExit: () => void; onComplete?: () => void }) {
+function EnglishShopPlay({ topic, difficulty, onExit, onComplete }: { topic: ShopTopicDetail; difficulty: keyof typeof SHOP_LEVELS; onExit: () => void; onComplete?: () => void }) {
   const t = useT();
-  const rounds = topic.rounds;
+  const config = SHOP_LEVELS[difficulty];
+  const [session, setSession] = useState(0);
+  const rounds = useMemo(() => {
+    const [start, end] = config.range;
+    const pool = [...topic.rounds.slice(start, end)];
+    for (let i = pool.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [pool[i], pool[j]] = [pool[j]!, pool[i]!]; }
+    if (session % 2) pool.reverse();
+    return pool.slice(0, config.rounds);
+  }, [topic, config, session]);
   const [roundIdx, setRoundIdx] = useState(0);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [pickedIdx, setPickedIdx] = useState<Set<number>>(new Set());
@@ -156,6 +176,7 @@ function EnglishShopPlay({ topic, onExit, onComplete }: { topic: ShopTopicDetail
     setPaid(false);
     setFinished(false);
     setMsg(t("Chạm đúng món trên kệ để bỏ vào giỏ"));
+    setSession((value) => value + 1);
   }
 
   return (
@@ -167,7 +188,7 @@ function EnglishShopPlay({ topic, onExit, onComplete }: { topic: ShopTopicDetail
         <div className="flex flex-col">
           <span className="font-baloo text-[25px] font-extrabold">{topic.name}</span>
           <span className="font-baloo text-[12.5px] font-semibold text-[#8A7A62]">
-            {t("Lượt")} {roundIdx + 1}/{rounds.length}
+            English Shop · <b style={{color:config.color}}>{config.label}</b> · {t("Lượt")} {roundIdx + 1}/{rounds.length}
           </span>
         </div>
         <div className="flex-1" />

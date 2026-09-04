@@ -69,6 +69,7 @@ import { myWordCatchRoundsRoutes } from "./routes/my/wordCatchRounds.routes.js";
 import { myWordCatchTopicsRoutes } from "./routes/my/wordCatchTopics.routes.js";
 import { petCareRoutes } from "./routes/petCare.routes.js";
 import { progressRoutes } from "./routes/progress.routes.js";
+import { friendRoutes } from "./routes/friend.routes.js";
 import { questRoutes } from "./routes/quest.routes.js";
 import { rpgRoutes } from "./routes/rpg.routes.js";
 import { ttsRoutes } from "./routes/tts.routes.js";
@@ -140,6 +141,7 @@ export function buildApp() {
   app.register(authRoutes, { prefix: "/auth" });
   app.register(childRoutes, { prefix: "/children" });
   app.register(progressRoutes, { prefix: "/children" });
+  app.register(friendRoutes, { prefix: "/children" });
   app.register(inventoryRoutes, { prefix: "/children" });
   app.register(savedWordsRoutes, { prefix: "/children" });
   app.register(notificationRoutes, { prefix: "/children" });

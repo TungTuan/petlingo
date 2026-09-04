@@ -78,8 +78,8 @@ export default function Login({ onAuthenticated }: LoginProps) {
           </div>
         </div>
         <div className="flex items-end gap-3.5">
-          <img src="/pets/buddy.png" alt="" className="animate-bob h-[150px] w-[150px] object-contain object-bottom" />
-          <img src="/pets/mimi.png" alt="" className="h-[110px] w-[110px] object-contain object-bottom" style={{ animation: "bob 3.9s ease-in-out infinite" }} />
+          <img src="/pets/buddy.webp" alt="" className="animate-bob h-[150px] w-[150px] object-contain object-bottom" />
+          <img src="/pets/mimi.webp" alt="" className="h-[110px] w-[110px] object-contain object-bottom" style={{ animation: "bob 3.9s ease-in-out infinite" }} />
         </div>
         <div className="rounded-2xl bg-white/92 px-5 py-3 font-baloo text-[15px] font-bold text-ink shadow-[0_4px_0_rgba(0,0,0,.1)]">
           {t("2.4 triệu từ đã học cùng nhau")}

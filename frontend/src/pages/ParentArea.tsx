@@ -93,7 +93,7 @@ export default function ParentArea({ childName, level, onExit }: ParentAreaProps
         </div>
         <div className="flex-1" />
         <div className="flex items-center gap-2.5 rounded-full border-[3px] border-[#C9E5F7] bg-[#EAF6FF] py-1.5 pl-1.5 pr-4.5">
-          <img src="/pets/buddy.png" alt="" className="h-[38px] w-[38px] rounded-full bg-white object-contain" />
+          <img src="/pets/buddy.webp" alt="" className="h-[38px] w-[38px] rounded-full bg-white object-contain" />
           <span className="font-baloo text-base font-extrabold text-[#3E7FB0]">
             {childName} · Level {level}
           </span>

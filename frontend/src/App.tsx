@@ -434,6 +434,13 @@ function AppInner() {
     }
     return result;
   }
+  async function handleRenameProfile(itemId: string, name: string) {
+    if (!child) throw new Error("Chưa chọn hồ sơ trẻ.");
+    const result = await api.renameProfile(child.id, itemId, name);
+    setChild(result.child);
+    setInventory((inv) => (inv ? inv.map((e) => e.item.id === itemId ? { ...e, quantity: result.quantity } : e).filter((e) => e.quantity > 0) : inv));
+    return result;
+  }
 
   async function handlePurchaseItem(itemId: string) {
     if (!child) throw new Error("Chưa chọn hồ sơ trẻ.");
@@ -578,7 +585,7 @@ function AppInner() {
           <div className="animate-pop flex w-[560px] max-w-full flex-col items-center gap-4.5 rounded-[30px] border-4 p-9" style={{ background: "#F1F4F7", borderColor: "#D6E1EA", boxShadow: "0 8px 0 #CBD8E3" }}>
             <div className="relative grid h-[160px] w-[180px] place-items-center">
               <span className="absolute bottom-3.5 h-8.5 w-[140px] rounded-[50%] bg-black/[.12]" />
-              <img src="/pets/buddy.png" alt="" className="animate-bob h-[160px] w-[160px] object-contain object-bottom" style={{ filter: "grayscale(.35)" }} />
+              <img src="/pets/buddy.webp" alt="" className="animate-bob h-[160px] w-[160px] object-contain object-bottom" style={{ filter: "grayscale(.35)" }} />
               <span className="absolute right-0 top-1.5 grid h-13 w-13 place-items-center rounded-full font-baloo text-2xl font-extrabold text-white shadow-[0_4px_0_rgba(0,0,0,.16)]" style={{ background: "#5C7BC9" }}>
                 !
               </span>
@@ -863,7 +870,7 @@ function AppInner() {
         return <SrsCard words={reviewWords} onExit={() => goBack("topics")} />;
 
       case "bag":
-        return <Bag coins={progress.coins} gems={progress.gems} inventory={inventory} onUseItem={handleUseItem} onRenamePet={handleRenamePet} onExit={() => goBack("home")} />;
+        return <Bag coins={progress.coins} gems={progress.gems} inventory={inventory} onUseItem={handleUseItem} onRenamePet={handleRenamePet} onRenameProfile={handleRenameProfile} onExit={() => goBack("home")} />;
 
       case "profile":
         return (
@@ -984,7 +991,7 @@ function AppInner() {
         );
 
       case "petRanch":
-        return <PetRanch owned={owned} petCopies={progress.petCopies} petStatsById={petStatsById} activePetId={activePetId} onSelectActive={selectActivePet} onExit={() => goBack("petCare")} />;
+        return <PetRanch childId={child.id} owned={owned} petCopies={progress.petCopies} petEggs={progress.petEggs} petStatsById={petStatsById} activePetId={activePetId} onSelectActive={selectActivePet} onInventoryChanged={async () => setInventory((await api.listInventory(child.id)).items)} onExit={() => goBack("petCare")} />;
 
       case "more":
         return <More onNavigate={handleNavigate} onOpen={navigateTo} />;

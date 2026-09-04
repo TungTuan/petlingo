@@ -6,8 +6,8 @@ type Category = AdminItem["category"];
 const CATEGORIES: Category[] = ["food", "toy", "accessory", "special"];
 const CATEGORY_LABEL: Record<Category, string> = { food: "Đồ ăn", toy: "Đồ chơi", accessory: "Phụ kiện", special: "Vật phẩm" };
 const CATEGORY_TONE: Record<Category, "green" | "orange" | "purple" | "gray"> = { food: "orange", toy: "green", accessory: "purple", special: "gray" };
-const STATS: ItemEffect["stat"][] = ["hunger", "happiness", "health", "experience", "coins", "resetLevel", "renamePet"];
-const STAT_LABEL: Record<ItemEffect["stat"], string> = { hunger: "Đồ ăn (pet)", happiness: "Vui vẻ (pet)", health: "Sức khoẻ (pet)", experience: "XP pet", coins: "Coin (trẻ)", resetLevel: "Reset level pet", renamePet: "Đổi tên pet" };
+const STATS: ItemEffect["stat"][] = ["hunger", "happiness", "health", "experience", "coins", "resetLevel", "renamePet", "renameUser"];
+const STAT_LABEL: Record<ItemEffect["stat"], string> = { hunger: "Đồ ăn (pet)", happiness: "Vui vẻ (pet)", health: "Sức khoẻ (pet)", experience: "XP pet", coins: "Coin (trẻ)", resetLevel: "Reset level pet", renamePet: "Đổi tên pet", renameUser: "Đổi tên hồ sơ" };
 
 const EMPTY: ItemInput = { key: "", name: "", category: "food", color: "#EF6A5A", radius: "12px", description: "", effects: [], price: 0, currency: "coin", imagePath: "", defaultQty: 1, order: 0, isActive: true };
 

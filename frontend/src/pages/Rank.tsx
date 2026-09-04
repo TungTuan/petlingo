@@ -84,7 +84,7 @@ export default function Rank({ child, onExit, onStudyMore }: RankProps) {
                       return (
                         <div key={entry.childId} className="flex flex-col items-center gap-2" style={{ width: rank === 1 ? "190px" : "166px" }}>
                           <img
-                            src={`/pets/${entry.avatarId}.png`}
+                            src={`/pets/${entry.avatarId}.webp`}
                             alt=""
                             className="object-contain"
                             style={{ width: PODIUM_PET_SIZE[pos], height: PODIUM_PET_SIZE[pos], animation: `bob ${rank === 1 ? "3.2s" : rank === 2 ? "3.6s" : "4s"} ease-in-out infinite` }}
@@ -117,7 +117,7 @@ export default function Rank({ child, onExit, onStudyMore }: RankProps) {
                       >
                         <span className="w-8.5 text-center font-baloo text-[17px] font-extrabold text-[#8A7A62]">{entry.rank}</span>
                         <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl" style={{ background: mine ? "#FFE9C9" : "#F7F0E2" }}>
-                          <img src={`/pets/${entry.avatarId}.png`} alt="" className="h-4/5 w-4/5 object-contain" />
+                          <img src={`/pets/${entry.avatarId}.webp`} alt="" className="h-4/5 w-4/5 object-contain" />
                         </span>
                         <div className="flex-1">
                           <div className="font-baloo text-[16.5px] font-extrabold">{entry.displayName}</div>

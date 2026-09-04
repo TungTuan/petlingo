@@ -84,6 +84,20 @@ export async function renameActivePet(childId: string, parentId: string, itemId:
   };
 }
 
+export async function renameChildProfile(childId: string, parentId: string, itemId: string, rawName: string) {
+  await getOwnedChildOrThrow(childId, parentId);
+  const name = rawName.trim().replace(/\s+/g, " ");
+  if (name.length < 2 || name.length > 20) throw new AppError(400, "Tên hiển thị cần từ 2 đến 20 ký tự.", "INVALID_PROFILE_NAME");
+  const row = await prisma.childItem.findUnique({ where: { childId_itemId: { childId, itemId } }, include: { item: true } });
+  if (!row || row.quantity <= 0) throw new AppError(400, "Bạn không còn thẻ đổi tên.", "OUT_OF_STOCK");
+  if (!toEffects(row.item.effects).some((effect) => effect.stat === "renameUser" && effect.delta > 0)) throw new AppError(400, "Vật phẩm này không thể đổi tên hồ sơ.", "INVALID_RENAME_ITEM");
+  const [, child] = await prisma.$transaction([
+    prisma.childItem.update({ where: { childId_itemId: { childId, itemId } }, data: { quantity: { decrement: 1 } } }),
+    prisma.child.update({ where: { id: childId }, data: { displayName: name } }),
+  ]);
+  return { quantity: row.quantity - 1, child, message: `Tên hiển thị mới của bạn là ${name}!` };
+}
+
 /**
  * Consumes 1 unit of an item and applies its effects: hunger/happiness/
  * health deltas land on the child's currently active pet's PetStats; a
@@ -153,7 +167,7 @@ export async function useItem(childId: string, parentId: string, itemId: string)
 export async function listFoodShop(childId: string, parentId: string): Promise<InventoryEntry[]> {
   await getOwnedChildOrThrow(childId, parentId);
   const items = await prisma.item.findMany({
-    where: { isActive: true, OR: [{ category: "food" }, { key: { in: ["dong-ho-tai-sinh", "ve-doi-ten-pet"] } }] },
+    where: { isActive: true, OR: [{ category: "food", imagePath: { not: "" } }, { key: { in: ["dong-ho-tai-sinh", "ve-doi-ten-pet", "the-doi-ten-ho-so"] } }] },
     orderBy: [{ order: "asc" }],
   });
   const owned = await prisma.childItem.findMany({ where: { childId } });

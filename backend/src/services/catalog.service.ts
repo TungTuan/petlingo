@@ -96,7 +96,10 @@ export async function listQuestions(lessonId: string) {
 
 export async function listActiveStories(viewerId: string) {
   const rows = await prisma.story.findMany({
-    where: { isActive: true, ...ownershipFilter(viewerId) },
+    // Drafts created by parents can exist before their first page is added.
+    // Keep those drafts in the editor, but never expose empty story cards in
+    // the child's reading library.
+    where: { isActive: true, pages: { some: {} }, ...ownershipFilter(viewerId) },
     orderBy: { order: "asc" },
     select: { id: true, key: true, title: true, topic: true, colorTheme: true, order: true, parentId: true, _count: { select: { pages: true } } },
   });

@@ -7,6 +7,7 @@ const ANIMATED_MAX_PET_IDS = new Set([
   "ellie", "frostwing", "frosty", "gargo", "glacio", "kiwi", "leo", "lila", "milky", "mimi",
   "misty", "mystic", "nimbus", "nocty", "papillon", "pepper", "poppy", "prism", "rosie", "sia",
   "smokey", "snowy", "sprout", "stella", "stripe", "sunny", "umbra", "void", "waffle",
+  "haetae",
 ]);
 
 interface PetPortraitProps {
@@ -24,32 +25,34 @@ export default function PetPortrait({ petId, name, className = "", animated = fa
   const rarity = PETS.find((pet) => pet.id === petId)?.rarity ?? "Common";
   const isMaxLevel = level !== undefined && level >= 30;
   const isFlying = FLYING_PET_IDS.has(petId);
-  const hasSelfMotionMedia = mediaAnimated && isMaxLevel && ANIMATED_MAX_PET_IDS.has(petId);
-  const shouldFly = animated && motion && isMaxLevel && isFlying && !hasSelfMotionMedia;
-  const cuteMotion = animated && motion && isMaxLevel && !isFlying && petId !== "buddy" && !hasSelfMotionMedia ? PET_CUTE_MOTION[petId] ?? "tilt" : null;
+  const hasSelfMotionMedia = mood !== "sad" && mediaAnimated && isMaxLevel && ANIMATED_MAX_PET_IDS.has(petId);
+  // Animated WebP only animates the pet itself (for example Ember's wing
+  // flap). It must not disable the container's gentle flight path; otherwise
+  // the dragon flaps its wings while remaining pinned to the ground on Home.
+  const shouldFly = mood !== "sad" && animated && motion && isMaxLevel && isFlying;
+  const cuteMotion = mood !== "sad" && animated && motion && isMaxLevel && !isFlying && petId !== "buddy" && !hasSelfMotionMedia ? PET_CUTE_MOTION[petId] ?? "tilt" : null;
   const stage = level === undefined ? null : getPetEvolutionStage(level);
   const preferred = useMemo(() => {
-    if (stage === "egg") return `/pets/eggs/${rarity.toLowerCase()}.png`;
-    if (petId === "buddy" && stage === "medium") return `/pets/evolution/buddy-medium-${mood}.png`;
+    if (stage === "egg") return `/pets/eggs/${rarity.toLowerCase()}.webp`;
+    if (petId === "buddy" && stage === "medium") return `/pets/evolution/buddy-medium-${mood}.webp`;
+    // Ember's wing motion is baked into its WebP. Keep that motion while
+    // hungry and let the `pet-mood-sad` CSS supply the tired posture/filter;
+    // swapping to the static sad PNG made its wings freeze completely.
+    if (mediaAnimated && petId === "ember") return "/pets/animation/ember-wing-flap-v6.webp";
+    // Other pets still prefer their dedicated sad artwork while hungry.
+    if (mood === "sad") return `/pets/sad/${petId}.webp`;
     if (mediaAnimated && petId === "buddy" && level !== undefined && level >= 30) {
       return "/pets/animation/buddy-cute-max-v1.webp";
-    }
-    // Ember's wing flap is baked into the webp itself (loops on its own,
-    // same asset Flappy Dragon uses) — no level gate needed, it can just
-    // stand there and flap naturally at any level/stage past the egg.
-    if (mediaAnimated && petId === "ember") {
-      return "/pets/animation/ember-wing-flap-v6.webp";
     }
     if (mediaAnimated && level !== undefined && level >= 30 && ANIMATED_MAX_PET_IDS.has(petId)) {
       return `/pets/animation/${petId}-max-v1.webp`;
     }
     // Chỉ 24/40 pet có sẵn ảnh buồn riêng (frontend/public/pets/sad/) — pet
     // còn thiếu sẽ tự rơi về ảnh vui bình thường qua onError bên dưới (fallback
-    // vốn đã trỏ đúng `/pets/${petId}.png`), không cần danh sách kiểm tra ở đây.
-    if (mood === "sad") return `/pets/sad/${petId}.png`;
-    return `/pets/${petId}.png`;
+    // vốn đã trỏ đúng `/pets/${petId}.webp`), không cần danh sách kiểm tra ở đây.
+    return `/pets/${petId}.webp`;
   }, [level, mediaAnimated, mood, petId, rarity, stage]);
-  const fallback = `/pets/${petId}.png`;
+  const fallback = `/pets/${petId}.webp`;
   const [src, setSrc] = useState(preferred);
 
   useEffect(() => setSrc(preferred), [preferred]);
@@ -62,7 +65,7 @@ export default function PetPortrait({ petId, name, className = "", animated = fa
       onError={() => {
         if (src !== fallback) setSrc(fallback);
       }}
-      className={`${animated && motion && !isMaxLevel ? "animate-pet-idle" : ""} ${stage ? `pet-stage-${stage}` : ""} ${shouldFly ? "pet-max-aura pet-fly-drift" : ""} ${cuteMotion ? `pet-max-aura pet-cute-${cuteMotion}` : ""} ${isMaxLevel ? `${shouldFly || cuteMotion ? "" : "pet-max-glow-static"} pet-aura-${rarity.toLowerCase()}` : ""} select-none object-contain ${className}`}
+      className={`${animated && motion && !isMaxLevel ? "animate-pet-idle" : ""} ${mood === "sad" && stage !== "egg" ? "pet-mood-sad" : ""} ${stage ? `pet-stage-${stage}` : ""} ${shouldFly ? "pet-max-aura pet-fly-drift" : ""} ${cuteMotion ? `pet-max-aura pet-cute-${cuteMotion}` : ""} ${isMaxLevel ? `${shouldFly || cuteMotion ? "" : "pet-max-glow-static"} pet-aura-${rarity.toLowerCase()}` : ""} select-none object-contain ${className}`}
     />
   );
 }

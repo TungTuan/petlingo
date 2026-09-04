@@ -264,6 +264,19 @@
   will-change: transform, filter;
 }
 
+/* Every pet must visibly react to hunger, including species that do not yet
+   have a bespoke sad sprite. The class also stays on bespoke sad art, giving
+   the whole catalog one consistent tired/droopy body language. */
+@keyframes pet-hungry-droop {
+  0%, 100% { transform: translateY(3px) rotate(-1.2deg) scaleY(.97); }
+  50% { transform: translateY(8px) rotate(1.2deg) scaleY(.94); }
+}
+.pet-mood-sad {
+  animation: pet-hungry-droop 3.8s ease-in-out infinite;
+  filter: saturate(.72) brightness(.93) drop-shadow(0 5px 3px rgba(72,63,72,.2));
+  transform-origin: 50% 92%;
+}
+
 /* A single portrait asset is reused between growth stages until a bespoke
    stage sprite exists. CSS `scale` is independent from the idle animation's
    transform, so growth remains visible without breaking the bob motion. */
@@ -301,6 +314,7 @@
 .ranch-pet-walking { animation-name: ranch-pet-walk; transform-origin: 50% 86%; }
 .ranch-pet-flying { animation-name: ranch-pet-fly; }
 .ranch-pet-flying .ranch-pet-shadow { animation: ranch-shadow-breathe 2.6s ease-in-out infinite; }
+.ranch-pet-egg { transform-origin: 50% 100%; cursor: default; }
 
 @keyframes pet-max-aura {
   0%, 100% { filter: drop-shadow(0 0 8px var(--pet-aura)) drop-shadow(0 0 18px color-mix(in srgb, var(--pet-aura) 65%, transparent)); }
@@ -426,7 +440,7 @@
 
 /* Home customization uses individually optimized WebP scenes so every theme
    changes the actual world, while remaining light enough for mobile. */
-.home-bg-garden { background-image: url('/backgrounds/home-garden-v2.png'); }
+.home-bg-garden { background-image: url('/backgrounds/home-garden-v2.webp'); }
 .home-bg-sunset { background-image: url('/backgrounds/home-castle-sunset-v1.webp'); }
 .home-bg-cherry { background-image: url('/backgrounds/home-cherry-valley-v1.webp'); }
 .home-bg-snow { background-image: url('/backgrounds/home-snow-village-v1.webp'); }
@@ -539,7 +553,7 @@
 @keyframes train-chug { 0%,100% { translate: 0 0; } 50% { translate: 0 -3px; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-pet-idle, .pet-max-aura, .pet-roam, .pet-fly-drift, [class*="pet-cute-"], .pet-ground-shadow, .pet-max-preview::before, .room-furniture, .game-zone-ready, .shop-item-picked, .word-train-engine, .ranch-pet, .ranch-pet-shadow { animation: none; translate: 0; }
+  .animate-pet-idle, .pet-mood-sad, .pet-max-aura, .pet-roam, .pet-fly-drift, [class*="pet-cute-"], .pet-ground-shadow, .pet-max-preview::before, .room-furniture, .game-zone-ready, .shop-item-picked, .word-train-engine, .ranch-pet, .ranch-pet-shadow { animation: none; translate: 0; }
 
   /* Bathing is a short, user-triggered status effect. Keep its motion visible
      even when ambient/continuous game animations are reduced; otherwise the
@@ -680,3 +694,5 @@
     }
   }
 }
+@keyframes home-pet-cute-action { 0%,100% { transform: translateY(0) rotate(0) scale(1) } 24% { transform: translateY(-18px) rotate(-5deg) scale(1.04) } 48% { transform: translateY(-5px) rotate(5deg) scale(1.02) } 70% { transform: translateY(-12px) rotate(-2deg) scale(1.04) } }
+.home-pet-cute-action { animation: home-pet-cute-action .85s cubic-bezier(.2,.8,.25,1); transform-origin: 50% 88%; }

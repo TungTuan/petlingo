@@ -108,7 +108,7 @@ export interface ClaimLegendaryResult {
   alreadyClaimed: boolean;
 }
 
-export type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel" | "renamePet"; delta: number };
+export type ItemEffect = { stat: "hunger" | "happiness" | "health" | "coins" | "experience" | "resetLevel" | "renamePet" | "renameUser"; delta: number };
 export interface InventoryItem {
   id: string;
   key: string;
@@ -132,6 +132,7 @@ export interface UseItemResult {
   petStats: PetStatsState | null;
   message: string;
 }
+export interface RenameProfileResult { quantity: number; child: Child; message: string }
 
 export interface PetStatsState {
   petKey: string;
@@ -143,6 +144,18 @@ export interface PetStatsState {
   level: number;
   experienceToNextLevel: number;
 }
+export interface FriendSummary {
+  friendshipId: string;
+  status: "pending" | "accepted";
+  direction: "sent" | "received";
+  friend: { id: string; displayName: string; avatarId: string };
+}
+export interface FriendRanchSnapshot {
+  owner: { id: string; displayName: string; avatarId: string };
+  progress: ProgressState;
+  petStats: Array<{ petKey: string; customName: string | null; hunger: number; happiness: number; health: number; experience: number; level: number }>;
+}
+export interface GiftMail { id: string; direction: "sent" | "received"; sender: { id: string; displayName: string }; receiver: { id: string; displayName: string }; item: { id: string; name: string; imagePath: string }; quantity: number; createdAt: string; readAt: string | null }
 export type CareAction = "feed" | "bathe" | "play" | "sleep" | "pat";
 export type RewardableActivity = "memoryMatch" | "wordCatch" | "englishShop" | "englishHome" | "wordTrain" | "englishDetective" | "echoParrot" | "chatBuddy" | "story";
 export interface ActivityRewardResult { progress: ProgressState; petStats: PetStatsState | null; rewardCoins: number; rewardXp: number }
@@ -1139,6 +1152,7 @@ export const api = {
   listInventory: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/items`),
   useItem: (childId: string, itemId: string) => request<UseItemResult>(`/children/${childId}/items/${itemId}/use`, { method: "POST" }),
   renamePet: (childId: string, itemId: string, name: string) => request<UseItemResult>(`/children/${childId}/items/${itemId}/rename-pet`, { method: "POST", body: { name } }),
+  renameProfile: (childId: string, itemId: string, name: string) => request<RenameProfileResult>(`/children/${childId}/items/${itemId}/rename-profile`, { method: "POST", body: { name } }),
 
   getPetStats: (childId: string, petKey: string) => request<{ petStats: PetStatsState }>(`/children/${childId}/pets/${petKey}/stats`),
   careForPet: (childId: string, petKey: string, action: CareAction) =>
@@ -1150,6 +1164,14 @@ export const api = {
   listFoodShop: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/food-shop`),
   listHomeBackgroundShop: (childId: string) => request<{ items: InventoryEntry[] }>(`/children/${childId}/home-background-shop`),
   purchaseItem: (childId: string, itemId: string) => request<{ progress: ProgressState; quantity: number }>(`/children/${childId}/items/${itemId}/purchase`, { method: "POST" }),
+
+  listFriends: (childId: string) => request<{ friendCode: string; friendships: FriendSummary[] }>(`/children/${childId}/friends`),
+  sendFriendRequest: (childId: string, friendCode: string) => request<FriendSummary>(`/children/${childId}/friends/requests`, { method: "POST", body: { friendCode } }),
+  acceptFriendRequest: (childId: string, friendshipId: string) => request<{ friendship: FriendSummary }>(`/children/${childId}/friends/${friendshipId}/accept`, { method: "POST" }),
+  removeFriendship: (childId: string, friendshipId: string) => request<void>(`/children/${childId}/friends/${friendshipId}`, { method: "DELETE" }),
+  visitFriendRanch: (childId: string, friendChildId: string) => request<{ ranch: FriendRanchSnapshot }>(`/children/${childId}/friends/${friendChildId}/ranch`),
+  listMailbox: (childId: string) => request<{ gifts: GiftMail[] }>(`/children/${childId}/mailbox`),
+  sendGift: (childId: string, friendChildId: string, itemId: string, quantity: number) => request<{ quantity: number; message: string }>(`/children/${childId}/friends/${friendChildId}/gifts`, { method: "POST", body: { itemId, quantity } }),
 
   // ---- Daily quests ("Nhiệm vụ hôm nay") ----
 

@@ -98,4 +98,4 @@ export const PETS: PetDef[] = PET_DATA.map(([name, id, species, rarity]) => ({
   ...RARITY[rarity],
 }));
 
-export const petSrc = (id: string) => `/pets/${id}.png`;
+export const petSrc = (id: string) => `/pets/${id}.webp`;

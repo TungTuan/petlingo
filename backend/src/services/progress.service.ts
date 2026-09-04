@@ -114,7 +114,7 @@ async function getOwnedProgressOrThrow(childId: string, parentId: string) {
   return child.progress;
 }
 
-function toProgressState(row: {
+export function toProgressState(row: {
   coins: number;
   gems: number;
   unlockedPets: unknown;

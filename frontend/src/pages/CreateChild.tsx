@@ -60,7 +60,7 @@ export default function CreateChild({ onCreated }: CreateChildProps) {
               }}
             >
               <img
-                src={`/pets/${id}.png`}
+                src={`/pets/${id}.webp`}
                 alt={id}
                 className="h-[80%] w-[80%] object-contain"
                 style={avatar === i ? { animation: "bob 2.8s ease-in-out infinite" } : undefined}

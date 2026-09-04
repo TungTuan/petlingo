@@ -123,8 +123,8 @@ function StoryReader({ story, onExit, onComplete }: { story: StoryDetail; onExit
             <div className="animate-cloud absolute left-15 top-8.5 h-12 w-[150px] rounded-full bg-white/75" />
             <div className="absolute inset-x-0 bottom-0 h-[34%]" style={{ background: p.ground }} />
             <div className="relative flex items-end gap-6.5 pb-6.5">
-              <img src={`/pets/${p.img1}.png`} alt="" className="animate-bob h-[210px] w-[210px] object-contain object-bottom" />
-              <img src={`/pets/${p.img2}.png`} alt="" className="h-[170px] w-[170px] object-contain object-bottom" style={{ animation: "bob 4s ease-in-out infinite" }} />
+              <img src={`/pets/${p.img1}.webp`} alt="" className="animate-bob h-[210px] w-[210px] object-contain object-bottom" />
+              <img src={`/pets/${p.img2}.webp`} alt="" className="h-[170px] w-[170px] object-contain object-bottom" style={{ animation: "bob 4s ease-in-out infinite" }} />
             </div>
             <div className="absolute right-6 top-5.5 rounded-2xl bg-white px-4.5 py-2.5 font-baloo text-[15px] font-extrabold shadow-[0_4px_0_rgba(0,0,0,.12)]">{t(p.label)}</div>
           </div>
