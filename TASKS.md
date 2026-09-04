@@ -1102,6 +1102,9 @@ tự giảm theo thời gian.
   công, `petStats.hunger` trả về đúng `0`.
 - **Lưu ý:** đây là vật phẩm TEST, không phải nội dung thật cho user cuối — cân
   nhắc xoá (`isActive: false` hoặc xoá row) khỏi Shop trước khi release thật.
+- [x] **Đã retire trước release (2026-09-04):** xoá mapping khỏi UI, thêm
+  migration đặt `isActive=false`/`defaultQty=0`, đồng thời thêm deny-list trong
+  seed để database cũ không thể vô tình bật lại item debug này.
 
 ### Pet đói → đổi sang ảnh buồn (`/pets/sad/`) — user tự thêm sẵn 24/40 ảnh (2026-08-28)
 `lib/petEvolution.ts` (`getPetMood`) và việc truyền `mood` xuống `<PetPortrait>` ở
@@ -1705,9 +1708,8 @@ code thật, không chỉ đoán):**
 - Migration `add_pet_custom_name` đã áp dụng đầy đủ (`prisma migrate
   status` → "Database schema is up to date").
 - **Việc còn tồn:** 2 world mới (IELTS/TOEIC) mới có 4 bài/world (so với 10
-  bài của 6 world cũ) — nội dung đang xây dở, không phải lỗi; vật phẩm test
-  "Đói ngay (Test)" (1 coin) vẫn còn sống trong Shop thật (đã ghi trong
-  `Release.md`, vẫn chưa gỡ); toàn bộ thay đổi trong mục này (kể cả của
+  bài của 6 world cũ) — nội dung đang xây dở, không phải lỗi; toàn bộ thay đổi
+  trong mục này (kể cả của
   người khác, không phải chỉ của tôi) vẫn CHƯA build/cài lại lên điện thoại
   thật, và CHƯA commit/push (xem `Release.md`'s Blocker #8 — khối lượng
   chưa lưu giờ còn lớn hơn nhiều so với lúc viết Release.md).

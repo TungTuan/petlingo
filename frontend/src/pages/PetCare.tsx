@@ -32,7 +32,6 @@ const ITEM_ICON: Record<string, string> = {
   "tao": "🍎", "banh-mi": "🥖", "sua": "🥛", "ca-rot": "🥕", "keo": "🍬", "xuong": "🦴",
   "dua-hau": "🍉", "trung-luoc": "🥚", "pho-mai": "🧀", "mat-ong": "🍯", "sup-bi-do": "🥣", "ca-hoi-tuoi": "🐟",
   "bong": "⚽", "chuot-bong": "🐭", "dem-ngu": "🛏️",
-  "test-lam-doi": "😩",
 };
 
 /** Pet Care — matches the reference sheet's "Phần 3 · Pet Care" panel. Stats/actions are now

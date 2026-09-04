@@ -131,9 +131,7 @@ export async function useItem(childId: string, parentId: string, itemId: string)
     }
     // Only block when the food would actually be wasted, i.e. it doesn't
     // raise hunger any further (hungerDelta > 0) and grants no XP either.
-    // An item with hungerDelta <= 0 (like a "test" item that lowers hunger
-    // on purpose) is never blocked by this — it's never "wasted" by an
-    // already-full pet.
+    // Items that do not raise hunger are not considered wasted by a full pet.
     if (experienceDelta <= 0 && hungerDelta > 0 && currentStats.hunger >= 100) {
       throw new AppError(409, "Pet đã no rồi! Chơi hoặc học thêm trước khi cho ăn tiếp nhé.", "PET_FULL");
     }

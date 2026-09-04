@@ -604,9 +604,6 @@ const ITEMS: { key: string; name: string; category: ItemCategory; color: string;
   { key: "taiyaki", name: "Taiyaki", category: "food", color: "#DFA451", radius: "18px", description: "Bánh cá nhân đậu đỏ Nhật Bản — hồi 25 đồ ăn và 8 sức khoẻ.", effects: [{ stat: "hunger", delta: 25 }, { stat: "health", delta: 8 }], defaultQty: 0, price: 55, currency: "coin", imagePath: "/items/food/taiyaki.webp" },
   { key: "songpyeon", name: "Songpyeon", category: "food", color: "#87C88B", radius: "999px", description: "Bánh gạo lễ Chuseok Hàn Quốc — hồi 20 đồ ăn và 12 vui vẻ.", effects: [{ stat: "hunger", delta: 20 }, { stat: "happiness", delta: 12 }], defaultQty: 0, price: 45, currency: "coin", imagePath: "/items/food/songpyeon.webp" },
   { key: "bungeoppang", name: "Bungeoppang", category: "food", color: "#E5A55F", radius: "18px", description: "Bánh cá đường phố Hàn Quốc — hồi 28 đồ ăn và 10 sức khoẻ.", effects: [{ stat: "hunger", delta: 28 }, { stat: "health", delta: 10 }], defaultQty: 0, price: 65, currency: "coin", imagePath: "/items/food/bungeoppang.webp" },
-  // Vật phẩm test/dev — làm pet đói ngay lập tức để kiểm thử trạng thái
-  // "đói" (speech bubble, cảnh báo...) mà không phải chờ hunger tự giảm.
-  // Giá 1 coin theo yêu cầu; KHÔNG dùng ở bản thật, chỉ để test.
   { key: "bong", name: "Bóng", category: "toy", color: "#7CC24A", radius: "999px", description: "Ném bóng để chơi cùng pet.", effects: [{ stat: "happiness", delta: 15 }], defaultQty: 1 },
   { key: "chuot-bong", name: "Chuột bông", category: "toy", color: "#B3A691", radius: "14px", description: "Mèo cực thích.", effects: [{ stat: "happiness", delta: 12 }], defaultQty: 2 },
   { key: "dem-ngu", name: "Đệm ngủ", category: "toy", color: "#9B7EDE", radius: "16px", description: "Ngủ ngon hồi nhiều sức khoẻ hơn.", effects: [{ stat: "health", delta: 20 }], defaultQty: 1 },
@@ -629,6 +626,11 @@ const ITEMS: { key: string; name: string; category: ItemCategory; color: string;
   { key: "background-dao-tren-may", name: "Đảo bay trên mây", category: "accessory", color: "#8FCDF1", radius: "18px", description: "Cầu vồng và lâu đài giữa những hòn đảo lơ lửng.", effects: [], defaultQty: 0, price: 60, currency: "gem", imagePath: "/backgrounds/home-sky-islands-v1.webp" },
   { key: "background-vuong-quoc-keo", name: "Vương quốc kẹo", category: "accessory", color: "#F49BC3", radius: "18px", description: "Lâu đài bánh ngọt và khu vườn kẹo đầy màu sắc.", effects: [], defaultQty: 0, price: 1200, currency: "coin", imagePath: "/backgrounds/home-candy-kingdom-v1.webp" },
 ];
+
+// Keys shipped in an earlier development build but forbidden in release.
+// Seed upserts do not deactivate records left behind in an older database,
+// so keep this deny-list even after removing those records from ITEMS.
+const RETIRED_ITEM_KEYS = ["test-lam-doi"];
 
 // Mirrors frontend/src/pages/QuestStreak.tsx's old QUEST_DATA mock — minus
 // "Ôn 10 từ cũ" (wordsReviewed), dropped for now since Topics/SrsCard aren't
@@ -4433,6 +4435,10 @@ async function main() {
   for (const [order, item] of ITEMS.entries()) {
     await prisma.item.upsert({ where: { key: item.key }, update: { ...item, order }, create: { ...item, order } });
   }
+  await prisma.item.updateMany({
+    where: { key: { in: RETIRED_ITEM_KEYS } },
+    data: { isActive: false, defaultQty: 0 },
+  });
   console.log(`✔ Seeded ${ITEMS.length} items`);
 
   let adminTestChild = await prisma.child.findFirst({ where: { parentId: admin.id, displayName: "Admin Test" } });

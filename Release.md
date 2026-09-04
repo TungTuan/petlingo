@@ -52,9 +52,9 @@ người dùng thật trả tiền/công khai trên store.**
 
 ## 🟠 Nên xử lý trước khi release (không chặn cứng nhưng rủi ro/uy tín thật)
 
-- **Vật phẩm test "Đói ngay" (`test-lam-doi`, 1 coin) vẫn đang sống trong
-  Shop thật** — nội dung debug lộ ra cho người dùng cuối, nên gỡ hoặc ẩn
-  (`isActive: false`) trước khi release.
+- **Đã xử lý vật phẩm test "Đói ngay" (`test-lam-doi`) ngày 2026-09-04:**
+  item không còn trong seed/UI; data migration và deny-list trong seed buộc
+  mọi database cũ đặt `isActive=false`, giữ quan hệ lịch sử thay vì xoá cứng.
 - **16/40 pet vẫn thiếu ảnh "sad"** (angel, aqua, berry, blaze, ember,
   frostwing, gargo, glacio, mystic, nocty, papillon, prism, sprout, stella,
   umbra, void) — pet đói của 16 loài này lặng lẽ rơi về ảnh vui bình thường,
@@ -145,16 +145,15 @@ người dùng thật trả tiền/công khai trên store.**
 
 ## Đề xuất thứ tự xử lý
 
-1. Gỡ/ẩn vật phẩm test "Đói ngay" khỏi Shop thật.
-2. Quyết định rõ mô hình kinh doanh (miễn phí hoàn toàn, hay có thu phí thật)
+1. Quyết định rõ mô hình kinh doanh (miễn phí hoàn toàn, hay có thu phí thật)
    — quyết định này chi phối toàn bộ Blocker #1, #2 (nếu thu phí thật thì
    Privacy Policy càng bắt buộc và cần kỹ hơn).
-3. Nếu nhắm iOS trước: mua Apple Developer ($99/năm), điền credentials Apple
+2. Nếu nhắm iOS trước: mua Apple Developer ($99/năm), điền credentials Apple
    Sign-In + chuyển sang flow native, chuẩn bị domain HTTPS thật.
-4. Nếu nhắm cả Android: cài Android Studio, test build thật trên ≥1 máy
+3. Nếu nhắm cả Android: cài Android Studio, test build thật trên ≥1 máy
    Android thật, tạo keystore release + Google Play Console ($25 một lần).
-5. Hoàn tất các mục ngoài code trong `LEGAL_RELEASE.md`: pháp nhân, email,
+4. Hoàn tất các mục ngoài code trong `LEGAL_RELEASE.md`: pháp nhân, email,
    legal review, bản dịch và verifiable parental consent nếu áp dụng.
-6. Sau khi có domain HTTPS thật: tạo `.env.release` và secrets backend
+5. Sau khi có domain HTTPS thật: tạo `.env.release` và secrets backend
    production từ các file `.example`, rồi chạy `npm run cap:sync:release`
    theo checklist trong `frontend/MOBILE_BUILD.md`.
